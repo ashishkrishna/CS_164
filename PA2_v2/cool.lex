@@ -145,8 +145,10 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>\n	 { update_curr_lineno(); }
 <YYINITIAL>\s+ { /* Fill-in here. */ }
 
-<YYINITIAL>"(*"    {yybegin(LINE_COMMENT); }
+<YYINITIAL>"(*"    { return comment_nester("(*"); }
 <YYINITIAL>"--"         { yybegin(SINGLE_LINE_COMMENT);  }
+<LINE_COMMENT>"(*"      {return comment_nester("(*"); }
+<LINE_COMMENT>"*)"      {return comment_nester("*)"); }
 <LINE_COMMENT>.*        { /* Fill-in here. */ }
 <LINE_COMMENT>\n        { update_curr_lineno(); }
 <YYINITIAL>\"           {string_buf.setLength(0);  
@@ -243,6 +245,8 @@ import java_cup.runtime.Symbol;
 <STRING_STATE>\\       {/* do nothing do not append */}
 
 
+
+
 /*SINGLE_LINE_COMMENT*/
 
 <SINGLE_LINE_COMMENT>[^\n] { /*do nothing do not make tokens for this */}
@@ -250,6 +254,7 @@ import java_cup.runtime.Symbol;
                         }
 
 
+/*LINE COMMENT */
 
 .                { /*
                     *  This should be the very last rule and will match
