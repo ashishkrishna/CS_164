@@ -76,11 +76,19 @@ class CellularAutomaton inherits IO {
     };
 };
 
-class Main {
+class Main inherits IO {
     cells : CellularAutomaton;
    
     main() : SELF_TYPE {
         {
+            "THE QuiCK brOWN fOx JUMPEd OVER THE LAZY DOG12324\n";
+            "1231312323";
+            "THE QUICK BROWN FOX JUMPED );
+            "THE QUICK BROWN FOX JUMPED \0 OVER\n";
+            "null_character";
+           
+            
+
             cells <- (new CellularAutomaton).init("         X         ");
             cells.print();
             (let countdown : Int <- 20 in
@@ -94,5 +102,5 @@ class Main {
             );  (* end let countdown
             self;
         }
-    };
+    }
 };

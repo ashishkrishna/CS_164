@@ -45,6 +45,9 @@ import java_cup.runtime.Symbol;
 
     void comment_nester(String comparator) {
     if(comparator == "(*") {
+        if(comment_nester_level == 0) {
+        yybegin(LINE_COMMENT);
+        }
         comment_nester_level++;
         return;
     }
@@ -241,6 +244,7 @@ import java_cup.runtime.Symbol;
 
 
 /*SINGLE_LINE_COMMENT*/
+
 <SINGLE_LINE_COMMENT>[^\n] { /*do nothing do not make tokens for this */}
 <SINGLE_LINE_COMMENT>\n {yybegin(YYINITIAL);
                         }
