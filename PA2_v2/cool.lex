@@ -9,6 +9,7 @@
 import java_cup.runtime.Symbol;
 
 %%
+%line
 
 /* Code enclosed in %{ %} is copied verbatim to the lexer class definition.
  * All extra variables/methods you want to use in the lexer actions go
@@ -25,7 +26,41 @@ import java_cup.runtime.Symbol;
     int get_curr_lineno() {
 	return curr_lineno;
     }
+    void update_curr_lineno() {
+    curr_lineno++;
+    return;
+    }
 
+    //String error Flags for reporting purposes
+    private int null_terminator_flag = 0;
+    private int length_flag = 0;
+    private int newline_flag = 0;
+    private int comment_nester_level = 0;
+
+    //Setting the null terminator flag
+    void set_null_terminator_flag(int val) {
+        null_terminator_flag = val;
+        return;
+    }
+
+    void comment_nester(String comparator) {
+    if(comparator == "(*") {
+        comment_nester_level++;
+        return;
+    }
+    else {
+        if(comparator == "*)" && comment_nester_level >= 2) {
+        comment_nester_level--;
+        return;
+        }
+        if(comparator == "*)" && comment_nester_level < 2) {
+        comment_nester_level--;
+        yybegin(YYINITIAL);
+        return;
+        }
+    }
+    return;
+    }
     private AbstractSymbol filename;
 
     void set_filename(String fname) {
@@ -47,6 +82,7 @@ import java_cup.runtime.Symbol;
  *  go here. */
 %init{
     // empty for now
+
 %init}
 
 /*  Code enclosed in %eofval{ %eofval} specifies java code that is
@@ -65,6 +101,8 @@ import java_cup.runtime.Symbol;
     case LINE_COMMENT:
 	   ...
 	   break;
+    case STRING_STATE:
+        return new Symbol()
  */
     }
     return new Symbol(TokenConstants.EOF);
@@ -79,6 +117,10 @@ import java_cup.runtime.Symbol;
  * .
  * Hint: You might need additional start conditions. */
 %state LINE_COMMENT
+%state STRING_STATE  
+/* Start condition for strings */
+%state SINGLE_LINE_COMMENT 
+/* -- Comment start */
 
 
 /* Define lexical rules after the %% separator.  There is some code
@@ -97,13 +139,15 @@ import java_cup.runtime.Symbol;
  * Reference Manual (CoolAid).  Please be sure to look there. */
 %%
 
-<YYINITIAL>\n	 { /* Fill-in here. */ }
+<YYINITIAL>\n	 { update_curr_lineno(); }
 <YYINITIAL>\s+ { /* Fill-in here. */ }
 
-<YYINITIAL>"--"         { /* Fill-in here. */ }
+<YYINITIAL>"(*"    {yybegin(LINE_COMMENT); }
+<YYINITIAL>"--"         { yybegin(SINGLE_LINE_COMMENT);  }
 <LINE_COMMENT>.*        { /* Fill-in here. */ }
-<LINE_COMMENT>\n        { /* Fill-in here. */ }
-
+<LINE_COMMENT>\n        { update_curr_lineno(); }
+<YYINITIAL>\"           {string_buf.setLength(0);  
+                         yybegin(STRING_STATE); }
 
 
 
@@ -165,6 +209,41 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"}"			{ return new Symbol(TokenConstants.RBRACE); }
 <YYINITIAL>"{"			{ return new Symbol(TokenConstants.LBRACE); }
 
+/*STRING_STATE*/
+
+<STRING_STATE>\"        {yybegin(YYINITIAL);
+
+                         if(null_terminator_flag == 1) {
+                         set_null_terminator_flag(0);
+                         return new Symbol(TokenConstants.ERROR, "Null terminator in string");
+                         }
+                         if(string_buf.length() > MAX_STR_CONST) {
+                         set_null_terminator_flag(0);
+                         return new Symbol(TokenConstants.ERROR, "String constant too long");
+                         }
+                         set_null_terminator_flag(0);
+                         return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
+
+<STRING_STATE>[^\n\\\b\f\t\0] {string_buf.append(yytext()); }
+<STRING_STATE>\n      {
+                         update_curr_lineno();
+                         yybegin(YYINITIAL);
+                         return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+                         }
+<STRING_STATE>\0|"null_character"       {
+                                        set_null_terminator_flag(1);
+                                        }
+
+<STRING_STATE>\\n      { 
+                        string_buf.append('\n'); }
+<STRING_STATE>\\b      {string_buf.append('\b'); }
+<STRING_STATE>\\       {/* do nothing do not append */}
+
+
+/*SINGLE_LINE_COMMENT*/
+<SINGLE_LINE_COMMENT>[^\n] { /*do nothing do not make tokens for this */}
+<SINGLE_LINE_COMMENT>\n {yybegin(YYINITIAL);
+                        }
 
 
 
