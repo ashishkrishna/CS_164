@@ -45,7 +45,8 @@ import java_cup.runtime.Symbol;
 
     void comment_nester(String comparator) {
     if(comparator == "(*") {
-        if(comment_nester_level == 0) {
+        if(comment_nester_level == 0 && yystate() == YYINITIAL) {
+        
         yybegin(LINE_COMMENT);
         }
         comment_nester_level++;
@@ -56,8 +57,9 @@ import java_cup.runtime.Symbol;
         comment_nester_level--;
         return;
         }
-        if(comparator == "*)" && comment_nester_level < 2) {
+        if(comparator == "*)" && comment_nester_level < 2 && yystate() == LINE_COMMENT) {
         comment_nester_level--;
+       
         yybegin(YYINITIAL);
         return;
         }
@@ -145,12 +147,15 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>\n	 { update_curr_lineno(); }
 <YYINITIAL>\s+ { /* Fill-in here. */ }
 
-<YYINITIAL>"(*"    { return comment_nester("(*"); }
+<YYINITIAL>"(*"    { comment_nester("(*");}
 <YYINITIAL>"--"         { yybegin(SINGLE_LINE_COMMENT);  }
-<LINE_COMMENT>"(*"      {return comment_nester("(*"); }
-<LINE_COMMENT>"*)"      {return comment_nester("*)"); }
-<LINE_COMMENT>.*        { /* Fill-in here. */ }
-<LINE_COMMENT>\n        { update_curr_lineno(); }
+<LINE_COMMENT>"(*"     {   
+                            comment_nester("(*"); }
+<LINE_COMMENT>"*)"      {   
+                             comment_nester("*)"); }
+<LINE_COMMENT>\n      {   
+                                update_curr_lineno(); }
+<LINE_COMMENT>[^"*)"\n]        { System.out.println(yytext()); }
 <YYINITIAL>\"           {string_buf.setLength(0);  
                          yybegin(STRING_STATE); }
 
