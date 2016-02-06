@@ -163,7 +163,7 @@ import java_cup.runtime.Symbol;
 
 
 <YYINITIAL>"=>"		{ return new Symbol(TokenConstants.DARROW); }
-
+<YYINITIAL>"<-"     {return new Symbol(TokenConstants.ASSIGN); } 
 
 
 
@@ -196,7 +196,9 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[Tt][Hh][Ee][Nn]   	{ return new Symbol(TokenConstants.THEN); }
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
-
+<YYINITIAL>[A-Z][^ |\n|\.|\)|\;]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
+ <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;]* {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+ 
 
 
 
@@ -207,7 +209,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"-"			{ return new Symbol(TokenConstants.MINUS); }
 <YYINITIAL>"*"			{ return new Symbol(TokenConstants.MULT); }
 <YYINITIAL>"="			{ return new Symbol(TokenConstants.EQ); }
-<YYINITIAL>"<"			{ return new Symbol(TokenConstants.LT); }
+<YYINITIAL>"<"|">"			{ return new Symbol(TokenConstants.LT); }
 <YYINITIAL>"."			{ return new Symbol(TokenConstants.DOT); }
 <YYINITIAL>"~"			{ return new Symbol(TokenConstants.NEG); }
 <YYINITIAL>","			{ return new Symbol(TokenConstants.COMMA); }
@@ -218,7 +220,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"@"			{ return new Symbol(TokenConstants.AT); }
 <YYINITIAL>"}"			{ return new Symbol(TokenConstants.RBRACE); }
 <YYINITIAL>"{"			{ return new Symbol(TokenConstants.LBRACE); }
-
+<YYINITIAL>" "          {/* WHITESPACE IGNORE */}
 /*STRING_STATE*/
 
 <STRING_STATE>\"        {yybegin(YYINITIAL);
