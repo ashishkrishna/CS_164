@@ -155,7 +155,7 @@ import java_cup.runtime.Symbol;
                              comment_nester("*)"); }
 <LINE_COMMENT>\n      {   
                                 update_curr_lineno(); }
-<LINE_COMMENT>[^"*)"\n]        { System.out.println(yytext()); }
+<LINE_COMMENT>[^"*)"\n]        { /* System.out.println(yytext()); */ }
 <YYINITIAL>\"           {string_buf.setLength(0);  
                          yybegin(STRING_STATE); }
 
