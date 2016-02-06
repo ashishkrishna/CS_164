@@ -144,20 +144,29 @@ import java_cup.runtime.Symbol;
  * Reference Manual (CoolAid).  Please be sure to look there. */
 %%
 
-<YYINITIAL>\n	 { update_curr_lineno(); }
+<YYINITIAL>\n	           { update_curr_lineno(); }
 <YYINITIAL>\s+ { /* Fill-in here. */ }
 
-<YYINITIAL>"(*"    { comment_nester("(*");}
-<YYINITIAL>"--"         { yybegin(SINGLE_LINE_COMMENT);  }
-<LINE_COMMENT>"(*"     {   
-                            comment_nester("(*"); }
-<LINE_COMMENT>"*)"      {   
-                             comment_nester("*)"); }
-<LINE_COMMENT>\n      {   
+<YYINITIAL>"(*"                 { comment_nester("(*");}
+<YYINITIAL>"--"                 { yybegin(SINGLE_LINE_COMMENT);  }
+
+/*LINE_COMMENT: The regular comment state denoted by (* *) */
+
+<LINE_COMMENT>"(*"              {   
+                                comment_nester("(*"); }
+<LINE_COMMENT>"*)"              {   
+                                 comment_nester("*)"); }
+<LINE_COMMENT>\n               {   
                                 update_curr_lineno(); }
 <LINE_COMMENT>[^"*)"\n]        { /* System.out.println(yytext()); */ }
-<YYINITIAL>\"           {string_buf.setLength(0);  
-                         yybegin(STRING_STATE); }
+
+
+
+
+
+
+<YYINITIAL>\"                  {string_buf.setLength(0);  
+                               yybegin(STRING_STATE); }
 
 
 
@@ -199,11 +208,6 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[A-Z][^ |\n|\.|\)|\;]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
  <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;]* {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
-
-
-
-
-
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }
 <YYINITIAL>"-"			{ return new Symbol(TokenConstants.MINUS); }
@@ -220,48 +224,53 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"@"			{ return new Symbol(TokenConstants.AT); }
 <YYINITIAL>"}"			{ return new Symbol(TokenConstants.RBRACE); }
 <YYINITIAL>"{"			{ return new Symbol(TokenConstants.LBRACE); }
-<YYINITIAL>" "          {/* WHITESPACE IGNORE */}
-/*STRING_STATE*/
+<YYINITIAL>" "|\r|\t|\f|\v          {/* WHITESPACE IGNORE */}
 
-<STRING_STATE>\"        {yybegin(YYINITIAL);
 
-                         if(null_terminator_flag == 1) {
-                         set_null_terminator_flag(0);
-                         return new Symbol(TokenConstants.ERROR, "Null terminator in string");
-                         }
-                         if(string_buf.length() > MAX_STR_CONST) {
-                         set_null_terminator_flag(0);
-                         return new Symbol(TokenConstants.ERROR, "String constant too long");
-                         }
-                         set_null_terminator_flag(0);
-                         return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
 
-<STRING_STATE>[^\n\\\b\f\t\0] {string_buf.append(yytext()); }
-<STRING_STATE>\n      {
-                         update_curr_lineno();
-                         yybegin(YYINITIAL);
-                         return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
-                         }
+/*STRING_STATE: The state used to form strings */
+
+<STRING_STATE>\"                        {yybegin(YYINITIAL);
+
+                                        if(null_terminator_flag == 1) {
+                                        set_null_terminator_flag(0);
+                                        return new Symbol(TokenConstants.ERROR, "Null terminator in string");
+                                         }
+                                        if(string_buf.length() > MAX_STR_CONST) {
+                                        set_null_terminator_flag(0);
+                                        return new Symbol(TokenConstants.ERROR, "String constant too long");
+                                        }
+                                        set_null_terminator_flag(0);
+                                        return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
+
+<STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); }
+<STRING_STATE>\n                        {
+                                        update_curr_lineno();
+                                        yybegin(YYINITIAL);
+                                        return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+                                        }
 <STRING_STATE>\0|"null_character"       {
                                         set_null_terminator_flag(1);
                                         }
 
-<STRING_STATE>\\n      { 
-                        string_buf.append('\n'); }
-<STRING_STATE>\\b      {string_buf.append('\b'); }
-<STRING_STATE>\\       {/* do nothing do not append */}
+<STRING_STATE>\\n                       { 
+                                        string_buf.append('\n'); }
+<STRING_STATE>\\b                       {string_buf.append('\b'); }
+<STRING_STATE>\\t                       {string_buf.append('\t'); }
+<STRING_STATE>\\f                       {string_buf.append('\f'); }
+<STRING_STATE>\\                        {/* do nothing do not append */}
 
 
 
 
-/*SINGLE_LINE_COMMENT*/
+/*SINGLE_LINE_COMMENT: This is for single line comments started by a -- */
 
-<SINGLE_LINE_COMMENT>[^\n] { /*do nothing do not make tokens for this */}
-<SINGLE_LINE_COMMENT>\n {yybegin(YYINITIAL);
-                        }
+<SINGLE_LINE_COMMENT>[^\n]              { /*do nothing do not make tokens for this */}
+<SINGLE_LINE_COMMENT>\n                 {yybegin(YYINITIAL);
+                                        }
 
 
-/*LINE COMMENT */
+
 
 .                { /*
                     *  This should be the very last rule and will match
