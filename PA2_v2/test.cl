@@ -1,3 +1,7 @@
+
+(* Test *)
+(* (* NestedTest *) *)
+
 (* models one-dimensional cellular automaton on a circle of finite radius
    arrays are faked as Strings,
    X's respresent live cells, dots represent dead cells,
@@ -82,11 +86,13 @@ class Main inherits IO {
     main() : SELF_TYPE {
         {
             "THE QuiCK brOWN fOx JUMPEd OVER THE LAZY DOG12324\n";
-            "1231312323";
+            "1234567890";
             "THE QUICK BROWN FOX JUMPED );
             "THE QUICK BROWN FOX JUMPED \0 OVER\n";
             "null_character";
-           
+            --one liner
+
+            (* SIMPLE COMMENT *)
             
 
             cells <- (new CellularAutomaton).init("         X         ");
