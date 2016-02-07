@@ -144,8 +144,10 @@ import java_cup.runtime.Symbol;
  * Reference Manual (CoolAid).  Please be sure to look there. */
 %%
 
-<YYINITIAL>\n	           { update_curr_lineno(); }
-<YYINITIAL>\s+ { /* Fill-in here. */ }
+<YYINITIAL>[" "\t\f]+	           { /*Do nothing*/ }
+<YYINITIAL>"\v"+                      {update_curr_lineno(); }
+<YYINITIAL>(\n|\r|\r\n)+                 { update_curr_lineno(); }
+
 
 <YYINITIAL>"(*"                 { comment_nester("(*");}
 <YYINITIAL>"--"                 { yybegin(SINGLE_LINE_COMMENT);  }
@@ -156,7 +158,7 @@ import java_cup.runtime.Symbol;
                                 comment_nester("(*"); }
 <LINE_COMMENT>"*)"              {   
                                  comment_nester("*)"); }
-<LINE_COMMENT>\n               {   
+<LINE_COMMENT>\n+               {   
                                 update_curr_lineno(); }
 <LINE_COMMENT>[^"*)"\n]        { /* System.out.println(yytext()); */ }
 
@@ -205,8 +207,8 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[Tt][Hh][Ee][Nn]   	{ return new Symbol(TokenConstants.THEN); }
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
-<YYINITIAL>[A-Z][^ |\n|\.|\)|\;]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
- <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;]* {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[A-Z][^ |\n|\.|\)|\;|\:]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
+ <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }
@@ -224,7 +226,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"@"			{ return new Symbol(TokenConstants.AT); }
 <YYINITIAL>"}"			{ return new Symbol(TokenConstants.RBRACE); }
 <YYINITIAL>"{"			{ return new Symbol(TokenConstants.LBRACE); }
-<YYINITIAL>" "|\r|\t|\f|\v          {/* WHITESPACE IGNORE */}
+
 
 
 
@@ -244,7 +246,7 @@ import java_cup.runtime.Symbol;
                                         return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
 
 <STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); }
-<STRING_STATE>\n                        {
+<STRING_STATE>\n+                        {
                                         update_curr_lineno();
                                         yybegin(YYINITIAL);
                                         return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
@@ -266,7 +268,8 @@ import java_cup.runtime.Symbol;
 /*SINGLE_LINE_COMMENT: This is for single line comments started by a -- */
 
 <SINGLE_LINE_COMMENT>[^\n]              { /*do nothing do not make tokens for this */}
-<SINGLE_LINE_COMMENT>\n                 {yybegin(YYINITIAL);
+<SINGLE_LINE_COMMENT>\n+                 {yybegin(YYINITIAL);
+                                        update_curr_lineno();
                                         }
 
 
