@@ -276,7 +276,7 @@ import java_cup.runtime.Symbol;
 
 
 /*STRING_STATE: The state used to form strings */
-<STRING_STATE>\x5c22                          {string_buf.append("\""); }
+
 <STRING_STATE>\"                        {yybegin(YYINITIAL);
 
                                         if(null_terminator_flag == 1) {
@@ -306,7 +306,16 @@ import java_cup.runtime.Symbol;
 <STRING_STATE>\\t                       {string_buf.append('\t'); }
 <STRING_STATE>\\f                       {string_buf.append('\f'); }
 
+<STRING_STATE>\\[^nbtf]                  { int indexer = 0;
+                                            while (yytext().charAt(indexer) == '\\'){
+                                            indexer++;
+                                            }
+                                            if(yytext().charAt(indexer) == '\n'){
+                                            update_curr_lineno();
+                                            }
+                                            string_buf.append(yytext().charAt(indexer));
 
+                                            }
 <STRING_STATE>\\                       {/* do nothing do not append */}
 
 
