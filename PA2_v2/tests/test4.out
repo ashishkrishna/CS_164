@@ -1,0 +1,327 @@
+#name "tests/test4.cl"
+#1 CLASS
+#1 TYPEID Foo
+#1 INHERITS
+#1 TYPEID Bazz
+#1 '{'
+#1 OBJECTID a
+#1 ':'
+#1 TYPEID Razz
+#1 ASSIGN
+#1 CASE
+#1 OBJECTID self
+#1 OF
+#1 OBJECTID n
+#1 ':'
+#1 TYPEID Razz
+#1 DARROW
+#1 '('
+#1 NEW
+#1 TYPEID Bar
+#1 ')'
+#1 ';'
+#1 OBJECTID n
+#1 ':'
+#1 TYPEID Foo
+#1 DARROW
+#1 '('
+#1 NEW
+#1 TYPEID Razz
+#1 ')'
+#1 ';'
+#1 OBJECTID n
+#1 ':'
+#1 TYPEID Bar
+#1 DARROW
+#1 OBJECTID n
+#1 ';'
+#1 ESAC
+#1 ';'
+#1 OBJECTID b
+#1 ':'
+#1 TYPEID Int
+#1 ASSIGN
+#1 OBJECTID a
+#1 '.'
+#1 OBJECTID doh
+#1 '('
+#1 ')'
+#1 '+'
+#1 OBJECTID g
+#1 '.'
+#1 OBJECTID doh
+#1 '('
+#1 ')'
+#1 '+'
+#1 OBJECTID doh
+#1 '('
+#1 ')'
+#1 '+'
+#1 OBJECTID printh
+#1 '('
+#1 ')'
+#1 ';'
+#1 OBJECTID doh
+#1 '('
+#1 ')'
+#1 ':'
+#1 TYPEID Int
+#1 '{'
+#1 '('
+#1 LET
+#1 OBJECTID i
+#1 ':'
+#1 TYPEID Int
+#1 ASSIGN
+#1 OBJECTID h
+#1 IN
+#1 '{'
+#1 OBJECTID h
+#1 ASSIGN
+#1 OBJECTID h
+#1 '+'
+#1 INT_CONST 2
+#1 ';'
+#1 OBJECTID i
+#1 ';'
+#1 '}'
+#1 ')'
+#1 '}'
+#1 ';'
+#1 '}'
+#1 ';'
+#1 CLASS
+#1 TYPEID Bar
+#1 INHERITS
+#1 TYPEID Razz
+#1 '{'
+#1 OBJECTID c
+#1 ':'
+#1 TYPEID Int
+#1 ASSIGN
+#1 OBJECTID doh
+#1 '('
+#1 ')'
+#1 ';'
+#1 OBJECTID d
+#1 ':'
+#1 TYPEID Object
+#1 ASSIGN
+#1 OBJECTID printh
+#1 '('
+#1 ')'
+#1 ';'
+Got here
+#2 '}'
+#2 ';'
+#2 CLASS
+#2 TYPEID Razz
+#2 INHERITS
+#2 TYPEID Foo
+#2 '{'
+#2 OBJECTID e
+#2 ':'
+#2 TYPEID Bar
+#2 ASSIGN
+#2 CASE
+#2 OBJECTID self
+#2 OF
+#2 OBJECTID n
+#2 ':'
+#2 TYPEID Razz
+#2 DARROW
+#2 '('
+#2 NEW
+#2 TYPEID Bar
+#2 ')'
+#2 ';'
+#2 OBJECTID n
+#2 ':'
+#2 TYPEID Bar
+#2 DARROW
+#2 OBJECTID n
+#2 ';'
+#2 ESAC
+#2 ';'
+#2 OBJECTID f
+#2 ':'
+#2 TYPEID Int
+#2 ASSIGN
+#2 OBJECTID a@Bazz
+#2 '.'
+#2 OBJECTID doh
+#2 '('
+#2 ')'
+#2 '+'
+#2 OBJECTID g
+#2 '.'
+#2 OBJECTID doh
+#2 '('
+#2 ')'
+#2 '+'
+#2 OBJECTID e
+#2 '.'
+#2 OBJECTID doh
+#2 '('
+#2 ')'
+#2 '+'
+#2 OBJECTID doh
+#2 '('
+#2 ')'
+#2 '+'
+#2 OBJECTID printh
+#2 '('
+#2 ')'
+#2 ';'
+#2 '}'
+#2 ';'
+#2 CLASS
+#2 TYPEID Bazz
+#2 INHERITS
+#2 TYPEID IO
+#2 '{'
+#2 OBJECTID h
+#2 ':'
+#2 TYPEID Int
+#2 ASSIGN
+#2 INT_CONST 1
+#2 ';'
+#2 OBJECTID g
+#2 ':'
+#2 TYPEID Foo
+#2 ASSIGN
+#2 CASE
+#2 OBJECTID self
+#2 OF
+#2 OBJECTID n
+#2 ':'
+#2 TYPEID Bazz
+#2 DARROW
+#2 '('
+#2 NEW
+#2 TYPEID Foo
+#2 ')'
+#2 ';'
+#2 OBJECTID n
+#2 ':'
+#2 TYPEID Razz
+#2 DARROW
+#2 '('
+#2 NEW
+#2 TYPEID Bar
+#2 ')'
+#2 ';'
+#2 OBJECTID n
+#2 ':'
+#2 TYPEID Foo
+#2 DARROW
+#2 '('
+#2 NEW
+#2 TYPEID Razz
+#2 ')'
+#2 ';'
+#2 OBJECTID n
+#2 ':'
+#2 TYPEID Bar
+#2 DARROW
+#2 OBJECTID n
+#2 ';'
+#2 ESAC
+#2 ';'
+#2 OBJECTID i
+#2 ':'
+#2 TYPEID Object
+#2 ASSIGN
+#2 OBJECTID printh
+#2 '('
+#2 ')'
+#2 ';'
+#2 OBJECTID printh
+#2 '('
+#2 ')'
+#2 ':'
+#2 TYPEID Int
+#2 '{'
+#2 '{'
+#2 OBJECTID out_int
+#2 '('
+#2 OBJECTID h
+#2 ')'
+#2 ';'
+#2 INT_CONST 0
+#2 ';'
+#2 '}'
+#2 '}'
+#2 ';'
+#2 OBJECTID doh
+#2 '('
+#2 ')'
+#2 ':'
+#2 TYPEID Int
+#2 '{'
+#2 '('
+#2 LET
+#2 OBJECTID i:
+#2 TYPEID Int
+#2 ASSIGN
+#2 OBJECTID h
+#2 IN
+#2 '{'
+#2 OBJECTID h
+#2 ASSIGN
+#2 OBJECTID h
+#2 '+'
+#2 INT_CONST 1
+#2 ';'
+#2 OBJECTID i
+#2 ';'
+#2 '}'
+#2 ')'
+#2 '}'
+#2 ';'
+Got here
+#3 '}'
+#3 ';'
+Got here
+#4 CLASS
+#4 TYPEID Main
+#4 '{'
+#4 OBJECTID a
+#4 ':'
+#4 TYPEID Bazz
+#4 ASSIGN
+#4 NEW
+#4 TYPEID Bazz
+#4 ';'
+#4 OBJECTID b
+#4 ':'
+#4 TYPEID Foo
+#4 ASSIGN
+#4 NEW
+#4 TYPEID Foo
+#4 ';'
+#4 OBJECTID c
+#4 ':'
+#4 TYPEID Razz
+#4 ASSIGN
+#4 NEW
+#4 TYPEID Razz
+#4 ';'
+#4 OBJECTID d
+#4 ':'
+#4 TYPEID Bar
+#4 ASSIGN
+#4 NEW
+#4 TYPEID Bar
+#4 ';'
+#4 OBJECTID main
+#4 '('
+#4 ')'
+#4 ':'
+#4 TYPEID String
+#4 '{'
+#4 STR_CONST "do nothing"
+#4 '}'
+#4 ';'
+#4 '}'
+#4 ';'

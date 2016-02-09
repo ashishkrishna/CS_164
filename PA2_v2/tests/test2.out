@@ -1,0 +1,8 @@
+#name "tests/test2.cl"
+#1 TYPEID Cool
+#1 OBJECTID is
+#1 NOT
+#1 TYPEID C:
+#1 INT_CONST 0
+#1 OBJECTID xabc
+#1 INT_CONST 0987

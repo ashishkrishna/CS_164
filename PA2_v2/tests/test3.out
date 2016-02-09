@@ -1,0 +1,17 @@
+#name "tests/test3.cl"
+Got here
+#2 STR_CONST "foo"
+Got here
+#3 STR_CONST "\b\t\n\f"
+Got here
+#5 ERROR "Unterminated string constant"
+#5 OBJECTID b"
+Got here
+#6 STR_CONST "1"
+#6 INT_CONST 2
+#6 INT_CONST 3
+#6 '~'
+#6 INT_CONST 4
+#6 STR_CONST "5"
+LEXER BUG - UNMATCHED: '
+LEXER BUG - UNMATCHED: \

@@ -1,0 +1,14 @@
+#name "tests/test1.cl"
+Got here
+#2 INT_CONST 0
+Got here
+#3 INT_CONST 1
+Got here
+#4 INT_CONST 2
+Got here
+#5 INT_CONST 3
+Got here
+#6 INT_CONST 4
+Got here
+#7 INT_CONST 5
+Got here
