@@ -145,8 +145,22 @@ import java_cup.runtime.Symbol;
 %%
 
 
-<YYINITIAL>\n+                 { update_curr_lineno(); }
-<YYINITIAL>\n(\s*)               {update_curr_lineno(); }
+<YYINITIAL>(\n)+                    {
+                                    string_buf.setLength(0); 
+                                    string_buf.append(yytext());
+                                    int count = 0;
+                                    while(count < string_buf.length()){
+                                    if(string_buf.charAt(count) == '\n') {
+                                        update_curr_lineno();
+                                        count++;
+                                    }
+                                    }
+                                    string_buf.setLength(0);
+                                    }
+<YYINITIAL>(\n)(\s*)               { 
+                                    update_curr_lineno(); }
+<YYINITIAL>(\s*)(\n)               {
+                                        update_curr_lineno(); }
 <YYINITIAL>\s+	           { /*Do nothing*/ }
 // <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }
 
@@ -161,11 +175,14 @@ import java_cup.runtime.Symbol;
                                 comment_nester("(*"); }
 <LINE_COMMENT>"*)"              {   
                                  comment_nester("*)"); }
-<LINE_COMMENT>\n+               {   
+
+<LINE_COMMENT>(\n)             {
+                                 update_curr_lineno(); }
+<LINE_COMMENT>(\s*)(\n)              {   
                                 update_curr_lineno(); }
-<LINE_COMMENT>\n(\s*)           {
+<LINE_COMMENT>(\n)(\s*)           {
                                 update_curr_lineno();  }
-<LINE_COMMENT>[^"*)"\n]        {  System.out.println(yytext());  }
+<LINE_COMMENT>[^"*)"\n]        {  /* System.out.println(yytext()); */  }
 
 
 
