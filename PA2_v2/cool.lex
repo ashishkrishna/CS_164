@@ -144,9 +144,12 @@ import java_cup.runtime.Symbol;
  * Reference Manual (CoolAid).  Please be sure to look there. */
 %%
 
-<YYINITIAL>[" "\t\f]+	           { /*Do nothing*/ }
-<YYINITIAL>"\v"+                      {update_curr_lineno(); }
-<YYINITIAL>(\n|\r|\r\n)+                 { update_curr_lineno(); }
+
+<YYINITIAL>\n+                 { update_curr_lineno(); }
+<YYINITIAL>\n(\s*)               {update_curr_lineno(); }
+<YYINITIAL>\s+	           { /*Do nothing*/ }
+// <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }
+
 
 
 <YYINITIAL>"(*"                 { comment_nester("(*");}
@@ -160,7 +163,9 @@ import java_cup.runtime.Symbol;
                                  comment_nester("*)"); }
 <LINE_COMMENT>\n+               {   
                                 update_curr_lineno(); }
-<LINE_COMMENT>[^"*)"\n]        { /* System.out.println(yytext()); */ }
+<LINE_COMMENT>\n(\s*)           {
+                                update_curr_lineno();  }
+<LINE_COMMENT>[^"*)"\n]        {  System.out.println(yytext());  }
 
 
 
@@ -275,7 +280,7 @@ import java_cup.runtime.Symbol;
 
 
 
-.                { /*
+[^]                { /*
                     *  This should be the very last rule and will match
                     *  everything not matched by other lexical rules.
                     */
