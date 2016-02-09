@@ -102,13 +102,13 @@ import java_cup.runtime.Symbol;
 	/* nothing special to do in the initial state */
 	break;
 
-/* If necessary, add code for other states here, e.g:
+/* If necessary, add code for other states here, e.g: */
     case LINE_COMMENT:
-	   ...
-	   break;
+            yybegin(YYINITIAL);
+            return new Symbol(TokenConstants.ERROR, "EOF in comment");
     case STRING_STATE:
-        return new Symbol()
- */
+        break;
+ 
     }
     return new Symbol(TokenConstants.EOF);
 %eofval}
@@ -250,15 +250,15 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[Tt][Hh][Ee][Nn]   	{ return new Symbol(TokenConstants.THEN); }
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
-<YYINITIAL>[A-Z][^ |\n|\.|\)|\;|\:]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
- <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:|\@]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[A-Z][^ |\n|\.|\)|\;|\:|\@|\,|\[|\]]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
+ <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:|\@|\[|\]|\,]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }
 <YYINITIAL>"-"			{ return new Symbol(TokenConstants.MINUS); }
 <YYINITIAL>"*"			{ return new Symbol(TokenConstants.MULT); }
 <YYINITIAL>"="			{ return new Symbol(TokenConstants.EQ); }
-<YYINITIAL>"<"|">"			{ return new Symbol(TokenConstants.LT); }
+<YYINITIAL>"<"			{ return new Symbol(TokenConstants.LT); }
 <YYINITIAL>"."			{ return new Symbol(TokenConstants.DOT); }
 <YYINITIAL>"~"			{ return new Symbol(TokenConstants.NEG); }
 <YYINITIAL>","			{ return new Symbol(TokenConstants.COMMA); }
@@ -269,13 +269,14 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"@"			{ return new Symbol(TokenConstants.AT); }
 <YYINITIAL>"}"			{ return new Symbol(TokenConstants.RBRACE); }
 <YYINITIAL>"{"			{ return new Symbol(TokenConstants.LBRACE); }
-
-
+<YYINITIAL>\'           { return new Symbol(TokenConstants.ERROR, "'");}
+<YYINITIAL>">"          { return new Symbol(TokenConstants.ERROR, ">"); }
+<YYINITIAL>"["          { return new Symbol(TokenConstants.ERROR, "["); }
+<YYINITIAL>"]"          { return new Symbol(TokenConstants.ERROR, "]"); }
 
 
 /*STRING_STATE: The state used to form strings */
 <STRING_STATE>\x5c22                          {string_buf.append("\""); }
-<STRING_STATE> "\\n"                    {update_curr_lineno(); }
 <STRING_STATE>\"                        {yybegin(YYINITIAL);
 
                                         if(null_terminator_flag == 1) {
@@ -299,11 +300,12 @@ import java_cup.runtime.Symbol;
                                         set_null_terminator_flag(1);
                                         }
 
-<STRING_STATE>\\n|\\\n                       { 
+<STRING_STATE>\\n                      { 
                                         string_buf.append('\n'); }
 <STRING_STATE>\\b                       {string_buf.append('\b'); }
 <STRING_STATE>\\t                       {string_buf.append('\t'); }
 <STRING_STATE>\\f                       {string_buf.append('\f'); }
+
 
 <STRING_STATE>\\                       {/* do nothing do not append */}
 
