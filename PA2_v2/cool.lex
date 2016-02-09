@@ -145,7 +145,7 @@ import java_cup.runtime.Symbol;
 %%
 
 
-<YYINITIAL>(\n)+                    {
+<YYINITIAL>(\n)+               {
                                     string_buf.setLength(0); 
                                     string_buf.append(yytext());
                                     int count = 0;
@@ -157,10 +157,31 @@ import java_cup.runtime.Symbol;
                                     }
                                     string_buf.setLength(0);
                                     }
-<YYINITIAL>(\n)(\s*)               { 
-                                    update_curr_lineno(); }
-<YYINITIAL>(\s*)(\n)               {
-                                        update_curr_lineno(); }
+ <YYINITIAL>(\n)(\s*)               { 
+                                    string_buf.setLength(0); 
+                                    string_buf.append(yytext());
+                                    int count = 0;
+                                    while(count < string_buf.length()){
+                                    if  (string_buf.charAt(count) == '\n') {
+                                        update_curr_lineno();    
+                                    }
+                                    count++;
+                                    }
+                                    string_buf.setLength(0);
+                                    }
+<YYINITIAL>(\s*)(\n)+               {
+                                    string_buf.setLength(0); 
+                                    string_buf.append(yytext());
+                                    int count = 0;
+                                    while(count < string_buf.length()){
+                                    if(string_buf.charAt(count) == '\n') {
+                                        update_curr_lineno();
+                                        
+                                    }
+                                    count++;
+                                    }
+                                    string_buf.setLength(0);
+                                    }
 <YYINITIAL>\s+	           { /*Do nothing*/ }
 // <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }
 
@@ -230,7 +251,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
 <YYINITIAL>[A-Z][^ |\n|\.|\)|\;|\:]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
- <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+ <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:|\@]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }
@@ -253,7 +274,8 @@ import java_cup.runtime.Symbol;
 
 
 /*STRING_STATE: The state used to form strings */
-
+<STRING_STATE>\x5c22                          {string_buf.append("\""); }
+<STRING_STATE> "\\n"                    {update_curr_lineno(); }
 <STRING_STATE>\"                        {yybegin(YYINITIAL);
 
                                         if(null_terminator_flag == 1) {
@@ -277,12 +299,13 @@ import java_cup.runtime.Symbol;
                                         set_null_terminator_flag(1);
                                         }
 
-<STRING_STATE>\\n                       { 
+<STRING_STATE>\\n|\\\n                       { 
                                         string_buf.append('\n'); }
 <STRING_STATE>\\b                       {string_buf.append('\b'); }
 <STRING_STATE>\\t                       {string_buf.append('\t'); }
 <STRING_STATE>\\f                       {string_buf.append('\f'); }
-<STRING_STATE>\\                        {/* do nothing do not append */}
+
+<STRING_STATE>\\                       {/* do nothing do not append */}
 
 
 
