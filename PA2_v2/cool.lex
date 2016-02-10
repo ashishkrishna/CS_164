@@ -183,7 +183,10 @@ import java_cup.runtime.Symbol;
                                     string_buf.setLength(0);
                                     }
 <YYINITIAL>\s+	           { /*Do nothing*/ }
-// <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }
+
+
+// <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }       
+//This doesn't work, but in theory it should be the \v character
 
 <YYINITIAL> "*)"                {return new Symbol(TokenConstants.ERROR, "Unmatched *)");}
 
@@ -292,11 +295,14 @@ import java_cup.runtime.Symbol;
                                         return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
 
 <STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); }
-<STRING_STATE>\n+                        {
+<STRING_STATE>\n                        {
                                         update_curr_lineno();
                                         yybegin(YYINITIAL);
                                         return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
                                         }
+
+//spec says begin parsing at next line, so just made \n
+
 <STRING_STATE>\0|"null_character"       {
                                         set_null_terminator_flag(1);
                                         }
