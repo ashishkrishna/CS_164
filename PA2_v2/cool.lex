@@ -197,19 +197,14 @@ import java_cup.runtime.Symbol;
 
 /*LINE_COMMENT: The regular comment state denoted by (* *) */
 
-<LINE_COMMENT>"(*"              {   
-                                comment_nester("(*"); }
-<LINE_COMMENT>"*)"              {   
-                                 comment_nester("*)"); }
+<LINE_COMMENT>"(*"              {comment_nester("(*"); }
+<LINE_COMMENT>"*)"              {comment_nester("*)"); }
 
-<LINE_COMMENT>(\n)             {
-                                 update_curr_lineno(); }
-<LINE_COMMENT>(\s*)(\n)              {   
-                                update_curr_lineno(); }
-<LINE_COMMENT>(\n)(\s*)           {
-                                update_curr_lineno();  }
-<LINE_COMMENT>[^"*)"\n]        {  /* System.out.println(yytext()); */  }
-
+<LINE_COMMENT>(\n)             {update_curr_lineno();}
+//<LINE_COMMENT>(\s*)(\n)        {update_curr_lineno();}
+//<LINE_COMMENT>(\n)(\s*)        {update_curr_lineno();}
+//<LINE_COMMENT>[^"*)"\n]              { /* System.out.println(yytext()); */ }
+<LINE_COMMENT>[^]               {}
 
 
 
