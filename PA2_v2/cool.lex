@@ -185,6 +185,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>\s+	           { /*Do nothing*/ }
 // <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }
 
+<YYINITIAL> "*)"                {return new Symbol(TokenConstants.ERROR, "Unmatched *)");}
 
 
 <YYINITIAL>"(*"                 { comment_nester("(*");}
@@ -251,7 +252,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
 <YYINITIAL>[A-Z][^ |\n|\.|\)|\;|\:|\@|\,|\[|\]]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
- <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:|\@|\[|\]|\,]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:|\@|\[|\]|\,]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }

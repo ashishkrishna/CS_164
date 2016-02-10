@@ -57,11 +57,15 @@
     <condition property="test5" value="success" else="fail">
       <filesmatch file1="tests/test5.out" file2="tests/test5.out.reference" textfile="true"/>
     </condition>
+    <condition property="finaltest" value="success" else="fail">
+      <filesmatch file1="tests/finaltest.out" file2="tests/finaltest.out.reference" textfile="true"/>
+    </condition>
     <echo>Test 1: ${test1}</echo>
     <echo>Test 2: ${test2}</echo>
     <echo>Test 3: ${test3}</echo>
     <echo>Test 4: ${test4}</echo>
     <echo>Test 5: ${test5}</echo>
+    <echo>Test 6: ${finaltest}</echo>
     <echo>
 You can compare 'tests/testN.out' and 'tests/testN.out.reference'
 to know more about a failed test case.
@@ -74,6 +78,7 @@ to know more about a failed test case.
     <exec executable="java" output="tests/test3.out"> <arg line="-cp .:./coolc.jar Lexer tests/test3.cl"/> </exec>
     <exec executable="java" output="tests/test4.out"> <arg line="-cp .:./coolc.jar Lexer tests/test4.cl"/> </exec>
     <exec executable="java" output="tests/test5.out"> <arg line="-cp .:./coolc.jar Lexer tests/test5.cl"/> </exec>
+    <exec executable="java" output="tests/finaltest.out"> <arg line="-cp .:./coolc.jar Lexer tests/finaltest.cl"/> </exec>
   </target>
 
   <!-- target: lexer -->
