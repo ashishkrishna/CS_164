@@ -107,7 +107,8 @@ import java_cup.runtime.Symbol;
             yybegin(YYINITIAL);
             return new Symbol(TokenConstants.ERROR, "EOF in comment");
     case STRING_STATE:
-        break;
+            yybegin(YYINITIAL);
+            return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
  
     }
     return new Symbol(TokenConstants.EOF);
