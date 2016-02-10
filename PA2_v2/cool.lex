@@ -107,6 +107,8 @@ import java_cup.runtime.Symbol;
             yybegin(YYINITIAL);
             return new Symbol(TokenConstants.ERROR, "EOF in comment");
     case STRING_STATE:
+            yybegin(YYINTIAL);
+            return new Symbol(TokenConstants.ERROR, "EOF in string");
         break;
  
     }
