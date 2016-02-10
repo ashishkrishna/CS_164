@@ -107,9 +107,8 @@ import java_cup.runtime.Symbol;
             yybegin(YYINITIAL);
             return new Symbol(TokenConstants.ERROR, "EOF in comment");
     case STRING_STATE:
-            yybegin(YYINTIAL);
-            return new Symbol(TokenConstants.ERROR, "EOF in string");
-        break;
+            yybegin(YYINITIAL);
+            return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
  
     }
     return new Symbol(TokenConstants.EOF);
@@ -185,8 +184,12 @@ import java_cup.runtime.Symbol;
                                     string_buf.setLength(0);
                                     }
 <YYINITIAL>\s+	           { /*Do nothing*/ }
-// <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }
 
+
+// <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }       
+//This doesn't work, but in theory it should be the \v character
+
+<YYINITIAL> "*)"                {return new Symbol(TokenConstants.ERROR, "Unmatched *)");}
 
 
 <YYINITIAL>"(*"                 { comment_nester("(*");}
@@ -194,19 +197,14 @@ import java_cup.runtime.Symbol;
 
 /*LINE_COMMENT: The regular comment state denoted by (* *) */
 
-<LINE_COMMENT>"(*"              {   
-                                comment_nester("(*"); }
-<LINE_COMMENT>"*)"              {   
-                                 comment_nester("*)"); }
+<LINE_COMMENT>"(*"              {comment_nester("(*"); }
+<LINE_COMMENT>"*)"              {comment_nester("*)"); }
 
-<LINE_COMMENT>(\n)             {
-                                 update_curr_lineno(); }
-<LINE_COMMENT>(\s*)(\n)              {   
-                                update_curr_lineno(); }
-<LINE_COMMENT>(\n)(\s*)           {
-                                update_curr_lineno();  }
-<LINE_COMMENT>[^"*)"\n]        {  /* System.out.println(yytext()); */  }
-
+<LINE_COMMENT>(\n)             {update_curr_lineno();}
+//<LINE_COMMENT>(\s*)(\n)        {update_curr_lineno();}
+//<LINE_COMMENT>(\n)(\s*)        {update_curr_lineno();}
+//<LINE_COMMENT>[^"*)"\n]              { /* System.out.println(yytext()); */ }
+<LINE_COMMENT>[^]               {}
 
 
 
@@ -252,8 +250,8 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[Tt][Hh][Ee][Nn]   	{ return new Symbol(TokenConstants.THEN); }
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
-<YYINITIAL>[A-Z][^ |\n|\.|\)|\;|\:|\@|\,|\[|\]]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
- <YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:|\@|\[|\]|\,]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[A-Z][a-z|A-Z|_]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[a-z][a-z|A-Z|_]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }
@@ -293,11 +291,14 @@ import java_cup.runtime.Symbol;
                                         return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
 
 <STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); }
-<STRING_STATE>\n+                        {
+<STRING_STATE>\n                        {
                                         update_curr_lineno();
                                         yybegin(YYINITIAL);
                                         return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
                                         }
+
+//spec says begin parsing at next line, so just made \n
+
 <STRING_STATE>\0|"null_character"       {
                                         set_null_terminator_flag(1);
                                         }
