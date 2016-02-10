@@ -251,8 +251,8 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[Tt][Hh][Ee][Nn]   	{ return new Symbol(TokenConstants.THEN); }
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
-<YYINITIAL>[A-Z][^ |\n|\.|\)|\;|\:|\@|\,|\[|\]]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
-<YYINITIAL>[a-z][^ |\n|\.|\|\(|\)|\;|\:|\@|\[|\]|\,]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[A-Z][a-z|A-Z|_]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[a-z][a-z|A-Z|_]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }

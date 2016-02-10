@@ -5,4 +5,3 @@
 #8 INT_CONST 3
 #10 INT_CONST 4
 #12 INT_CONST 5
-#13 ERROR "EOF in comment"
