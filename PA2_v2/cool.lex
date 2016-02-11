@@ -250,8 +250,8 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[Tt][Hh][Ee][Nn]   	{ return new Symbol(TokenConstants.THEN); }
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
-<YYINITIAL>[A-Z][a-z|A-Z|_]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
-<YYINITIAL>[a-z][a-z|A-Z|_]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[A-Z][a-z|A-Z|_|0-9]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[a-z][a-z|A-Z|_|0-9]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
  
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }
@@ -273,7 +273,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>">"          { return new Symbol(TokenConstants.ERROR, ">"); }
 <YYINITIAL>"["          { return new Symbol(TokenConstants.ERROR, "["); }
 <YYINITIAL>"]"          { return new Symbol(TokenConstants.ERROR, "]"); }
-
+<YYINITIAL>\\          { return new Symbol(TokenConstants.ERROR, "\\"); }
 
 /*STRING_STATE: The state used to form strings */
 
@@ -290,7 +290,9 @@ import java_cup.runtime.Symbol;
                                         set_null_terminator_flag(0);
                                         return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
 
-<STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); }
+<STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); } 
+//Add everything except characters in spec, and slashes
+
 <STRING_STATE>\n                        {
                                         update_curr_lineno();
                                         yybegin(YYINITIAL);
@@ -299,27 +301,22 @@ import java_cup.runtime.Symbol;
 
 //spec says begin parsing at next line, so just made \n
 
-<STRING_STATE>\0|"null_character"       {
-                                        set_null_terminator_flag(1);
-                                        }
+<STRING_STATE>\0                        {set_null_terminator_flag(1);}
 
-<STRING_STATE>\\n                      { 
-                                        string_buf.append('\n'); }
+<STRING_STATE>\\n                       {string_buf.append('\n'); }
 <STRING_STATE>\\b                       {string_buf.append('\b'); }
-<STRING_STATE>\\t                       {string_buf.append('\t'); }
+<STRING_STATE>\\t|\t                       {string_buf.append('\t'); }
 <STRING_STATE>\\f                       {string_buf.append('\f'); }
 
-<STRING_STATE>\\[^nbtf]                  { int indexer = 0;
-                                            while (yytext().charAt(indexer) == '\\'){
-                                            indexer++;
-                                            }
-                                            if(yytext().charAt(indexer) == '\n'){
+<STRING_STATE>\\([^nbtf])                  {//int indexer = 0;
+                                            //while (yytext().charAt(indexer) == '\\'){
+                                            //indexer++;
+                                            //}
+                                            if(yytext().charAt(1) == '\n'){
                                             update_curr_lineno();
                                             }
-                                            string_buf.append(yytext().charAt(indexer));
-
-                                            }
-<STRING_STATE>\\                       {/* do nothing do not append */}
+                                            string_buf.append(yytext().charAt(1));
+                                        }
 
 
 
