@@ -258,6 +258,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"-"			{ return new Symbol(TokenConstants.MINUS); }
 <YYINITIAL>"*"			{ return new Symbol(TokenConstants.MULT); }
 <YYINITIAL>"="			{ return new Symbol(TokenConstants.EQ); }
+<YYINITIAL>"<="          { return new Symbol(TokenConstants.LE); }
 <YYINITIAL>"<"			{ return new Symbol(TokenConstants.LT); }
 <YYINITIAL>"."			{ return new Symbol(TokenConstants.DOT); }
 <YYINITIAL>"~"			{ return new Symbol(TokenConstants.NEG); }
@@ -324,7 +325,7 @@ import java_cup.runtime.Symbol;
 /*SINGLE_LINE_COMMENT: This is for single line comments started by a -- */
 
 <SINGLE_LINE_COMMENT>[^\n]              { /*do nothing do not make tokens for this */}
-<SINGLE_LINE_COMMENT>\n+                 {yybegin(YYINITIAL);
+<SINGLE_LINE_COMMENT>\n                 {yybegin(YYINITIAL);
                                         update_curr_lineno();
                                         }
 
