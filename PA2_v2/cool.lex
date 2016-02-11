@@ -145,9 +145,13 @@ import java_cup.runtime.Symbol;
  * Reference Manual (CoolAid).  Please be sure to look there. */
 %%
 
+
 /*<YYINITIAL>\n                    {update_curr_lineno();} */
 
+
+
 <YYINITIAL>(\s)+               {
+
                                     string_buf.setLength(0); 
                                    string_buf.append(yytext());
                                     int count = 0;
@@ -160,7 +164,8 @@ import java_cup.runtime.Symbol;
                                     }
                                     string_buf.setLength(0);
                                     }
- //Too complicated?
+
+
 
  /*<YYINITIAL>(\n)(\s*)               {update_curr_lineno();}*/
                                     
@@ -192,7 +197,9 @@ import java_cup.runtime.Symbol;
                                     string_buf.setLength(0);
                                     }*/
 
+
 /*<YYINITIAL>\s	           { /*Do nothing*/ }*/
+
 
 
 // <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }       
