@@ -146,9 +146,6 @@ import java_cup.runtime.Symbol;
 %%
 
 
-/*<YYINITIAL>\n                    {update_curr_lineno();} */
-
-
 
 <YYINITIAL>(\s)+               {
 
@@ -165,41 +162,8 @@ import java_cup.runtime.Symbol;
                                     string_buf.setLength(0);
                                     }
 
-
-
- /*<YYINITIAL>(\n)(\s*)               {update_curr_lineno();}*/
                                     
-                                    /*{ 
-                                    string_buf.setLength(0); 
-                                    string_buf.append(yytext());
-                                    int count = 0;
-                                    while(count < string_buf.length()){
-                                    if  (string_buf.charAt(count) == '\n') {
-                                        update_curr_lineno();    
-                                    }
-                                    count++;
-                                    }
-                                    string_buf.setLength(0);
-                                    }*/
-
-/*<YYINITIAL>(\s*)(\n)                {update_curr_lineno();}*/
-                                    /*{
-                                    string_buf.setLength(0); 
-                                    string_buf.append(yytext());
-                                    int count = 0;
-                                    while(count < string_buf.length()){
-                                    if(string_buf.charAt(count) == '\n') {
-                                        update_curr_lineno();
-                                        
-                                    }
-                                    count++;
-                                    }
-                                    string_buf.setLength(0);
-                                    }*/
-
-
-/*<YYINITIAL>\s	           { /*Do nothing*/ }*/
-
+/* One common case to handle all types of whitespace. If the whitespace is a \n, the line number is incremented */
 
 
 // <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }       
