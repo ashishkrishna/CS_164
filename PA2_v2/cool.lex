@@ -162,7 +162,7 @@ import java_cup.runtime.Symbol;
                                     string_buf.setLength(0);
                                     }
 
-                                    
+
 /* One common case to handle all types of whitespace. If the whitespace is a \n, the line number is incremented */
 
 
@@ -170,10 +170,17 @@ import java_cup.runtime.Symbol;
 //This doesn't work, but in theory it should be the \v character
 
 <YYINITIAL> "*)"                {return new Symbol(TokenConstants.ERROR, "Unmatched *)");}
+/* Should not be closing comment without an opening comment */
 
 
 <YYINITIAL>"(*"                 { comment_nester("(*");}
+
+/* Comment opener, comment_nester handles transition into LINE_COMMENT state */
+
+
 <YYINITIAL>"--"                 { yybegin(SINGLE_LINE_COMMENT);  }
+
+/*Comment opener for one-liners */
 
 /*LINE_COMMENT: The regular comment state denoted by (* *) */
 
@@ -181,9 +188,9 @@ import java_cup.runtime.Symbol;
 <LINE_COMMENT>"*)"              {comment_nester("*)"); }
 
 <LINE_COMMENT>(\n)             {update_curr_lineno();}
-//<LINE_COMMENT>(\s*)(\n)        {update_curr_lineno();}
-//<LINE_COMMENT>(\n)(\s*)        {update_curr_lineno();}
-//<LINE_COMMENT>[^"*)"\n]              { /* System.out.println(yytext()); */ }
+
+/*Reading in a newline, the only thing that we care about in this state other than opening and closing notations */
+
 <LINE_COMMENT>[^]               {}
 
 
@@ -256,6 +263,8 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"]"          { return new Symbol(TokenConstants.ERROR, "]"); }
 <YYINITIAL>\\          { return new Symbol(TokenConstants.ERROR, "\\"); }
 
+/* Tokens found in TokenConstants.java that do not have a table allocated */
+
 /*STRING_STATE: The state used to form strings */
 
 <STRING_STATE>\"                        {yybegin(YYINITIAL);
@@ -270,6 +279,8 @@ import java_cup.runtime.Symbol;
                                         }
                                         set_null_terminator_flag(0);
                                         return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
+/* String closer, copy everything from the string buffer into the string table, set the null terminator flag to 0, and exit the state back to YYINITIAL */
+
 
 <STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); } 
 //Add everything except characters in spec, and slashes
@@ -308,6 +319,7 @@ import java_cup.runtime.Symbol;
 <SINGLE_LINE_COMMENT>\n                 {yybegin(YYINITIAL);
                                         update_curr_lineno();
                                         }
+/*End of comment and of this state if a new line is entered */
 
 
 
