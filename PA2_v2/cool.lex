@@ -145,10 +145,11 @@ import java_cup.runtime.Symbol;
  * Reference Manual (CoolAid).  Please be sure to look there. */
 %%
 
+<YYINITIAL>\n                    {update_curr_lineno();} 
 
-<YYINITIAL>(\n)+               {
+/*<YYINITIAL>(\n)+               {
                                     string_buf.setLength(0); 
-                                    string_buf.append(yytext());
+                                   string_buf.append(yytext());
                                     int count = 0;
                                     while(count < string_buf.length()){
                                     if(string_buf.charAt(count) == '\n') {
@@ -158,7 +159,11 @@ import java_cup.runtime.Symbol;
                                     }
                                     string_buf.setLength(0);
                                     }
- <YYINITIAL>(\n)(\s*)               { 
+*/ //Too complicated?
+
+ /*<YYINITIAL>(\n)(\s*)               {update_curr_lineno();}*/
+                                    
+                                    /*{ 
                                     string_buf.setLength(0); 
                                     string_buf.append(yytext());
                                     int count = 0;
@@ -169,8 +174,10 @@ import java_cup.runtime.Symbol;
                                     count++;
                                     }
                                     string_buf.setLength(0);
-                                    }
-<YYINITIAL>(\s*)(\n)+               {
+                                    }*/
+
+/*<YYINITIAL>(\s*)(\n)                {update_curr_lineno();}*/
+                                    /*{
                                     string_buf.setLength(0); 
                                     string_buf.append(yytext());
                                     int count = 0;
@@ -182,8 +189,9 @@ import java_cup.runtime.Symbol;
                                     count++;
                                     }
                                     string_buf.setLength(0);
-                                    }
-<YYINITIAL>\s+	           { /*Do nothing*/ }
+                                    }*/
+
+<YYINITIAL>\s	           { /*Do nothing*/ }
 
 
 // <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }       
