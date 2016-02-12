@@ -1,0 +1,117 @@
+#name "tests/finaltest.cl"
+#1 INT_CONST 1
+#1 TYPEID This
+#1 OBJECTID should
+#1 OBJECTID probably
+#1 OBJECTID work
+#2 INT_CONST 2
+#2 TYPEID The
+#2 OBJECTID lexer
+#2 OBJECTID just
+#2 OBJECTID ignores
+#2 OBJECTID syntax
+#2 ','
+#2 OBJECTID so
+#2 OBJECTID putting
+#2 IN
+#2 OBJECTID things
+#2 OBJECTID like
+#2 '{'
+#2 OBJECTID shouldn
+#2 ERROR "'"
+#2 OBJECTID t
+#2 OBJECTID matter
+#2 '-'
+#2 OBJECTID they
+#2 OBJECTID just
+#2 OBJECTID need
+#2 OBJECTID to
+#2 OBJECTID be
+#2 OBJECTID matched
+#2 OBJECTID by
+#2 OBJECTID the
+#2 OBJECTID lexer
+#2 OBJECTID as
+#2 OBJECTID tokens
+#2 '.'
+#4 INT_CONST 4
+#4 OBJECTID is
+#4 OBJECTID okay
+#4 ','
+#4 OBJECTID but
+#4 ERROR "Unmatched *)"
+#4 OBJECTID is
+#4 NOT
+#5 INT_CONST 5
+#5 TYPEID It
+#5 OBJECTID should
+#5 OBJECTID continue
+#5 OBJECTID lexing
+#6 INT_CONST 6
+#6 STR_CONST "This is a string"
+#7 INT_CONST 7
+#7 STR_CONST "(* *) is still a string"
+#8 INT_CONST 8
+#8 STR_CONST "*) \n \t \b r"
+#9 INT_CONST 9
+#9 ERROR "'"
+#9 TYPEID One
+#9 OF
+#9 OBJECTID these
+#9 OBJECTID shouldn
+#9 ERROR "'"
+#9 OBJECTID t
+#9 OBJECTID work
+#9 ERROR "'"
+#10 INT_CONST 000230
+#11 INT_CONST 10
+#12 ERROR "Unterminated string constant"
+#12 TYPEID Here
+#12 OBJECTID is
+#12 OBJECTID goes
+#12 STR_CONST ""
+#14 ERROR "Unterminated string constant"
+#15 ERROR "Unterminated string constant"
+#15 STR_CONST "\n"
+#19 STR_CONST "null_character test"
+#25 ERROR "'"
+#25 ERROR "'"
+#26 STR_CONST "\n \b\t0"
+#27 INT_CONST 5
+#30 ERROR "\\"
+#31 ERROR "\\"
+#31 ERROR "\\"
+#32 ERROR "\\"
+#32 ERROR "\\"
+#32 ERROR "\\"
+#33 ERROR "\\"
+#33 ERROR "\\"
+#33 ERROR "\\"
+#33 ERROR "\\"
+#33 ERROR "\\"
+#34 ERROR "\\"
+#34 ERROR "\\"
+#34 ERROR "\\"
+#34 ERROR "\\"
+#34 ERROR "\\"
+#34 ERROR "\\"
+#35 ERROR "\\"
+#35 ERROR "\\"
+#35 OBJECTID t
+#35 ERROR "\\"
+#35 OBJECTID t
+#35 ERROR "\\"
+#35 OBJECTID t
+#35 ERROR "\\"
+#35 OBJECTID t
+#35 ERROR "\\"
+#35 OBJECTID v
+#35 ERROR "\\"
+#35 OBJECTID f
+#37 STR_CONST "This is a \nstring"
+#38 STR_CONST "a"
+#39 STR_CONST "\f"
+#40 STR_CONST "1"
+#41 STR_CONST "@"
+#42 STR_CONST "\f"
+#45 ERROR "EOF in comment"
