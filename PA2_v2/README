@@ -1,6 +1,6 @@
 Write-up for PA2
 ----------------
-There are a few things to to note in our implementation. First, handling for '<=' as a LE token was added, as this was missing. In addition, handling for backlashes in the YYINITIAL state was added as an error. This is in agreement with the behavior of the given lexer.
+There are a few things to note in our implementation. First, handling for '<=' as a LE token was added, as this was missing. In addition, handling for backlashes in the YYINITIAL state was added as an error. This is in agreement with the behavior of the given lexer.
 
 Our strings were implemented in a simple way. The first mach the straing state looks for is a quotation mark. This was, it can correctly start and stop reading strings. Following this, much of the handling is to match anything except escaped characters. This is added as text. Newline characters that are not escaped are made to throw errors, while escaped newlines as well as new line literals are handling in the obvious way. Null terminators and overly long strings are handled by simply checking at the end of the string if the error occured. This way, we were able to handle not only the issue of unescaped newlines in the proper way, but also to avoid having to search for the second quote character. By simple reading the string as a string until the end, and assessing the errors that were encountered, things go a lot more seamlessly.
 
