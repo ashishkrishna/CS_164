@@ -9,6 +9,7 @@
 import java_cup.runtime.Symbol;
 
 %%
+%line
 
 /* Code enclosed in %{ %} is copied verbatim to the lexer class definition.
  * All extra variables/methods you want to use in the lexer actions go
@@ -25,7 +26,46 @@ import java_cup.runtime.Symbol;
     int get_curr_lineno() {
 	return curr_lineno;
     }
+    void update_curr_lineno() {
+    curr_lineno++;
+    return;
+    }
 
+    //String error Flags for reporting purposes
+    private int null_terminator_flag = 0;
+    private int length_flag = 0;
+    private int newline_flag = 0;
+    private int comment_nester_level = 0;
+
+    //Setting the null terminator flag
+    void set_null_terminator_flag(int val) {
+        null_terminator_flag = val;
+        return;
+    }
+
+    void comment_nester(String comparator) {
+    if(comparator == "(*") {
+        if(comment_nester_level == 0 && yystate() == YYINITIAL) {
+        
+        yybegin(LINE_COMMENT);
+        }
+        comment_nester_level++;
+        return;
+    }
+    else {
+        if(comparator == "*)" && comment_nester_level >= 2) {
+        comment_nester_level--;
+        return;
+        }
+        if(comparator == "*)" && comment_nester_level < 2 && yystate() == LINE_COMMENT) {
+        comment_nester_level--;
+       
+        yybegin(YYINITIAL);
+        return;
+        }
+    }
+    return;
+    }
     private AbstractSymbol filename;
 
     void set_filename(String fname) {
@@ -47,6 +87,7 @@ import java_cup.runtime.Symbol;
  *  go here. */
 %init{
     // empty for now
+
 %init}
 
 /*  Code enclosed in %eofval{ %eofval} specifies java code that is
@@ -61,11 +102,14 @@ import java_cup.runtime.Symbol;
 	/* nothing special to do in the initial state */
 	break;
 
-/* If necessary, add code for other states here, e.g:
+/* If necessary, add code for other states here, e.g: */
     case LINE_COMMENT:
-	   ...
-	   break;
- */
+            yybegin(YYINITIAL);
+            return new Symbol(TokenConstants.ERROR, "EOF in comment");
+    case STRING_STATE:
+            yybegin(YYINITIAL);
+            return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+ 
     }
     return new Symbol(TokenConstants.EOF);
 %eofval}
@@ -79,6 +123,10 @@ import java_cup.runtime.Symbol;
  * .
  * Hint: You might need additional start conditions. */
 %state LINE_COMMENT
+%state STRING_STATE  
+/* Start condition for strings */
+%state SINGLE_LINE_COMMENT 
+/* -- Comment start */
 
 
 /* Define lexical rules after the %% separator.  There is some code
@@ -97,19 +145,66 @@ import java_cup.runtime.Symbol;
  * Reference Manual (CoolAid).  Please be sure to look there. */
 %%
 
-<YYINITIAL>\n	 { /* Fill-in here. */ }
-<YYINITIAL>\s+ { /* Fill-in here. */ }
 
-<YYINITIAL>"--"         { /* Fill-in here. */ }
-<LINE_COMMENT>.*        { /* Fill-in here. */ }
-<LINE_COMMENT>\n        { /* Fill-in here. */ }
 
+<YYINITIAL>(\s)+               {
+
+                                    string_buf.setLength(0); 
+                                   string_buf.append(yytext());
+                                    int count = 0;
+                                    while(count < string_buf.length()){
+                                    if(string_buf.charAt(count) == '\n') {
+                                        update_curr_lineno();
+                                        
+                                    }
+                                    count++;
+                                    }
+                                    string_buf.setLength(0);
+                                    }
+
+
+/* One common case to handle all types of whitespace. If the whitespace is a \n, the line number is incremented */
+
+
+// <YYINITIAL>"0x0B"+                  {update_curr_lineno(); }       
+//This doesn't work, but in theory it should be the \v character
+
+<YYINITIAL> "*)"                {return new Symbol(TokenConstants.ERROR, "Unmatched *)");}
+/* Should not be closing comment without an opening comment */
+
+
+<YYINITIAL>"(*"                 { comment_nester("(*");}
+
+/* Comment opener, comment_nester handles transition into LINE_COMMENT state */
+
+
+<YYINITIAL>"--"                 { yybegin(SINGLE_LINE_COMMENT);  }
+
+/*Comment opener for one-liners */
+
+/*LINE_COMMENT: The regular comment state denoted by (* *) */
+
+<LINE_COMMENT>"(*"              {comment_nester("(*"); }
+<LINE_COMMENT>"*)"              {comment_nester("*)"); }
+
+<LINE_COMMENT>(\n)             {update_curr_lineno();}
+
+/*Reading in a newline, the only thing that we care about in this state other than opening and closing notations */
+
+<LINE_COMMENT>[^]               {}
+
+
+
+
+
+<YYINITIAL>\"                  {string_buf.setLength(0);  
+                               yybegin(STRING_STATE); }
 
 
 
 
 <YYINITIAL>"=>"		{ return new Symbol(TokenConstants.DARROW); }
-
+<YYINITIAL>"<-"     {return new Symbol(TokenConstants.ASSIGN); } 
 
 
 
@@ -142,17 +237,15 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[Tt][Hh][Ee][Nn]   	{ return new Symbol(TokenConstants.THEN); }
 <YYINITIAL>t[Rr][Uu][Ee]	{ return new Symbol(TokenConstants.BOOL_CONST, Boolean.TRUE); }
 <YYINITIAL>[Ww][Hh][Ii][Ll][Ee] { return new Symbol(TokenConstants.WHILE); }
-
-
-
-
-
-
+<YYINITIAL>[A-Z][a-z|A-Z|_|0-9]* {return new Symbol(TokenConstants.TYPEID, AbstractTable.idtable.addString(yytext())); }
+<YYINITIAL>[a-z][a-z|A-Z|_|0-9]*  {return new Symbol(TokenConstants.OBJECTID, AbstractTable.idtable.addString(yytext())); }
+ 
 <YYINITIAL>"+"			{ return new Symbol(TokenConstants.PLUS); }
 <YYINITIAL>"/"			{ return new Symbol(TokenConstants.DIV); }
 <YYINITIAL>"-"			{ return new Symbol(TokenConstants.MINUS); }
 <YYINITIAL>"*"			{ return new Symbol(TokenConstants.MULT); }
 <YYINITIAL>"="			{ return new Symbol(TokenConstants.EQ); }
+<YYINITIAL>"<="          { return new Symbol(TokenConstants.LE); }
 <YYINITIAL>"<"			{ return new Symbol(TokenConstants.LT); }
 <YYINITIAL>"."			{ return new Symbol(TokenConstants.DOT); }
 <YYINITIAL>"~"			{ return new Symbol(TokenConstants.NEG); }
@@ -164,11 +257,74 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"@"			{ return new Symbol(TokenConstants.AT); }
 <YYINITIAL>"}"			{ return new Symbol(TokenConstants.RBRACE); }
 <YYINITIAL>"{"			{ return new Symbol(TokenConstants.LBRACE); }
+<YYINITIAL>\'           { return new Symbol(TokenConstants.ERROR, "'");}
+<YYINITIAL>">"          { return new Symbol(TokenConstants.ERROR, ">"); }
+<YYINITIAL>"["          { return new Symbol(TokenConstants.ERROR, "["); }
+<YYINITIAL>"]"          { return new Symbol(TokenConstants.ERROR, "]"); }
+<YYINITIAL>\\          { return new Symbol(TokenConstants.ERROR, "\\"); }
+
+/* Tokens found in TokenConstants.java that do not have a table allocated */
+
+/*STRING_STATE: The state used to form strings */
+
+<STRING_STATE>\"                        {yybegin(YYINITIAL);
+
+                                        if(null_terminator_flag == 1) {
+                                        set_null_terminator_flag(0);
+                                        return new Symbol(TokenConstants.ERROR, "Null terminator in string");
+                                         }
+                                        if(string_buf.length() > MAX_STR_CONST) {
+                                        set_null_terminator_flag(0);
+                                        return new Symbol(TokenConstants.ERROR, "String constant too long");
+                                        }
+                                        set_null_terminator_flag(0);
+                                        return new Symbol(TokenConstants.STR_CONST, AbstractTable.stringtable.addString(string_buf.toString(), MAX_STR_CONST)); }
+/* String closer, copy everything from the string buffer into the string table, set the null terminator flag to 0, and exit the state back to YYINITIAL */
+
+
+<STRING_STATE>[^\n\\\b\f\t\0]           {string_buf.append(yytext()); } 
+//Add everything except characters in spec, and slashes
+
+<STRING_STATE>\n                        {
+                                        update_curr_lineno();
+                                        yybegin(YYINITIAL);
+                                        return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+                                        }
+
+//spec says begin parsing at next line, so just made \n
+
+<STRING_STATE>\0                        {set_null_terminator_flag(1);}
+
+<STRING_STATE>\\n                       {string_buf.append('\n'); }
+<STRING_STATE>\\b                       {string_buf.append('\b'); }
+<STRING_STATE>\\t|\t                       {string_buf.append('\t'); }
+<STRING_STATE>\\f                       {string_buf.append('\f'); }
+
+<STRING_STATE>\\([^nbtf])                  {//int indexer = 0;
+                                            //while (yytext().charAt(indexer) == '\\'){
+                                            //indexer++;
+                                            //}
+                                            if(yytext().charAt(1) == '\n'){
+                                            update_curr_lineno();
+                                            }
+                                            string_buf.append(yytext().charAt(1));
+                                        }
 
 
 
 
-.                { /*
+/*SINGLE_LINE_COMMENT: This is for single line comments started by a -- */
+
+<SINGLE_LINE_COMMENT>[^\n]              { /*do nothing do not make tokens for this */}
+<SINGLE_LINE_COMMENT>\n                 {yybegin(YYINITIAL);
+                                        update_curr_lineno();
+                                        }
+/*End of comment and of this state if a new line is entered */
+
+
+
+
+[^]                { /*
                     *  This should be the very last rule and will match
                     *  everything not matched by other lexical rules.
                     */
