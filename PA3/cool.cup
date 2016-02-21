@@ -83,6 +83,7 @@ nonterminal Formals formal_list;
 nonterminal Feature f2;
 nonterminal Features feature_list;
 nonterminal Cases case_list;
+nonterminal Case case_1;
 
 
 /*
@@ -236,7 +237,8 @@ expr
 		{: RESULT = new block(curr_lineno(), exprslist); :}
 	| CASE expr:e OF case_list:cl ESAC
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
-	
+	| WHILE expr:eone LOOP expr:etwo POOL
+		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
 
         ;
 
@@ -251,6 +253,20 @@ actuals
 	    {: RESULT = el; :}
 	;
 
+/* Non-empty list of cases 
+case_list
+	::= case_1:c1
+		{: RESULT = new Cases(curr_lineno()).appendElement(c1); :}
+	| case_list:cl case_1:c1
+		{: RESULT = cl.appendElement(c1); :}
+	; */
+
+/*Case evals*/
+case_1
+	::= OBJECTID:o COLON TYPEID:t DARROW expr:e1 SEMI
+		{: RESULT = new branch(curr_lineno(), o, t, e1); :}
+
+	;
 
 /* Non-empty list of expressions */
 exp_list
