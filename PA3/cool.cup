@@ -212,7 +212,8 @@ expr
 		{: RESULT = new assign(curr_lineno(), o, e1); :}
 	| IF expr:e1 THEN expr:e2 ELSE expr:e3 FI
 		{: RESULT = new cond(curr_lineno(), e1, e2, e3); :}
-	
+	| LET OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 IN expr:e2
+		{:RESULT = new let(curr_lineno(), o, t, e1, e2); :}
         ;
 
 
