@@ -234,6 +234,7 @@ expr
 		{:RESULT = new new_(curr_lineno(), n); :}
 	| LBRACE exp_list:exprslist RBRACE
 		{: RESULT = new block(curr_lineno(), exprslist); :}
+	
 
         ;
 
@@ -257,4 +258,8 @@ exp_list
         /* Several expressions */
 	| exp_list:el COMMA expr:e
 	    {: RESULT = el.appendElement(e); :}
+	| expr:e SEMI 
+		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
+	|  exp_list:el expr:e SEMI
+		{: RESULT = el.appendElement(e); :}
 	;
