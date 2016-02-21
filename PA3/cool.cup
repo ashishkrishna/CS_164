@@ -78,10 +78,11 @@ nonterminal class_c class_cc;
 nonterminal Features optional_feature_list;
 nonterminal Expression expr;
 nonterminal Expressions actuals, exp_list;
-nonterminal Formal f1;
+nonterminal Formal formal_1;
 nonterminal Formals formal_list;
 nonterminal Feature f2;
 nonterminal Features feature_list;
+nonterminal block bl;
 
 
 /*
@@ -139,7 +140,7 @@ class_cc
 	    {: RESULT = new class_c(curr_lineno(), n, p, f, curr_filename()); :}
 	;
 
-
+/* Optional Features List */
 optional_feature_list
 	::= /* empty */
 	    {: RESULT = new Features(curr_lineno()); :}
@@ -158,12 +159,27 @@ f2
 		{: RESULT = new method(curr_lineno(), o, f1, t, e); :}
 
 	;
+
+
+/*Optional Formal List*/
 formal_list
 	
 	::=/*Empty*/
 		{: RESULT = new Formals(curr_lineno()); :}
-
+	| formal_1:formal1
+		{: RESULT = new Formals(curr_lineno()).appendElement(formal1); :}
+	| formal_list:f2 formal_1:formal1
+		{: RESULT = f2.appendElement(formal1); :}
 	;
+
+ /*Formal*/
+ formal_1
+ 		::= OBJECTID:o COLON TYPEID:t 
+ 			{: RESULT = new formalc(curr_lineno(), o, t); :}
+ 		| OBJECTID:obj COLON TYPEID:typ COMMA
+ 			{: RESULT = new formalc(curr_lineno(), obj, typ); :} 
+
+ 		;
 
 /* Expressions */
 expr
@@ -214,6 +230,11 @@ expr
 		{: RESULT = new cond(curr_lineno(), e1, e2, e3); :}
 	| LET OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 IN expr:e2
 		{:RESULT = new let(curr_lineno(), o, t, e1, e2); :}
+	| NEW TYPEID:n
+		{:RESULT = new new_(curr_lineno(), n); :}
+	| LBRACE exp_list:exprslist RBRACE
+		{: RESULT = new block(curr_lineno(), exprslist); :}
+
         ;
 
 
