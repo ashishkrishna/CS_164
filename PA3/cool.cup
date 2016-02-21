@@ -90,9 +90,14 @@ nonterminal Case case_1;
  * Precedence declarations.
  */
 /*** FILL-IN HERE ***/
-
+precedence right ASSIGN;
 precedence left PLUS, MINUS;
 precedence left MULT, DIV;
+precedence left ISVOID;
+precedence left AT;
+precedence left DOT;
+
+
 
 
 
@@ -158,6 +163,8 @@ f2
 	::=OBJECTID:o COLON TYPEID:t SEMI
 		{: 
 		RESULT = new attr(curr_lineno(), o, t, new no_expr(curr_lineno())); :}
+	| OBJECTID:o COLON TYPEID:t ASSIGN expr:ex1 SEMI
+		{: RESULT = new attr(curr_lineno(), o, t, ex1); :}
 	| OBJECTID:o LPAREN formal_list:f1 RPAREN COLON TYPEID:t LBRACE expr:e RBRACE SEMI
 		{: RESULT = new method(curr_lineno(), o, f1, t, e); :}
 
@@ -222,9 +229,7 @@ expr
 	| expr:e1 DOT OBJECTID:n actuals:b
 		{: RESULT = new dispatch(curr_lineno(), e1, n, b); :}
 	| expr:e1 AT TYPEID:t DOT OBJECTID:n actuals:b
-		{: object tmp = new object(curr_lineno(), n);
-		   tmp.set_type(t);
-		RESULT = new dispatch(curr_lineno(), tmp, t, b); :}
+		{: RESULT = new static_dispatch(curr_lineno(), e1, t, n, b); :}
 	| ISVOID expr:e
 		{: RESULT = new isvoid(curr_lineno(), e); :}
 	| OBJECTID:o ASSIGN expr:e1 
