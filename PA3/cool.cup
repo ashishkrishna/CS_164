@@ -82,7 +82,7 @@ nonterminal Formal formal_1;
 nonterminal Formals formal_list;
 nonterminal Feature f2;
 nonterminal Features feature_list;
-nonterminal block bl;
+nonterminal Cases case_list;
 
 
 /*
@@ -234,6 +234,8 @@ expr
 		{:RESULT = new new_(curr_lineno(), n); :}
 	| LBRACE exp_list:exprslist RBRACE
 		{: RESULT = new block(curr_lineno(), exprslist); :}
+	| CASE expr:e OF case_list:cl ESAC
+		{: RESULT = new typcase(curr_lineno(), e, cl); :}
 	
 
         ;
