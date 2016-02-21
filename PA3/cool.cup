@@ -78,6 +78,8 @@ nonterminal class_c class_cc;
 nonterminal Features optional_feature_list;
 nonterminal Expression expr;
 nonterminal Expressions actuals, exp_list;
+nonterminal Formal f1;
+nonterminal Formals formal_list;
 
 
 /*
@@ -85,6 +87,8 @@ nonterminal Expressions actuals, exp_list;
  */
 /*** FILL-IN HERE ***/
 
+precedence left PLUS, MINUS;
+precedence left MULT, DIV;
 
 
 
@@ -175,6 +179,13 @@ expr
 	                             new object(curr_lineno(), 
 	                                        AbstractTable.idtable.addString("self")),
 				     n, a); :}
+	| expr:e1 DOT OBJECTID:n actuals:b
+		{: RESULT = new dispatch(curr_lineno(), e1, n, b); :}
+	| ISVOID expr:e
+		{: RESULT = new isvoid(curr_lineno(), e); :}
+	| OBJECTID:o ASSIGN expr:e1
+		{: RESULT = new assign(curr_lineno(), o, e1); :}
+	
         ;
 
 
