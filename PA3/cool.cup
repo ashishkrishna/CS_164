@@ -80,6 +80,8 @@ nonterminal Expression expr;
 nonterminal Expressions actuals, exp_list;
 nonterminal Formal f1;
 nonterminal Formals formal_list;
+nonterminal Feature f2;
+nonterminal Features feature_list;
 
 
 /*
@@ -141,8 +143,27 @@ class_cc
 optional_feature_list
 	::= /* empty */
 	    {: RESULT = new Features(curr_lineno()); :}
+	| f2:feature2 
+		{: RESULT = new Features(curr_lineno()).appendElement(feature2);  :}
+	| optional_feature_list:flist f2:feature2
+		{: RESULT = flist.appendElement(feature2); :}
 	;
 
+/* Feature */
+f2
+	::=OBJECTID:o COLON TYPEID:t SEMI
+		{: 
+		RESULT = new attr(curr_lineno(), o, t, new no_expr(curr_lineno())); :}
+	| OBJECTID:o LPAREN formal_list:f1 RPAREN COLON TYPEID:t LBRACE expr:e RBRACE SEMI
+		{: RESULT = new method(curr_lineno(), o, f1, t, e); :}
+
+	;
+formal_list
+	
+	::=/*Empty*/
+		{: RESULT = new Formals(curr_lineno()); :}
+
+	;
 
 /* Expressions */
 expr
@@ -181,10 +202,16 @@ expr
 				     n, a); :}
 	| expr:e1 DOT OBJECTID:n actuals:b
 		{: RESULT = new dispatch(curr_lineno(), e1, n, b); :}
+	| expr:e1 AT TYPEID:t DOT OBJECTID:n actuals:b
+		{: object tmp = new object(curr_lineno(), n);
+		   tmp.set_type(t);
+		RESULT = new dispatch(curr_lineno(), tmp, t, b); :}
 	| ISVOID expr:e
 		{: RESULT = new isvoid(curr_lineno(), e); :}
-	| OBJECTID:o ASSIGN expr:e1
+	| OBJECTID:o ASSIGN expr:e1 
 		{: RESULT = new assign(curr_lineno(), o, e1); :}
+	| IF expr:e1 THEN expr:e2 ELSE expr:e3 FI
+		{: RESULT = new cond(curr_lineno(), e1, e2, e3); :}
 	
         ;
 
