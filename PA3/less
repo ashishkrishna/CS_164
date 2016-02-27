@@ -1,0 +1,33 @@
+#4
+_program
+  #4
+  _class
+    Test
+    Object
+    "tests/good2.test"
+    (
+    #3
+    _attr
+      foo
+      Test
+      #3
+      _no_expr
+      : _no_type
+    #4
+    _method
+      baz
+      String
+      #3
+      _let
+        x
+        Int
+        #3
+        _int
+          5
+        : _no_type
+        #3
+        _object
+          x
+        : _no_type
+      : _no_type
+    )
