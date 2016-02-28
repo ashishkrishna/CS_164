@@ -238,6 +238,8 @@ expr
 		{: RESULT = new cond(curr_lineno(), e1, e2, e3); :}
 	| LET OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 IN expr:e2
 		{:RESULT = new let(curr_lineno(), o, t, e1, e2); :}
+	| LET OBJECTID:o COLON TYPEID:t IN expr:e2
+		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), e2); :}
 	| NEW TYPEID:n
 		{:RESULT = new new_(curr_lineno(), n); :}
 	| LBRACE exp_list_two:exprslist RBRACE
@@ -248,8 +250,7 @@ expr
 		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
 
         ;
-
-
+	
 /* Method arguments */
 actuals
         /* No arguments */
