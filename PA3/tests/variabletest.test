@@ -1,0 +1,4 @@
+class Fiatlux {
+     a:Int;
+     letitbe():Int  {};
+};
