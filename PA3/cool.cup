@@ -77,7 +77,7 @@ nonterminal Classes class_list;
 nonterminal class_c class_cc;
 nonterminal Features optional_feature_list;
 nonterminal Expression expr;
-nonterminal Expressions actuals, exp_list;
+nonterminal Expressions actuals, exp_list, block_exp_list;
 nonterminal Formal formal_1;
 nonterminal Formals formal_list;
 nonterminal Feature f2;
@@ -242,7 +242,7 @@ expr
 		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), e2); :}
 	| NEW TYPEID:n
 		{:RESULT = new new_(curr_lineno(), n); :}
-	| LBRACE exp_list:exprslist RBRACE
+	| LBRACE block_exp_list:exprslist RBRACE
 		{: RESULT = new block(curr_lineno(), exprslist); :}
 	| CASE expr:e OF case_list:cl ESAC
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
@@ -286,8 +286,11 @@ exp_list
         /* Several expressions */
 	| exp_list:el COMMA expr:e
 	    {: RESULT = el.appendElement(e); :}
-	| expr:e SEMI 
+	;
+
+block_exp_list
+	::= expr:e SEMI 
 		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
-	|  exp_list:el expr:e SEMI
+	|  block_exp_list:el expr:e SEMI
 		{: RESULT = el.appendElement(e); :}
 	;
