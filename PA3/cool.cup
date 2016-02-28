@@ -77,7 +77,11 @@ nonterminal Classes class_list;
 nonterminal class_c class_cc;
 nonterminal Features optional_feature_list;
 nonterminal Expression expr;
+<<<<<<< HEAD
 nonterminal Expressions actuals, exp_list, exp_list_two;
+=======
+nonterminal Expressions actuals, exp_list, block_exp_list;
+>>>>>>> 62b84cd272839a143cb27cef5f314dfbe5284578
 nonterminal Formal formal_1;
 nonterminal Formals formal_list;
 nonterminal Feature f2;
@@ -242,7 +246,7 @@ expr
 		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), e2); :}
 	| NEW TYPEID:n
 		{:RESULT = new new_(curr_lineno(), n); :}
-	| LBRACE exp_list_two:exprslist RBRACE
+	| LBRACE block_exp_list:exprslist RBRACE
 		{: RESULT = new block(curr_lineno(), exprslist); :}
 	| CASE expr:e OF case_list:cl ESAC
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
@@ -279,14 +283,7 @@ case_1
 	; 
 
 
-exp_list_two
-	
-	::= expr:e SEMI 
-		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
-	|  exp_list_two:el expr:e SEMI
-		{: RESULT = el.appendElement(e); :}
 
-	;
 
 /* Non-empty list of expressions */
 exp_list
@@ -296,4 +293,13 @@ exp_list
         /* Several expressions */
 	| exp_list:el COMMA expr:e
 	    {: RESULT = el.appendElement(e); :}
+
+	;
+
+block_exp_list
+	::= expr:e SEMI 
+		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
+	|  block_exp_list:el expr:e SEMI
+		{: RESULT = el.appendElement(e); :}
+
 	;
