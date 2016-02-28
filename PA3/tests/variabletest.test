@@ -1,4 +1,10 @@
 class Fiatlux {
      a:Int;
-     letitbe():Int  {};
+     letitbe():Int  {
+     {
+     let a:Int in 2 * 1 + 2 * 2;
+     let a:Int <- let b:Int in 2 + 2 * 3 in 2 + 1;
+     let a:Int in if 1 <=2 then a else a fi ;
+     }
+     };
 };
