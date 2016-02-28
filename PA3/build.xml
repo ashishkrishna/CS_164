@@ -16,7 +16,7 @@
   <property name="cgen" value="CoolParser.java TokenConstants.java"/>
   <property name="cfil" value="${csrc} ${cgen}"/>
 
-  <property name="tests" value="tests/good1.test, tests/good2.test, tests/good3.test, tests/good4.test, tests/good5.test, tests/good6.test, tests/bad1.test, tests/bad2.test, tests/bad3.test, tests/bad4.test"/>
+  <property name="tests" value="tests/good1.test, tests/good2.test, tests/good3.test, tests/good4.test, tests/good5.test, tests/good6.test, tests/bad1.test, tests/bad2.test, tests/bad3.test, tests/bad4.test, tests/lettest_1.test"/>
   <property name="output" value="good.output bad.output cool.output"/>
 
   <path id="classpath">
@@ -58,6 +58,8 @@
     <exec executable="python"> <arg line="compare-parser.py tests/bad2.test"/> </exec>
     <exec executable="python"> <arg line="compare-parser.py tests/bad3.test"/> </exec>
     <exec executable="python"> <arg line="compare-parser.py tests/bad4.test"/> </exec>
+    <exec executable="python"> <arg line="compare-parser.py tests/lettest_1.test"/> </exec>
+
     <echo>
 You can check 'tests/NAME.test.diff' to know more about a failed test case.
     </echo>
