@@ -146,7 +146,6 @@ class_cc
 	| CLASS TYPEID:n INHERITS TYPEID:p LBRACE optional_feature_list:f RBRACE SEMI
 	    {: RESULT = new class_c(curr_lineno(), n, p, f, curr_filename()); :}
 	| error SEMI
-
 	;
 
 /* Optional Features List */
@@ -162,13 +161,12 @@ optional_feature_list
 /* Feature */
 f2
 	::=OBJECTID:o COLON TYPEID:t SEMI
-		{: 
-		RESULT = new attr(curr_lineno(), o, t, new no_expr(curr_lineno())); :}
+		{: RESULT = new attr(curr_lineno(), o, t, new no_expr(curr_lineno())); :}
 	| OBJECTID:o COLON TYPEID:t ASSIGN expr:ex1 SEMI
 		{: RESULT = new attr(curr_lineno(), o, t, ex1); :}
 	| OBJECTID:o LPAREN formal_list:f1 RPAREN COLON TYPEID:t LBRACE expr:e RBRACE SEMI
 		{: RESULT = new method(curr_lineno(), o, f1, t, e); :}
-
+	| error SEMI
 	;
 
 
@@ -249,8 +247,7 @@ expr
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
 	| WHILE expr:eone LOOP expr:etwo POOL
 		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
-
-        ;
+    ;
 	
 /* Method arguments */
 actuals
