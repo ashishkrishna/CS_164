@@ -247,7 +247,11 @@ expr
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
 	| WHILE expr:eone LOOP expr:etwo POOL
 		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
+<<<<<<< HEAD
     ;
+=======
+        ;
+>>>>>>> 1be63097ec4da2ecb45c714ab8df5738cdc2d806
 	
 /* Method arguments */
 actuals
@@ -257,7 +261,7 @@ actuals
         /* List of arguments */
 	| LPAREN exp_list:el RPAREN
 	    {: RESULT = el; :}
-	;
+	; 
 
 /* Non-empty list of cases */ 
 case_list
@@ -269,12 +273,12 @@ case_list
 		{: RESULT = cl.appendElement(c1); :}
 	; 
 
-/*Case evals*/
+/*Case evals */
 case_1
 	::= OBJECTID:o COLON TYPEID:t DARROW expr:e1 
-		{: RESULT = new branch(curr_lineno(), o, t, e1); :}
+		{: RESULT = new branch(curr_lineno(), o, t, e1); :} 
 
-	;
+	; 
 
 /* Non-empty list of expressions */
 exp_list
@@ -284,6 +288,8 @@ exp_list
         /* Several expressions */
 	| exp_list:el COMMA expr:e
 	    {: RESULT = el.appendElement(e); :}
+
+
 	;
 
 block_exp_list
@@ -291,4 +297,5 @@ block_exp_list
 		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
 	|  block_exp_list:el expr:e SEMI
 		{: RESULT = el.appendElement(e); :}
+
 	;
