@@ -1,0 +1,13 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,3 ****
+
+  "tests/variablegoodtest.test", line 11: parse error at or near WHILE
+- "tests/variablegoodtest.test", line 47: parse error at or near ')'
+- "tests/variablegoodtest.test", line 65: parse error at or near ')'
+--- 1 ----
+
