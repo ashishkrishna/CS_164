@@ -264,6 +264,7 @@ lettail
 	|	OBJECTID:o COLON TYPEID:t COMMA lettail:tail
 		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), tail); :}
 	| error SEMI
+	| error IN expr:e1
 	;
 	
 /* Method arguments */
