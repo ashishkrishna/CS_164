@@ -1,7 +1,8 @@
-<exec executable="python"> <arg line="compare-parser.py examples/assign.cl"/></exec>
+<exec executable="python"> <arg line="compare-parser.py examples/README/></exec>
+<exec executable="python"> <arg line="compare-parser.py examples/assign.cl/></exec>
 <exec executable="python"> <arg line="compare-parser.py examples/primes_exception.cl/></exec>
-<exec executable="python"> <arg line="compare-parser.py examples/list.cl"/></exec>
-<exec executable="python"> <arg line="compare-parser.py examples/palindrome.cl"/></exec>
+<exec executable="python"> <arg line="compare-parser.py examples/list.cl/></exec>
+<exec executable="python"> <arg line="compare-parser.py examples/palindrome.cl/></exec>
 <exec executable="python"> <arg line="compare-parser.py examples/manual-ex1.cl/></exec>
 <exec executable="python"> <arg line="compare-parser.py examples/let_example.cl/></exec>
 <exec executable="python"> <arg line="compare-parser.py examples/book_list.cl/></exec>

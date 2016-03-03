@@ -84,6 +84,7 @@ nonterminal Feature f2;
 nonterminal Features feature_list;
 nonterminal Cases case_list;
 nonterminal Case case_1;
+nonterminal let lettail;
 
 
 /*
@@ -238,10 +239,6 @@ expr
 		{: RESULT = new assign(curr_lineno(), o, e1); :}
 	| IF expr:e1 THEN expr:e2 ELSE expr:e3 FI
 		{: RESULT = new cond(curr_lineno(), e1, e2, e3); :}
-	| LET OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 IN expr:e2
-		{:RESULT = new let(curr_lineno(), o, t, e1, e2); :}
-	| LET OBJECTID:o COLON TYPEID:t IN expr:e2
-		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), e2); :}
 	| NEW TYPEID:n
 		{:RESULT = new new_(curr_lineno(), n); :}
 	| LBRACE block_exp_list:exprslist RBRACE
@@ -250,7 +247,24 @@ expr
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
 	| WHILE expr:eone LOOP expr:etwo POOL
 		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
+    | LET lettail:tail
+		{:RESULT = tail; :}
     ;
+
+/*Let tail*/
+lettail
+	::=  OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 IN expr:e2
+		{:RESULT = new let(curr_lineno(), o, t, e1, e2); :}
+	|	OBJECTID:o COLON TYPEID:t IN expr:e2
+		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), e2); :}
+
+	|	OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 COMMA lettail:tail
+		{:RESULT = new let(curr_lineno(), o, t, e1, tail); :}
+
+	|	OBJECTID:o COLON TYPEID:t COMMA lettail:tail
+		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), tail); :}
+	| error SEMI
+	;
 	
 /* Method arguments */
 actuals
