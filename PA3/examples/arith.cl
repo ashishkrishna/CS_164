@@ -1,26 +1,3 @@
-class Fiatlux {
-     a:Int;
-     letitbe():Int  {
-     {
-     let a:Int in 2 * 1 + 2 * 2;
-     let a:Int in 2 < 1;
-     let a:Int <- let b:Int in 2 + 2 * 3 in 2 + 1;
-     let a:Int in if 1 <=2 then a else a fi ;
-     let a:Int in 1;  
-
-     while y <= num loop
-            {
-              x <- x * y;
-              y <- y + 1;
-            }
-         pool;
-     
-     }
-     };
-};
-
-
-
 (*
  *  A contribution from Anne Sheets (sheets@cory)
  *

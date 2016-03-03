@@ -16,7 +16,7 @@
   <property name="cgen" value="CoolParser.java TokenConstants.java"/>
   <property name="cfil" value="${csrc} ${cgen}"/>
 
-  <property name="tests" value="tests/good1.test, tests/good2.test, tests/good3.test, tests/good4.test, tests/good5.test, tests/good6.test, tests/bad1.test, tests/bad2.test, tests/bad3.test, tests/bad4.test, tests/variablegoodtest.test, tests/variablebadtest.test"/>
+  <property name="tests" value="tests/good1.test, tests/good2.test, tests/good3.test, tests/good4.test, tests/good5.test, tests/good6.test, tests/bad1.test, tests/bad2.test, tests/bad3.test, tests/bad4.test, tests/variablegoodtest.test, tests/variablebadtest.test, assign.cl, primes_exception.cl, list.cl, palindrome.cl, manual-ex1.cl, let_example.cl, book_list.cl, log.txt, arith.cl, life.cl, hello_exception.cl, primes.cl, complex.cl, empty_class.cl, finally_exception.cl, atoi.cl, new_complex.cl, hairyscary.cl, fact.cl, sort_list.cl, cells.cl, hello_world.cl, fact_exception.cl, atoi_test.cl, null_string.cl, graph.cl, cool.cl, io.cl, lam.cl"/>
   <property name="output" value="good.output bad.output cool.output"/>
 
   <path id="classpath">
@@ -61,6 +61,35 @@
     <exec executable="python"> <arg line="compare-parser.py tests/lettest_1.test"/> </exec>
     <exec executable="python"> <arg line="compare-parser.py tests/variablegoodtest.test"/> </exec>
     <exec executable="python"> <arg line="compare-parser.py tests/variablebadtest.test"/> </exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/assign.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/primes_exception.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/list.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/palindrome.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/manual-ex1.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/let_example.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/book_list.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/log.txt"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/arith.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/life.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/hello_exception.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/primes.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/complex.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/empty_class.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/finally_exception.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/atoi.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/new_complex.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/hairyscary.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/fact.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/sort_list.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/cells.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/hello_world.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/fact_exception.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/atoi_test.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/null_string.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/graph.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/cool.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/io.cl"/></exec>
+    <exec executable="python"> <arg line="compare-parser.py examples/lam.cl"/></exec>
     <echo>
 You can check 'tests/NAME.test.diff' to know more about a failed test case.
     </echo>

@@ -250,8 +250,7 @@ expr
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
 	| WHILE expr:eone LOOP expr:etwo POOL
 		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
-
-        ;
+    ;
 	
 /* Method arguments */
 actuals
