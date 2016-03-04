@@ -150,7 +150,7 @@ class_cc
 
 	;
 
-/* Optional Features List */
+/* Optional Features List, a container for methods and attributes in a class */
 optional_feature_list
 	::= /* empty */
 	    {: RESULT = new Features(curr_lineno()); :}
@@ -160,7 +160,7 @@ optional_feature_list
 		{: RESULT = flist.appendElement(feature2); :}
 	;
 
-/* Feature */
+/* Feature defined in a class, either a method or attribute  */
 f2
 	::=OBJECTID:o COLON TYPEID:t SEMI
 		{: 
@@ -174,7 +174,7 @@ f2
 	;
 
 
-/*Optional Formal List*/
+/*Optional Formal List, a list of parameters that are declared in a function's definition*/
 formal_list
 	
 	::=/*Empty*/
@@ -185,7 +185,7 @@ formal_list
 		{: RESULT = f2.appendElement(formal1); :}
 	;
 
- /*Formal*/
+ /*Formal: A variable declared in the function's call*/
  formal_1
  		::= OBJECTID:o COLON TYPEID:t 
  			{: RESULT = new formalc(curr_lineno(), o, t); :}
@@ -194,7 +194,8 @@ formal_list
 
  		;
 
-/* Expressions */
+/* Expressions: defined as being all code found within a method, or within
+a class that is not defined as a method or attribute of the class */
 expr
 	::= expr:e1 PLUS expr:e2
 	    {: RESULT = new plus(curr_lineno(), e1, e2); :}
@@ -251,6 +252,8 @@ expr
 		{:RESULT = tail; :}
     ;
 
+ /* Added productions as per listed in Cool Manual Pg. 16*/
+
 /*Let tail*/
 lettail
 	::=  OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 IN expr:e2
@@ -266,8 +269,11 @@ lettail
 	| error SEMI
 	| error IN expr:e1
 	;
+
+/*Let productions defined in separate code block, since multiple local variable declarations 
+require a recursive nesting of let's */
 	
-/* Method arguments */
+/* Arguments that are passed in a method call */
 actuals
         /* No arguments */
 	::= LPAREN RPAREN
@@ -277,7 +283,8 @@ actuals
 	    {: RESULT = el; :}
 	;
 
-/* Non-empty list of cases */ 
+
+/* Non-empty list of cases in case expression blocks */ 
 case_list
 	::= case_1:c1 
 		{: RESULT = new Cases(curr_lineno()).appendElement(c1); :}
@@ -287,14 +294,14 @@ case_list
 		{: RESULT = cl.appendElement(c1); :}
 	; 
 
-/*Case evals*/
+/*Case evaluations for each case expression within a case expression block */
 case_1
 	::= OBJECTID:o COLON TYPEID:t DARROW expr:e1 
 		{: RESULT = new branch(curr_lineno(), o, t, e1); :}
 
 	;
 
-/* Non-empty list of expressions */
+/* Non-empty list of expressions not within a block expression. Delineated by commas here */
 exp_list
         /* One expression */
 	::= expr:e
@@ -304,6 +311,7 @@ exp_list
 	    {: RESULT = el.appendElement(e); :}
 	;
 
+/* Non-empty list of expressions within a block expression. Semicolons delineate for this*/
 block_exp_list
 	::= expr:e SEMI 
 		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
