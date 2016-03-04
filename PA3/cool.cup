@@ -170,6 +170,7 @@ f2
 	| OBJECTID:o LPAREN formal_list:f1 RPAREN COLON TYPEID:t LBRACE expr:e RBRACE SEMI
 		{: RESULT = new method(curr_lineno(), o, f1, t, e); :}
 	| error SEMI
+	
 
 	;
 
@@ -242,7 +243,7 @@ expr
 		{: RESULT = new cond(curr_lineno(), e1, e2, e3); :}
 	| NEW TYPEID:n
 		{:RESULT = new new_(curr_lineno(), n); :}
-	| LBRACE block_exp_list:exprslist RBRACE
+	| LBRACE block_exp_list:exprslist RBRACE 
 		{: RESULT = new block(curr_lineno(), exprslist); :}
 	| CASE expr:e OF case_list:cl ESAC
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
@@ -250,7 +251,10 @@ expr
 		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
     | LET lettail:tail
 		{:RESULT = tail; :}
-    ;
+	
+	
+
+     ;
 
  /* Added productions as per listed in Cool Manual Pg. 16*/
 
@@ -317,4 +321,5 @@ block_exp_list
 		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
 	|  block_exp_list:el expr:e SEMI
 		{: RESULT = el.appendElement(e); :}
+	| error SEMI
 	;
