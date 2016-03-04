@@ -244,6 +244,7 @@ expr
 		{:RESULT = new new_(curr_lineno(), n); :}
 	| LBRACE block_exp_list:exprslist RBRACE
 		{: RESULT = new block(curr_lineno(), exprslist); :}
+	
 	| CASE expr:e OF case_list:cl ESAC
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
 	| WHILE expr:eone LOOP expr:etwo POOL
