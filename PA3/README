@@ -194,4 +194,7 @@ the default resolution of these conflicts posed no problems, and the test output
 the provided reference. However, in the context of building a commercial grade compiler destined
 for widespread useage, these conflicts should be considered more carefully, in order to prevent any
 and all possible conflicts that could potentially arise. 
+The test cases we selected included Cool files that were examples in PA1. We created a lot of tests
+with let expressions, partly in order to ensure that the ambiguity in its definitions posed no problems.
+We do not provide support for the parsing of exceptions, since we were not required to do so.
 
