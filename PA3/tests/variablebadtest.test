@@ -2,7 +2,7 @@
 class A {
    set_var(num : Int) : SELF_TYPE {
       {
-         var,num,self,poop
+         var,num,self,foo
       }
    };
 };
@@ -10,7 +10,8 @@ class A {
 class A {
    set_var(num : Int) : SELF_TYPE {
       {
-         var,num,self,poop
+     let a:int in 1;
+     let a:int, b:Int in 1;
       }
    };
 };
