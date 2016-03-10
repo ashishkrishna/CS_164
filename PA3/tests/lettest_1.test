@@ -1,0 +1,5 @@
+class A {
+   set_var(num : Int) : SELF_TYPE {
+      let x : Int in x <- 2*3-2; 
+   };
+};

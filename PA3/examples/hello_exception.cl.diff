@@ -1,0 +1,14 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 2,4 ****
+
+--- 2,5 ----
+
+  "examples/hello_exception.cl", line 13: parse error at or near STR_CONST = "I'm not cool.\n"
+  "examples/hello_exception.cl", line 18: parse error at or near DARROW
+  "examples/hello_exception.cl", line 24: parse error at or near STR_CONST = "New Exception"
++ "examples/hello_exception.cl", line 25: parse error at or near STR_CONST = "I'm still not cool.\n"

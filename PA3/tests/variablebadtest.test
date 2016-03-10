@@ -1,0 +1,33 @@
+(*(* This is a weird case*)
+class A {
+   set_var(num : Int) : SELF_TYPE {
+      {
+         var,num,self,foo
+      }
+   };
+};
+
+class A {
+   set_var(num : Int) : SELF_TYPE {
+      {
+     let a:int in 1;
+     let a:int, b:Int in 1;
+      }
+   };
+};
+
+class A {
+   set_var(num : Int) : SELF_TYPE {
+      {
+
+      }
+   };
+}; *)
+
+class A {
+   set_var(num : Int) : SELF_TYPE {
+      {
+         let a:Int <- ,"banana" in 1;
+      }
+   };
+};

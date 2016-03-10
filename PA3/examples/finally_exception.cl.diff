@@ -1,0 +1,18 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,4 ****
+
+  "examples/finally_exception.cl", line 10: parse error at or near STR_CONST = " Exception Thrown from Main\n"
+  "examples/finally_exception.cl", line 25: parse error at or near OBJECTID = out_string
+! "examples/finally_exception.cl", line 31: parse error at or near OBJECTID = try
+! "examples/finally_exception.cl", line 35: parse error at or near OBJECTID = finally
+--- 1,4 ----
+
+  "examples/finally_exception.cl", line 10: parse error at or near STR_CONST = " Exception Thrown from Main\n"
+  "examples/finally_exception.cl", line 25: parse error at or near OBJECTID = out_string
+! "examples/finally_exception.cl", line 29: parse error at or near STR_CONST = "2. Try Finally with exception...\n"
+! "examples/finally_exception.cl", line 33: parse error at or near ';'

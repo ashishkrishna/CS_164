@@ -163,3 +163,38 @@ Instructions
 
 Write-up for PA3
 ----------------
+We extended productions for the expression (expr) nonterminal by referencing
+the Cool syntax layout given on pg. 16 of the Cool manual. The design decisions we made 
+with respect to containers, namely blocks, feature lists, and actual lists 
+were largely based upon the existing skeleton code. We provided an empty container case 
+for each of these nonterminals, as well as one more population productions (the non-
+empty cases). These population productions would either continue to populate an existing 
+container or create a new one and commence population. We added additional nonterminals 
+in order to handle feature, case, let, and actual atomics. The resulting productions for 
+these nonterminals were again directly drawn from the Cool syntax layout described in
+the manual. 
+We implemented error handling for classes, let statements, and features. The error handling
+was symmetric to the case already defined in a production for the program nonterminal, and 
+consisted, most often of a simple "error SEMI", in order to coerce the parser to continue 
+parsing after the error. The notable exception to this was in the let statement production
+block, where we also defined a "error in expr:e1" in order to handle errors in the first 
+part of a recursive definition (a let expression with multiple local variables defined within
+its scope).
+The inherent ambiguity of let statements did not pose a major problem. Our parser automatically
+parsed as far right as it legally could, and as a result we never encountered any side-effects
+from the ambiguity in our tests. We did define a separate block for let statements, and created
+a let nonterminal as well. This was necessary due to the recursive nature of let statements of the
+form: 
+let <id1> : <type1> [<- <expr1>] ...., <idn> : <typen> [<- <exprn>] in <expr>
+Defining multiple local variables (<idn>'s) required a recursive nesting of let statements, as we 
+saw from the output of the reference parser provided. 
+Our language remains inherently ambiguous, based on cool.output, where there are a number of 
+shift/reduce conflicts. However, this is not inherently problematic. We found that on all our test cases, 
+the default resolution of these conflicts posed no problems, and the test outputs seemed to match
+the provided reference. However, in the context of building a commercial grade compiler destined
+for widespread useage, these conflicts should be considered more carefully, in order to prevent any
+and all possible conflicts that could potentially arise. 
+The test cases we selected included Cool files that were examples in PA1. We created a lot of tests
+with let expressions, partly in order to ensure that the ambiguity in its definitions posed no problems.
+We do not provide support for the parsing of exceptions, since we were not required to do so.
+
