@@ -262,7 +262,6 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>"["          { return new Symbol(TokenConstants.ERROR, "["); }
 <YYINITIAL>"]"          { return new Symbol(TokenConstants.ERROR, "]"); }
 <YYINITIAL>\\          { return new Symbol(TokenConstants.ERROR, "\\"); }
-
 /* Tokens found in TokenConstants.java that do not have a table allocated */
 
 /*STRING_STATE: The state used to form strings */
@@ -322,7 +321,7 @@ import java_cup.runtime.Symbol;
 /*End of comment and of this state if a new line is entered */
 
 
-
+[^]                 {return new Symbol(TokenConstants.ERROR, yytext());}          
 
 [^]                { /*
                     *  This should be the very last rule and will match

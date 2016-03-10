@@ -84,6 +84,7 @@ nonterminal Feature f2;
 nonterminal Features feature_list;
 nonterminal Cases case_list;
 nonterminal Case case_1;
+
 nonterminal let lettail;
 
 
@@ -150,7 +151,9 @@ class_cc
 
 	;
 
+
 /* Optional Features List, a container for methods and attributes in a class */
+
 optional_feature_list
 	::= /* empty */
 	    {: RESULT = new Features(curr_lineno()); :}
@@ -160,7 +163,9 @@ optional_feature_list
 		{: RESULT = flist.appendElement(feature2); :}
 	;
 
+
 /* Feature defined in a class, either a method or attribute  */
+
 f2
 	::=OBJECTID:o COLON TYPEID:t SEMI
 		{: 
@@ -170,10 +175,30 @@ f2
 	| OBJECTID:o LPAREN formal_list:f1 RPAREN COLON TYPEID:t LBRACE expr:e RBRACE SEMI
 		{: RESULT = new method(curr_lineno(), o, f1, t, e); :}
 	| error SEMI
-	
 
 	;
 
+
+/*Optional Formal List*/
+formal_list
+	
+	::=/*Empty*/
+		{: RESULT = new Formals(curr_lineno()); :}
+	| formal_1:formal1
+		{: RESULT = new Formals(curr_lineno()).appendElement(formal1); :}
+	| formal_list:f2 formal_1:formal1
+		{: RESULT = f2.appendElement(formal1); :}
+
+	;
+
+ /*Formal*/
+ formal_1
+ 		::= OBJECTID:o COLON TYPEID:t 
+ 			{: RESULT = new formalc(curr_lineno(), o, t); :}
+ 		| OBJECTID:obj COLON TYPEID:typ COMMA
+ 			{: RESULT = new formalc(curr_lineno(), obj, typ); :} 
+
+ 		;
 
 /*Optional Formal List, a list of parameters that are declared in a function's definition*/
 formal_list
@@ -241,15 +266,21 @@ expr
 		{: RESULT = new assign(curr_lineno(), o, e1); :}
 	| IF expr:e1 THEN expr:e2 ELSE expr:e3 FI
 		{: RESULT = new cond(curr_lineno(), e1, e2, e3); :}
+
+	| LET OBJECTID:o COLON TYPEID:t ASSIGN expr:e1 IN expr:e2
+		{:RESULT = new let(curr_lineno(), o, t, e1, e2); :}
+	| LET OBJECTID:o COLON TYPEID:t IN expr:e2
+		{:RESULT = new let(curr_lineno(), o, t, new no_expr(curr_lineno()), e2); :}
 	| NEW TYPEID:n
 		{:RESULT = new new_(curr_lineno(), n); :}
-	| LBRACE block_exp_list:exprslist RBRACE 
+	| LBRACE block_exp_list:exprslist RBRACE
 		{: RESULT = new block(curr_lineno(), exprslist); :}
-	
+
 	| CASE expr:e OF case_list:cl ESAC
 		{: RESULT = new typcase(curr_lineno(), e, cl); :}
 	| WHILE expr:eone LOOP expr:etwo POOL
 		{:RESULT = new loop(curr_lineno(), eone, etwo); :}
+
     | LET lettail:tail
 		{:RESULT = tail; :}
 	
@@ -279,6 +310,12 @@ lettail
 require a recursive nesting of let's */
 	
 /* Arguments that are passed in a method call */
+
+
+        ;
+	
+/* Method arguments */
+
 actuals
         /* No arguments */
 	::= LPAREN RPAREN
@@ -288,6 +325,22 @@ actuals
 	    {: RESULT = el; :}
 	;
 
+/* Non-empty list of cases */ 
+case_list
+	::= case_1:c1 
+		{: RESULT = new Cases(curr_lineno()).appendElement(c1); :}
+	| case_1:c1 SEMI
+		{: RESULT = new Cases(curr_lineno()).appendElement(c1); :}
+	| case_list:cl case_1:c1 SEMI
+		{: RESULT = cl.appendElement(c1); :}
+	; 
+
+/*Case evals*/
+case_1
+	::= OBJECTID:o COLON TYPEID:t DARROW expr:e1 
+		{: RESULT = new branch(curr_lineno(), o, t, e1); :}
+
+	;
 
 /* Non-empty list of cases in case expression blocks */ 
 case_list
@@ -316,11 +369,15 @@ exp_list
 	    {: RESULT = el.appendElement(e); :}
 	;
 
+
 /* Non-empty list of expressions within a block expression. Semicolons delineate for this*/
+
 block_exp_list
 	::= expr:e SEMI 
 		{: RESULT = new Expressions(curr_lineno()).appendElement(e); :}
 	|  block_exp_list:el expr:e SEMI
 		{: RESULT = el.appendElement(e); :}
+
 	| error SEMI
+
 	;

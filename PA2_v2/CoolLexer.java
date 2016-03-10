@@ -849,11 +849,7 @@ class CoolLexer implements java_cup.runtime.Scanner {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { /*
-                    *  This should be the very last rule and will match
-                    *  everything not matched by other lexical rules.
-                    */
-                   System.err.println("LEXER BUG - UNMATCHED: " + yytext());
+            { return new Symbol(TokenConstants.ERROR, yytext());
             }
           case 67: break;
           case 2: 
