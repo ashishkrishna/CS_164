@@ -10,7 +10,7 @@ class C {
 	};
 };
 
-Class Main {
+Class Main inherits C {
 	main():C {
 	  (new C).init(1,true)
 	};

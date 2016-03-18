@@ -22,13 +22,15 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // This is a project skeleton file
 
 import java.io.PrintStream;
-
+import java.util.Vector;
+import java.util.*;
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
  * here to provide a container for the supplied methods.  */
 class ClassTable {
     private int semantErrors;
     private PrintStream errorStream;
+    protected Vector<class_c> ll_cls = new Vector<class_c>(2);
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -192,20 +194,101 @@ class ClassTable {
 
 	// NOT TO BE INCLUDED IN SKELETON
 	
-	Object_class.dump_with_types(System.err, 0);
-	IO_class.dump_with_types(System.err, 0);
-	Int_class.dump_with_types(System.err, 0);
-	Bool_class.dump_with_types(System.err, 0);
-	Str_class.dump_with_types(System.err, 0);
+	// Object_class.dump_with_types(System.err, 0);
+	// IO_class.dump_with_types(System.err, 0);
+	// Int_class.dump_with_types(System.err, 0);
+	// Bool_class.dump_with_types(System.err, 0);
+	// Str_class.dump_with_types(System.err, 0);
+	// Add the basic types of classes by default
+	ll_cls.addElement(Object_class);
+	ll_cls.addElement(IO_class);
+	ll_cls.addElement(Int_class);
+	ll_cls.addElement(Bool_class);
+	ll_cls.addElement(Str_class);
     }
+	
+
 	
 
 
     public ClassTable(Classes cls) {
 	semantErrors = 0;
 	errorStream = System.err;
+	installBasicClasses();
+	HierarchyNode root_1;
+	/* Storing the names of all the visited classes */
+	Vector<String> visited = new Vector<String>(0);
+	/* Collect all of the classes into a vector */
+	for(int i=0; i< cls.getLength(); i++) {
+		ll_cls.addElement((class_c) cls.getNth(i));
+	}
+	/*Find root to start building the inheritance graph */
+	String root = "_no_class";
+	for(Enumeration<class_c> enums1 = ll_cls.elements(); enums1.hasMoreElements();) {
+		 class_c e1 = enums1.nextElement();
+		 if(e1.getParent().equalString(root, root.length())) {
+		 	  root_1 = new HierarchyNode(e1);
+		 	  root_1 = populate_Tree(root_1, 0);
+		 	  traverse_Graph(root_1, visited);
+		 	  	
+		 }
+		 
+	}
+
+	/*If the graph is well-structured, then every class would have been visited in the traversal; In Cool, there is 
+	exactly one root node: the Object class, since all classes that do not have a explicit inheritance are still descendants
+	of the Object class. So all of the classes must be visited during the traversal starting @ the Object class root node */ 
+
+	for(Enumeration<class_c> check_nodes = ll_cls.elements(); check_nodes.hasMoreElements(); ) {
+    		if(!visited.contains(check_nodes.nextElement().getName().toString()))    {   
+    			System.out.println("False_1"); //Replace this statement with an error reporting message 
+    		}
+    	}
+    	System.out.println("True_3"); //Replace this with nothing (Delete since we proceed nominally in event that inheritance graph is OK)
+
 	
+
 	/* fill this in */
+    }
+
+    /* Building the inheritance graph, going through each class and checking the parent-child relationship */ 
+    public HierarchyNode populate_Tree(HierarchyNode root, int n) {
+    	for(Enumeration<class_c> enums1 = ll_cls.elements(); enums1.hasMoreElements();) {
+		 class_c e1 = enums1.nextElement();
+		 if(e1.getParent().equalString(root.thisNode(), root.thisNode().length())) {
+		 		HierarchyNode child = new HierarchyNode(e1, root);
+		 		root.addChild(child);
+		 		populate_Tree(child, n+1);
+		}
+    	
+    }
+    return root;
+}
+
+
+	/*Boolean check doesn't really mean anything here-- Cool does not allow for multiple inheritance, this is more 
+	just a step taken to ensure the completion of the traversal, and uniformity in data types */ 
+
+    public boolean traverse_Graph(HierarchyNode root, Vector<String> visited) {
+    	for(Enumeration<String> marked_down = visited.elements(); marked_down.hasMoreElements(); ) {
+    		if(root.thisNode().equals(marked_down.nextElement())) {
+    			return false;
+    		}
+
+    	}
+    	visited.addElement(root.thisNode());
+    	if(root.isLeaf()) {
+    		return true;
+    	}
+    	Enumeration<HierarchyNode> children = root.getChildren();
+    	while(children.hasMoreElements()) {
+    		boolean truth = traverse_Graph(children.nextElement(), visited);
+    		if(truth == false)
+    			return false;
+
+    	}
+    	return true;
+
     }
 
     /** Prints line number and file name of the given class.
@@ -258,5 +341,43 @@ class ClassTable {
 	new ClassTable(null).installBasicClasses();
     }
 }
-			  
+
+/* Class used to build the  Class inheritance graph. Really just a tree. The TA's were not prescient enough to add a Tree Class 
+for .
+F*cking W*nta. */
+ class HierarchyNode {
+	protected HierarchyNode parent = null;
+	protected Vector<HierarchyNode> children;
+	protected String NodeName;
+	public HierarchyNode(class_c Node1) {
+		this.NodeName = Node1.getName().toString();
+		this.parent = null;
+		this.children = new Vector<HierarchyNode>(0);
+	}
+	public HierarchyNode(class_c Node1, HierarchyNode Node2) {
+		this.NodeName = Node1.getName().toString();
+		this.parent = Node2;
+		this.children  = new Vector<HierarchyNode>(0);
+	}
+	public String thisNode() {
+		return this.NodeName;
+	}
+	public boolean isLeaf() {
+		if (children.size() == 0) {
+			return true;
+		}
+		return false;
+	} 
+
+	public void addChild(HierarchyNode child) {
+		this.children.addElement(child);
+	}
+	public Enumeration<HierarchyNode> getChildren() {
+		return this.children.elements();
+	}
+
+	public HierarchyNode getParent() {
+		return this.parent;
+	}
+}		  
     
