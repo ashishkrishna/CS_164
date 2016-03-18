@@ -231,6 +231,8 @@ class ClassTable {
 		else {
 			semantErrors++;
 			semantError(curr_elem);
+			String errnmcl = curr_elem.getName().toString();
+			errorStream.append("Class "+errnmcl+ " was previously defined\n");
 		// curr_elem.dump_with_types(errorStream, 0);
 		}
 	}
@@ -266,9 +268,16 @@ class ClassTable {
     			class_c undefined_inherit_check = bad_iters.nextElement();
     			//System.out.println(undefined_inherit_check.getName().toString());
     		if(!bad_node_names.contains(undefined_inherit_check.getParent().toString())) {
-    			
     			semantErrors++;
-    			bad_nodes.remove(undefined_inherit_check);
+    			String errcl = undefined_inherit_check.getName().toString();
+    			String errcl_2 = undefined_inherit_check.getParent().toString();
+    			semantError(undefined_inherit_check);
+    			errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + "\n");
+    			int index = bad_node_names.indexOf(undefined_inherit_check.getName().toString());
+    			bad_nodes.remove(index);
+    			bad_node_names.remove(index);
+
+
     		}
     	}
     
@@ -325,6 +334,8 @@ class ClassTable {
 			if (e1.getParent().equalString(root.thisNode(), root.thisNode().length()) && added.contains(e1.getName().toString())) {
 			semantErrors++;
 			semantError(e1);
+			String errnmcl = e1.getName().toString();
+			errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle\n");
 			return root;
 			
 		}

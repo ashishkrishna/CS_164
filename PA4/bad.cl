@@ -68,3 +68,14 @@ class D inherits C {
            }
 	};
 };
+class G inherits R {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
