@@ -209,7 +209,6 @@ class ClassTable {
 	
     public ClassTable(Classes cls) {
 	semantErrors = 0;
-	int errorFlag = 0;
 	errorStream = System.err;
 	installBasicClasses();
 	HierarchyNode root_1;
@@ -224,7 +223,7 @@ class ClassTable {
 		named.addElement(curr_elem.getName().toString());
 	}
 	else {
-		errorFlag = 1;
+		semantErrors++;
 		curr_elem.dump_with_types(errorStream, 0);
 	}
 	}
@@ -248,13 +247,11 @@ class ClassTable {
 	for(Enumeration<class_c> check_nodes = ll_cls.elements(); check_nodes.hasMoreElements(); ) {
 			class_c checking_node = check_nodes.nextElement();
     		if(!visited.contains(checking_node.getName().toString()))    {  
-    			 errorFlag = 1; 
+    			 semantErrors++;
     			 checking_node.dump_with_types(errorStream, 0);//Replace this statement with an error reporting message 
     		}
     	}
-    if(errorFlag == 1) {
-    	System.exit(-1);
-    }
+    
     	
     }
 
