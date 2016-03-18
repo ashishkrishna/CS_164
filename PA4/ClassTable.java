@@ -315,6 +315,7 @@ class ClassTable {
     			}
     		}
     	}
+if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.size() > 0) {
     int lowest_line_num;
     Enumeration<class_c> c1 = cycledefs.elements();
     Enumeration<class_c> u1 = undefs.elements();
@@ -337,13 +338,8 @@ class ClassTable {
     	class_c rnext = i1.nextElement();
     	total_errors.put(rnext.getLineNumber(), rnext);
     }
-    int max = 1;
-    try {
+    int max = 0;
    	 max = Collections.max(total_errors.keySet(), null);
-   }
-   catch(NoSuchElementException r) {
-   	 /*Do nothing here */
-   }
    	for(int i = 0; i < max+1; i++){
    		class_c semanter = total_errors.get(i);
    		if(semanter != null) {
@@ -377,11 +373,7 @@ class ClassTable {
    			}
    		}
    	}
-
-
-    	
-
-    
+}
     	
     }
 
