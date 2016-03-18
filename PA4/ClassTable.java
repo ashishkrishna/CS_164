@@ -24,6 +24,7 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 import java.io.PrintStream;
 import java.util.Vector;
 import java.util.*;
+import java.lang.Math;
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
  * here to provide a container for the supplied methods.  */
@@ -33,6 +34,12 @@ class ClassTable {
     protected Vector<class_c> ll_cls = new Vector<class_c>(2);
     protected Vector<class_c> bad_nodes;
     protected Vector<String> bad_node_names;
+    protected  Vector<class_c> undefs;
+	protected Vector<class_c> redefs;
+	protected Vector<class_c> cycledefs;
+	protected  Vector<String> undefs_lbls;
+	protected Vector<String> redefs_lbls;
+	protected Vector<String> cycledefs_lbls;
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -218,6 +225,12 @@ class ClassTable {
 	Vector<String> named = new Vector<String>(0);
 	/* Storing the names of all the visited classes */
 	Vector<String> visited = new Vector<String>(0);
+	undefs = new Vector<class_c>(0);
+	redefs = new Vector<class_c>(0);
+	cycledefs = new Vector<class_c>(0);
+	undefs_lbls = new Vector<String>(0);
+	redefs_lbls = new Vector<String>(0);
+	cycledefs_lbls = new Vector<String>(0);
 	bad_nodes = new Vector<class_c>(0);
 	bad_node_names = new Vector<String>(0);
 	/* Collect all of the classes into a vector */
@@ -230,13 +243,13 @@ class ClassTable {
 		}
 		else {
 			semantErrors++;
-			semantError(curr_elem);
-			String errnmcl = curr_elem.getName().toString();
-			errorStream.append("Class "+errnmcl+ " was previously defined\n");
-		// curr_elem.dump_with_types(errorStream, 0);
+			redefs.add(curr_elem);
+			redefs_lbls.add(curr_elem.getName().toString());
+			// semantError(curr_elem);
+			// String errnmcl = curr_elem.getName().toString();
+			// errorStream.append("Class "+errnmcl+ " was previously defined\n");
 		}
 	}
-	/*Find root to start building the inheritance graph */
 	String root = "_no_class";
 	for(Enumeration<class_c> enums1 = ll_cls.elements(); enums1.hasMoreElements();) {
 		 class_c e1 = enums1.nextElement();
@@ -259,20 +272,21 @@ class ClassTable {
     			 semantErrors++;
     			 bad_nodes.addElement(checking_node);
     			 bad_node_names.addElement(checking_node.getName().toString());
-    			 //semantError(checking_node);
-    			 //checking_node.dump_with_types(errorStream, 0);//Replace this statement with an error reporting message 
     		}
     	}
-   
+   /* Now we proceed with building graphs for bad nodes. First, we remove all bad nodes who do not have defined parents. Then 
+   we have nodes remaining in the bad nodes that are part of cycles (these cycles can be distinct, and errors need to be returned
+   	for each distinct cycle) */
     for(Enumeration<class_c> bad_iters = bad_nodes.elements(); bad_iters.hasMoreElements();) {
     			class_c undefined_inherit_check = bad_iters.nextElement();
-    			//System.out.println(undefined_inherit_check.getName().toString());
     		if(!bad_node_names.contains(undefined_inherit_check.getParent().toString())) {
     			semantErrors++;
-    			String errcl = undefined_inherit_check.getName().toString();
-    			String errcl_2 = undefined_inherit_check.getParent().toString();
-    			semantError(undefined_inherit_check);
-    			errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + "\n");
+    			// String errcl = undefined_inherit_check.getName().toString();
+    			// String errcl_2 = undefined_inherit_check.getParent().toString();
+    			undefs.addElement(undefined_inherit_check);
+    			undefs_lbls.addElement(undefined_inherit_check.getName().toString());
+    			// semantError(undefined_inherit_check);
+    			// errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + "\n");
     			int index = bad_node_names.indexOf(undefined_inherit_check.getName().toString());
     			bad_nodes.remove(index);
     			bad_node_names.remove(index);
@@ -280,13 +294,12 @@ class ClassTable {
 
     		}
     	}
-    
+    /* Detect cycles and remove the bad nodes until there are no more nodes left in bad nodes */
     while (bad_nodes.size() != 0) {
     		bad_root = new HierarchyNode(bad_nodes.elementAt(0));
     		Vector<String> to_be_added = new Vector<String>(0);
     		Vector<String> bad_visited = new Vector<String>(0);
     		populatebad_Tree(bad_root, 0, to_be_added);
-    		//traverse_Graph(bad_root, bad_visited);
     		
     		for(Enumeration<String> checked_bad_ones = to_be_added.elements(); checked_bad_ones.hasMoreElements();) {
     			String checked_one = checked_bad_ones.nextElement();
@@ -298,6 +311,56 @@ class ClassTable {
     			}
     		}
     	}
+    int lowest_line_num;
+    Enumeration<class_c> c1 = cycledefs.elements();
+    Enumeration<class_c> u1 = undefs.elements();
+    Enumeration<class_c> r1 = redefs.elements();
+    HashMap<Integer, class_c> total_errors = new HashMap<Integer, class_c>();
+    while(c1.hasMoreElements()) {
+    	class_c cnext = c1.nextElement();
+    	total_errors.put(cnext.getLineNumber(), cnext);
+    }
+    while(u1.hasMoreElements()) {
+    	class_c unext = u1.nextElement();
+    	total_errors.put(unext.getLineNumber(), unext);
+    }
+    while(r1.hasMoreElements()) {
+    	class_c rnext = r1.nextElement();
+    	total_errors.put(rnext.getLineNumber(), rnext);
+    }
+    int max = 1;
+    try {
+   	 max = Collections.max(total_errors.keySet(), null);
+   }
+   catch(NoSuchElementException r) {
+   	 /*Do nothing here */
+   }
+   	for(int i = 0; i < max+1; i++){
+   		class_c semanter = total_errors.get(i);
+   		if(semanter != null) {
+   			if (cycledefs_lbls.contains(semanter.getName().toString())) {
+   				semantError(semanter);
+				String errnmcl = semanter.getName().toString();
+				errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle\n");
+
+   			}
+   			if (undefs_lbls.contains(semanter.getName().toString())) {
+   				 String errcl = semanter.getName().toString();
+    			 String errcl_2 = semanter.getParent().toString();
+    			 semantError(semanter);
+    			 errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + "\n");
+   				
+   			}
+   			if (redefs_lbls.contains(semanter.getName().toString())) {
+   				 semantError(semanter);
+				 String errnmcl = semanter.getName().toString();
+				 errorStream.append("Class "+errnmcl+ " was previously defined\n");
+
+   				
+   			}
+   		}
+   	}
+
 
     	
 
@@ -333,9 +396,12 @@ class ClassTable {
 		else {
 			if (e1.getParent().equalString(root.thisNode(), root.thisNode().length()) && added.contains(e1.getName().toString())) {
 			semantErrors++;
-			semantError(e1);
-			String errnmcl = e1.getName().toString();
-			errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle\n");
+			cycledefs_lbls.addElement(root.getParent().thisNode());
+			cycledefs.addElement(root.getParent().thisClassNode());
+
+			// semantError(root.getParent().thisClassNode());
+			// String errnmcl = root.getParent().thisClassNode().getName().toString();
+			// errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle\n");
 			return root;
 			
 		}
@@ -361,7 +427,10 @@ class ClassTable {
     	HierarchyNode parent = root.getParent();
     	if(parent != null && (parent.thisNode().equals("String") || parent.thisNode().equals("Bool") || parent.thisNode().equals("Int"))) {
     		semantErrors++;
+    		String parerr = parent.thisNode();
+    		String roerr = root.thisNode();
     		semantError(root.thisClassNode());
+    		errorStream.append("Class " + roerr + " cannot inherit class " + parerr + ".\n");
     	}
     	if(root.isLeaf()) {
     		return true;

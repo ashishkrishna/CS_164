@@ -1,4 +1,51 @@
-class C inherits D {
+class A inherits D {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+class C inherits A {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+class D inherits C {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+class Aleph inherits Beta {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+class Beta inherits Aleph {
 	a : Int;
 	b : Bool;
 	init(x : Int, y : Bool) : C {
@@ -46,6 +93,68 @@ class E inherits F {
 	};
 };
 
+
+class M inherits E {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+class H inherits M {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+class U inherits H {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+class L inherits U {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+class W inherits U {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
+
+
 class F inherits E {
 	a : Int;
 	b : Bool;
@@ -57,17 +166,7 @@ class F inherits E {
            }
 	};
 };
-class D inherits C {
-	a : Int;
-	b : Bool;
-	init(x : Int, y : Bool) : C {
-           {
-		a <- x;
-		b <- y;
-		self;
-           }
-	};
-};
+
 class G inherits R {
 	a : Int;
 	b : Bool;
