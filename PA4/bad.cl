@@ -21,6 +21,19 @@ Class Main {
 	};
 };
 
+
+
+class E inherits F {
+	a : Int;
+	b : Bool;
+	init(x : Int, y : Bool) : C {
+           {
+		a <- x;
+		b <- y;
+		self;
+           }
+	};
+};
 class D inherits C {
 	a : Int;
 	b : Bool;

@@ -240,11 +240,12 @@ class ClassTable {
 	of the Object class. So all of the classes must be visited during the traversal starting @ the Object class root node */ 
 
 	for(Enumeration<class_c> check_nodes = ll_cls.elements(); check_nodes.hasMoreElements(); ) {
-    		if(!visited.contains(check_nodes.nextElement().getName().toString()))    {   
-    			System.out.println("False_1"); //Replace this statement with an error reporting message 
+			class_c checking_node = check_nodes.nextElement();
+    		if(!visited.contains(checking_node.getName().toString()))    {   
+    			 checking_node.dump_with_types(errorStream, 0);//Replace this statement with an error reporting message 
     		}
     	}
-    	System.out.println("True_3"); //Replace this with nothing (Delete since we proceed nominally in event that inheritance graph is OK)
+    	//Replace this with nothing (Delete since we proceed nominally in event that inheritance graph is OK)
 
 	
 
