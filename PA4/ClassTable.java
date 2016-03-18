@@ -249,9 +249,6 @@ class ClassTable {
 			semantErrors++;
 			redefs.add(curr_elem);
 			redefs_lbls.add(curr_elem.getName().toString());
-			// semantError(curr_elem);
-			// String errnmcl = curr_elem.getName().toString();
-			// errorStream.append("Class "+errnmcl+ " was previously defined\n");
 		}
 	}
 	String root = "_no_class";
@@ -285,12 +282,8 @@ class ClassTable {
     			class_c undefined_inherit_check = bad_iters.nextElement();
     		if(!bad_node_names.contains(undefined_inherit_check.getParent().toString())) {
     			semantErrors++;
-    			// String errcl = undefined_inherit_check.getName().toString();
-    			// String errcl_2 = undefined_inherit_check.getParent().toString();
     			undefs.addElement(undefined_inherit_check);
     			undefs_lbls.addElement(undefined_inherit_check.getName().toString());
-    			// semantError(undefined_inherit_check);
-    			// errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + "\n");
     			int index = bad_node_names.indexOf(undefined_inherit_check.getName().toString());
     			bad_nodes.remove(index);
     			bad_node_names.remove(index);
@@ -346,20 +339,20 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.siz
    			if (cycledefs_lbls.contains(semanter.getName().toString())) {
    				semantError(semanter);
 				String errnmcl = semanter.getName().toString();
-				errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle\n");
+				errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle.\n");
 
    			}
    			if (undefs_lbls.contains(semanter.getName().toString())) {
    				 String errcl = semanter.getName().toString();
     			 String errcl_2 = semanter.getParent().toString();
     			 semantError(semanter);
-    			 errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + "\n");
+    			 errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + ".\n");
    				
    			}
    			if (redefs_lbls.contains(semanter.getName().toString())) {
    				 semantError(semanter);
 				 String errnmcl = semanter.getName().toString();
-				 errorStream.append("Class "+errnmcl+ " was previously defined\n");
+				 errorStream.append("Class "+errnmcl+ " was previously defined.\n");
 
    				
    			}
@@ -407,10 +400,6 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.siz
 			semantErrors++;
 			cycledefs_lbls.addElement(root.getParent().thisNode());
 			cycledefs.addElement(root.getParent().thisClassNode());
-
-			// semantError(root.getParent().thisClassNode());
-			// String errnmcl = root.getParent().thisClassNode().getName().toString();
-			// errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle\n");
 			return root;
 			
 		}
@@ -438,10 +427,6 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.siz
     		semantErrors++;
     		indefs.add(root.thisClassNode());
     		indefs_lbls.add(root.thisNode());
-    		// String parerr = parent.thisNode();
-    		// String roerr = root.thisNode();
-    		// semantError(root.thisClassNode());
-    		// errorStream.append("Class " + roerr + " cannot inherit class " + parerr + ".\n");
     	}
     	if(root.isLeaf()) {
     		return true;
