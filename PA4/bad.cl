@@ -21,6 +21,17 @@ Class Main {
 	};
 };
 
+Class Main {
+	main():C {
+	 {
+	  (new C).init(1,2);
+	  (new C).init(1,true,3);
+	  (new C).iinit(1,true);
+	  (new C);
+	 }
+	};
+};
+
 
 
 class E inherits F {

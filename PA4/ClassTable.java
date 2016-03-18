@@ -207,20 +207,26 @@ class ClassTable {
 	ll_cls.addElement(Str_class);
     }
 	
-
-	
-
-
     public ClassTable(Classes cls) {
 	semantErrors = 0;
+	int errorFlag = 0;
 	errorStream = System.err;
 	installBasicClasses();
 	HierarchyNode root_1;
+	Vector<String> named = new Vector<String>(0);
 	/* Storing the names of all the visited classes */
 	Vector<String> visited = new Vector<String>(0);
 	/* Collect all of the classes into a vector */
 	for(int i=0; i< cls.getLength(); i++) {
-		ll_cls.addElement((class_c) cls.getNth(i));
+		class_c curr_elem = (class_c) cls.getNth(i);
+		ll_cls.addElement(curr_elem);
+		if(!named.contains(curr_elem.getName().toString())) {
+		named.addElement(curr_elem.getName().toString());
+	}
+	else {
+		curr_elem.dump_with_types(errorStream, 0);
+		errorFlag = 1;
+	}
 	}
 	/*Find root to start building the inheritance graph */
 	String root = "_no_class";
@@ -241,15 +247,15 @@ class ClassTable {
 
 	for(Enumeration<class_c> check_nodes = ll_cls.elements(); check_nodes.hasMoreElements(); ) {
 			class_c checking_node = check_nodes.nextElement();
-    		if(!visited.contains(checking_node.getName().toString()))    {   
+    		if(!visited.contains(checking_node.getName().toString()))    {  
+    			 errorFlag = 1; 
     			 checking_node.dump_with_types(errorStream, 0);//Replace this statement with an error reporting message 
     		}
     	}
-    	//Replace this with nothing (Delete since we proceed nominally in event that inheritance graph is OK)
-
-	
-
-	/* fill this in */
+    if(errorFlag == 1) {
+    	System.exit(-1);
+    }
+    	
     }
 
     /* Building the inheritance graph, going through each class and checking the parent-child relationship */ 
@@ -343,9 +349,7 @@ class ClassTable {
     }
 }
 
-/* Class used to build the  Class inheritance graph. Really just a tree. The TA's were not prescient enough to add a Tree Class 
-for .
-F*cking W*nta. */
+/* Class used to build the  Class inheritance graph. Really just a tree. */
  class HierarchyNode {
 	protected HierarchyNode parent = null;
 	protected Vector<HierarchyNode> children;
