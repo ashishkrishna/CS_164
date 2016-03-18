@@ -31,6 +31,8 @@ class ClassTable {
     private int semantErrors;
     private PrintStream errorStream;
     protected Vector<class_c> ll_cls = new Vector<class_c>(2);
+    protected Vector<class_c> bad_nodes;
+    protected Vector<String> bad_node_names;
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -212,15 +214,19 @@ class ClassTable {
 	errorStream = System.err;
 	installBasicClasses();
 	HierarchyNode root_1;
+	HierarchyNode bad_root;
 	Vector<String> named = new Vector<String>(0);
 	/* Storing the names of all the visited classes */
 	Vector<String> visited = new Vector<String>(0);
+	bad_nodes = new Vector<class_c>(0);
+	bad_node_names = new Vector<String>(0);
 	/* Collect all of the classes into a vector */
 	for(int i=0; i< cls.getLength(); i++) {
 		class_c curr_elem = (class_c) cls.getNth(i);
-		ll_cls.addElement(curr_elem);
+		
 		if(!named.contains(curr_elem.getName().toString())) {
 		named.addElement(curr_elem.getName().toString());
+		ll_cls.addElement(curr_elem);
 		}
 		else {
 			semantErrors++;
@@ -249,10 +255,43 @@ class ClassTable {
 			class_c checking_node = check_nodes.nextElement();
     		if(!visited.contains(checking_node.getName().toString()))    {  
     			 semantErrors++;
-    			 semantError(checking_node);
+    			 bad_nodes.addElement(checking_node);
+    			 bad_node_names.addElement(checking_node.getName().toString());
+    			 //semantError(checking_node);
     			 //checking_node.dump_with_types(errorStream, 0);//Replace this statement with an error reporting message 
     		}
     	}
+   
+    for(Enumeration<class_c> bad_iters = bad_nodes.elements(); bad_iters.hasMoreElements();) {
+    			class_c undefined_inherit_check = bad_iters.nextElement();
+    			//System.out.println(undefined_inherit_check.getName().toString());
+    		if(!bad_node_names.contains(undefined_inherit_check.getParent().toString())) {
+    			
+    			semantErrors++;
+    			bad_nodes.remove(undefined_inherit_check);
+    		}
+    	}
+    
+    while (bad_nodes.size() != 0) {
+    		bad_root = new HierarchyNode(bad_nodes.elementAt(0));
+    		Vector<String> to_be_added = new Vector<String>(0);
+    		Vector<String> bad_visited = new Vector<String>(0);
+    		populatebad_Tree(bad_root, 0, to_be_added);
+    		//traverse_Graph(bad_root, bad_visited);
+    		
+    		for(Enumeration<String> checked_bad_ones = to_be_added.elements(); checked_bad_ones.hasMoreElements();) {
+    			String checked_one = checked_bad_ones.nextElement();
+    			if(bad_node_names.contains(checked_one))  {
+    				  int remove_index = bad_node_names.indexOf(checked_one);
+    				 
+    				  bad_node_names.remove(remove_index);
+    				  bad_nodes.remove(remove_index);
+    			}
+    		}
+    	}
+
+    	
+
     
     	
     }
@@ -266,6 +305,31 @@ class ClassTable {
 		 		root.addChild(child);
 		 		populate_Tree(child, n+1);
 		}
+    	
+    }
+    return root;
+}
+	/*Building the inheritance graph for bad nodes */
+	public HierarchyNode populatebad_Tree(HierarchyNode root, int n, Vector<String> added) {
+    	for(Enumeration<class_c> enums1 = bad_nodes.elements(); enums1.hasMoreElements();) {
+		 class_c e1 = enums1.nextElement();
+		 
+		 
+		 if(e1.getParent().equalString(root.thisNode(), root.thisNode().length()) && !added.contains(e1.getName().toString())) {
+		 		added.addElement(e1.getName().toString());
+		 		HierarchyNode child = new HierarchyNode(e1, root);
+		 		root.addChild(child);
+		 		populatebad_Tree(child, n+1, added);
+		}
+		else {
+			if (e1.getParent().equalString(root.thisNode(), root.thisNode().length()) && added.contains(e1.getName().toString())) {
+			semantErrors++;
+			semantError(e1);
+			return root;
+			
+		}
+	}
+		
     	
     }
     return root;
@@ -293,9 +357,13 @@ class ClassTable {
     	}
     	Enumeration<HierarchyNode> children = root.getChildren();
     	while(children.hasMoreElements()) {
-    		boolean truth = traverse_Graph(children.nextElement(), visited);
-    		if(truth == false)
+    		HierarchyNode next_one = children.nextElement();
+    		boolean truth = traverse_Graph(next_one, visited);
+    		if(truth == false) {
+    			semantErrors++;
+    			semantError(next_one.thisClassNode());
     			return false;
+    		}
 
     	}
     	return true;
