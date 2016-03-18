@@ -224,8 +224,8 @@ class ClassTable {
 		named.addElement(curr_elem.getName().toString());
 	}
 	else {
-		curr_elem.dump_with_types(errorStream, 0);
 		errorFlag = 1;
+		curr_elem.dump_with_types(errorStream, 0);
 	}
 	}
 	/*Find root to start building the inheritance graph */
