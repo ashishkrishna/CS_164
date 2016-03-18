@@ -37,9 +37,11 @@ class ClassTable {
     protected  Vector<class_c> undefs;
 	protected Vector<class_c> redefs;
 	protected Vector<class_c> cycledefs;
+	protected Vector<class_c> indefs;
 	protected  Vector<String> undefs_lbls;
 	protected Vector<String> redefs_lbls;
 	protected Vector<String> cycledefs_lbls;
+	protected Vector<String> indefs_lbls;
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -227,10 +229,12 @@ class ClassTable {
 	Vector<String> visited = new Vector<String>(0);
 	undefs = new Vector<class_c>(0);
 	redefs = new Vector<class_c>(0);
+	indefs = new Vector<class_c>(0);
 	cycledefs = new Vector<class_c>(0);
 	undefs_lbls = new Vector<String>(0);
 	redefs_lbls = new Vector<String>(0);
 	cycledefs_lbls = new Vector<String>(0);
+	indefs_lbls = new Vector<String>(0);
 	bad_nodes = new Vector<class_c>(0);
 	bad_node_names = new Vector<String>(0);
 	/* Collect all of the classes into a vector */
@@ -315,6 +319,7 @@ class ClassTable {
     Enumeration<class_c> c1 = cycledefs.elements();
     Enumeration<class_c> u1 = undefs.elements();
     Enumeration<class_c> r1 = redefs.elements();
+    Enumeration<class_c> i1 = indefs.elements();
     HashMap<Integer, class_c> total_errors = new HashMap<Integer, class_c>();
     while(c1.hasMoreElements()) {
     	class_c cnext = c1.nextElement();
@@ -326,6 +331,10 @@ class ClassTable {
     }
     while(r1.hasMoreElements()) {
     	class_c rnext = r1.nextElement();
+    	total_errors.put(rnext.getLineNumber(), rnext);
+    }
+    while(i1.hasMoreElements()) {
+    	class_c rnext = i1.nextElement();
     	total_errors.put(rnext.getLineNumber(), rnext);
     }
     int max = 1;
@@ -355,6 +364,14 @@ class ClassTable {
    				 semantError(semanter);
 				 String errnmcl = semanter.getName().toString();
 				 errorStream.append("Class "+errnmcl+ " was previously defined\n");
+
+   				
+   			}
+   			if (indefs_lbls.contains(semanter.getName().toString())) {
+   				  semantError(semanter);
+   				  String parerr = semanter.getParent().toString();
+    			  String roerr = semanter.getName().toString();
+    			  errorStream.append("Class " + roerr + " cannot inherit class " + parerr + ".\n");
 
    				
    			}
@@ -427,10 +444,12 @@ class ClassTable {
     	HierarchyNode parent = root.getParent();
     	if(parent != null && (parent.thisNode().equals("String") || parent.thisNode().equals("Bool") || parent.thisNode().equals("Int"))) {
     		semantErrors++;
-    		String parerr = parent.thisNode();
-    		String roerr = root.thisNode();
-    		semantError(root.thisClassNode());
-    		errorStream.append("Class " + roerr + " cannot inherit class " + parerr + ".\n");
+    		indefs.add(root.thisClassNode());
+    		indefs_lbls.add(root.thisNode());
+    		// String parerr = parent.thisNode();
+    		// String roerr = root.thisNode();
+    		// semantError(root.thisClassNode());
+    		// errorStream.append("Class " + roerr + " cannot inherit class " + parerr + ".\n");
     	}
     	if(root.isLeaf()) {
     		return true;
