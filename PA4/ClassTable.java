@@ -221,11 +221,12 @@ class ClassTable {
 		ll_cls.addElement(curr_elem);
 		if(!named.contains(curr_elem.getName().toString())) {
 		named.addElement(curr_elem.getName().toString());
-	}
-	else {
-		semantErrors++;
-		curr_elem.dump_with_types(errorStream, 0);
-	}
+		}
+		else {
+			semantErrors++;
+			semantError(curr_elem);
+		// curr_elem.dump_with_types(errorStream, 0);
+		}
 	}
 	/*Find root to start building the inheritance graph */
 	String root = "_no_class";
@@ -248,7 +249,8 @@ class ClassTable {
 			class_c checking_node = check_nodes.nextElement();
     		if(!visited.contains(checking_node.getName().toString()))    {  
     			 semantErrors++;
-    			 checking_node.dump_with_types(errorStream, 0);//Replace this statement with an error reporting message 
+    			 semantError(checking_node);
+    			 //checking_node.dump_with_types(errorStream, 0);//Replace this statement with an error reporting message 
     		}
     	}
     
@@ -281,6 +283,11 @@ class ClassTable {
 
     	}
     	visited.addElement(root.thisNode());
+    	HierarchyNode parent = root.getParent();
+    	if(parent != null && (parent.thisNode().equals("String") || parent.thisNode().equals("Bool") || parent.thisNode().equals("Int"))) {
+    		semantErrors++;
+    		semantError(root.thisClassNode());
+    	}
     	if(root.isLeaf()) {
     		return true;
     	}
@@ -351,19 +358,27 @@ class ClassTable {
 	protected HierarchyNode parent = null;
 	protected Vector<HierarchyNode> children;
 	protected String NodeName;
+	protected class_c classnd;
 	public HierarchyNode(class_c Node1) {
 		this.NodeName = Node1.getName().toString();
 		this.parent = null;
+		this.classnd = Node1;
 		this.children = new Vector<HierarchyNode>(0);
 	}
 	public HierarchyNode(class_c Node1, HierarchyNode Node2) {
 		this.NodeName = Node1.getName().toString();
 		this.parent = Node2;
+		this.classnd = Node1;
 		this.children  = new Vector<HierarchyNode>(0);
 	}
 	public String thisNode() {
 		return this.NodeName;
 	}
+
+	public class_c thisClassNode() {
+		return this.classnd;
+	}
+
 	public boolean isLeaf() {
 		if (children.size() == 0) {
 			return true;
