@@ -281,6 +281,11 @@ class ClassTable {
 			redefs_linenum.add(curr_elem.getLineNumber());
 		}
 	}
+	if(!named.contains("Main")) {
+			errorStream.print("<basic class>:0: ");
+			errorStream.append("Class Main is not defined.\n");
+	}
+
 	/*Find the root node (Object class) and build the tree of all valid classes */
 	String root = "_no_class";
 	for(Enumeration<class_c> enums1 = ll_cls.elements(); enums1.hasMoreElements();) {
@@ -488,12 +493,13 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 
     }
 
+    public HierarchyNode goodClasses() {
+    	return list_of_class_trees.elementAt(0);
+    }
 
     /** Return the good_nodes for further type checking */
 
-    public Vector<class_c> goodClasses() {
-    	return good_nodes;
-    }
+   
     /** Prints line number and file name of the given class.
      *
      * Also increments semantic error count.

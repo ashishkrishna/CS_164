@@ -235,9 +235,11 @@ class programc extends Program {
       * @param lineNumber the line in the source file from which this node came.
       * @param a0 initial value for classes
       */
+    int semanticerr;
     public programc(int lineNumber, Classes a1) {
         super(lineNumber);
         classes = a1;
+        semanticerr = 0;
     }
     public TreeNode copy() {
         return new programc(lineNumber, (Classes)classes.copy());
@@ -279,8 +281,15 @@ class programc extends Program {
     }
 
     /*Go through all the classes */
-    for(Enumeration e = classes.getElements(); e.hasMoreElements() ; ) {
-       Class_ to_check =  (Class_)e.nextElement();
+    SymbolTable class_checker = new SymbolTable();
+    HierarchyNode root_1 = classTable.goodClasses();
+    checkClasses(root_1, class_checker);
+    if(semanticerr > 0) {
+        System.err.println("Compilation halted due to static semantic errors.");
+        System.exit(1);
+    }
+
+
        //AbstractTable 
       // Features f_check = to_check.getFeatures();
        /*Go through the features */
@@ -288,10 +297,58 @@ class programc extends Program {
        
 
 
-    }
-    Vector<class_c> valid_classes_1 = classTable.goodClasses();
+    
+    
 
      /* some semantic analysis code may go here */
+    }
+
+    public void checkClasses(HierarchyNode root, SymbolTable symtab) {
+        symtab.enterScope();
+        class_c to_check_class = root.thisClassNode();
+        Features this_classes_features = to_check_class.getFeatures();
+        for(Enumeration<Feature> list_of_features = this_classes_features.getElements(); list_of_features.hasMoreElements();) {
+            Feature alpha = list_of_features.nextElement();
+            if(alpha.getClass().equals(attr.class)) {
+                attr attr_1 = (attr) alpha;
+                if(symtab.lookup(attr_1.name) == null) {
+                    symtab.addId(attr_1.name, attr_1);
+                }
+                else {
+                   semanticerr++;
+                   System.err.println("Attribute " + attr_1.name + " is an attribute of an inherited class.");
+                }
+                }
+            else if (alpha.getClass().equals(method.class)) {
+                method method_1 = (method) alpha;
+                if(symtab.lookup(method_1.name) == null) {
+                    symtab.addId(method_1.name, method_1);
+                }
+                else {
+                   semanticerr++;
+                   System.err.println("Method " + method_1.name + " is a method of an inherited class.");
+                }
+            }
+        }
+
+        if(root.isLeaf()) {
+            symtab.exitScope();
+            return;
+        }
+        else {
+            /*Returned symtab at the very end should just have base Object attributes*/
+            /*Record size of symtab here */
+            Enumeration<HierarchyNode> childclasses = root.getChildren();
+            while(childclasses.hasMoreElements()) {
+                HierarchyNode child_class = childclasses.nextElement();
+                checkClasses(child_class, symtab);
+                /*Pop till symtab matches the original */
+                
+                
+            }
+            symtab.exitScope();
+            return;
+        }
     }
 
 }
