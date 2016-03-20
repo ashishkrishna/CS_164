@@ -31,19 +31,23 @@ import java.lang.Math;
 class ClassTable {
     private int semantErrors;
     private PrintStream errorStream;
-    protected Vector<class_c> ll_cls = new Vector<class_c>(2);
-    protected Vector<class_c> bad_nodes;
-    protected Vector<String> bad_node_names;
-    protected  Vector<class_c> undefs;
-	protected Vector<class_c> redefs;
-	protected Vector<class_c> cycledefs;
-	protected Vector<class_c> indefs;
-	protected  Vector<String> undefs_lbls;
-	protected Vector<String> redefs_lbls;
-	protected Vector<String> cycledefs_lbls;
-	protected Vector<String> indefs_lbls;
-	protected Vector<class_c> good_nodes;
-	protected Vector<HierarchyNode> list_of_class_trees;
+    protected Vector<class_c> ll_cls = new Vector<class_c>(2); /* Global class container */
+    protected Vector<class_c> bad_nodes; /* Container for bad nodes */
+    protected Vector<String> bad_node_names; /* Container for bad node names */
+    protected  Vector<class_c> undefs; /*Container for undefined inheritance nodes */
+	protected Vector<class_c> redefs; /*Container for redefined nodes */
+	protected Vector<class_c> cycledefs; /*Container for cycle nodes */
+	protected Vector<class_c> indefs; /*Container for invalid inherit nodes */ 
+	protected  Vector<String> undefs_lbls; /*Container for undefined inheritance node names */
+	protected Vector<String> redefs_lbls; /*Container for redefined node names */
+	protected Vector<String> cycledefs_lbls; /*Container for cycle node names */
+	protected Vector<String> indefs_lbls; /*Container for invalid inheritance node names */
+	protected  Vector<Integer> undefs_linenum; /* Container for undefined inheritance line nums */ 
+	protected Vector<Integer> redefs_linenum; /*Container for redefined inherit line nums */ 
+	protected Vector<Integer> cycledefs_linenum; /*Container for cycle node line nums*/ 
+	protected Vector<Integer> indefs_linenum; /*Container for invalid node line nums */ 
+	protected Vector<class_c> good_nodes; /*Container for good nodes in graph traversal */
+	protected Vector<HierarchyNode> list_of_class_trees; /* Container for class trees to be used in future */
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -218,6 +222,11 @@ class ClassTable {
 	ll_cls.addElement(Int_class);
 	ll_cls.addElement(Bool_class);
 	ll_cls.addElement(Str_class);
+	// named.addElement(Object_class.getName().toString());
+	// named.addElement(IO_class.getName().toString());
+	// named.addElement(Int_class.getName().toString());
+	// named.addElement(Bool_class.getName().toString());
+	// named.addElement(Str_class.getName().toString());
     }
 	
     public ClassTable(Classes cls) {
@@ -236,29 +245,40 @@ class ClassTable {
 	undefs_lbls = new Vector<String>(0);
 	redefs_lbls = new Vector<String>(0);
 	cycledefs_lbls = new Vector<String>(0);
+	indefs_linenum = new Vector<Integer>(0);
+	undefs_linenum = new Vector<Integer>(0);
+	redefs_linenum = new Vector<Integer>(0);
+	cycledefs_linenum = new Vector<Integer>(0);
 	indefs_lbls = new Vector<String>(0);
 	bad_nodes = new Vector<class_c>(0);
 	bad_node_names = new Vector<String>(0);
 	good_nodes = new Vector<class_c>(0);
 	list_of_class_trees = new Vector<HierarchyNode>(0);
+	named.addElement("Object");
+	named.addElement("IO");
+	named.addElement("Int");
+	named.addElement("Bool");
+	named.addElement("String");
 	/* Collect all of the classes into a vector */
 	for(int i=0; i< cls.getLength(); i++) {
 		class_c curr_elem = (class_c) cls.getNth(i);
-		
 		if(!named.contains(curr_elem.getName().toString())) {
 		named.addElement(curr_elem.getName().toString());
 		ll_cls.addElement(curr_elem);
 		}
 		else {
+			
 			semantErrors++;
 			AbstractSymbol parent = curr_elem.getParent();
     		if((parent.toString().equals("String")) || (parent.toString().equals("Bool"))|| (parent.toString().equals("Int"))) {
     		semantErrors++;
     		indefs.add(curr_elem);
     		indefs_lbls.add(curr_elem.getName().toString());
+    		indefs_linenum.add(curr_elem.getLineNumber());
     	}
 			redefs.add(curr_elem);
 			redefs_lbls.add(curr_elem.getName().toString());
+			redefs_linenum.add(curr_elem.getLineNumber());
 		}
 	}
 	/*Find the root node (Object class) and build the tree of all valid classes */
@@ -300,6 +320,7 @@ class ClassTable {
     			semantErrors++;
     			undefs.addElement(undefined_inherit_check);
     			undefs_lbls.addElement(undefined_inherit_check.getName().toString());
+    			undefs_linenum.add(undefined_inherit_check.getLineNumber());
     			int index = bad_node_names.indexOf(undefined_inherit_check.getName().toString());
     			bad_nodes.remove(index);
     			bad_node_names.remove(index);
@@ -313,7 +334,7 @@ class ClassTable {
     		Vector<String> to_be_added = new Vector<String>(0);
     		Vector<String> bad_visited = new Vector<String>(0);
     		populatebad_Tree(bad_root, 0, to_be_added);
-    		traverse_Graph(bad_root, bad_visited);
+    		//traverse_Graph(bad_root, bad_visited);
     		for(Enumeration<String> checked_bad_ones = to_be_added.elements(); checked_bad_ones.hasMoreElements();) {
     			String checked_one = checked_bad_ones.nextElement();
     			if(bad_node_names.contains(checked_one))  {
@@ -345,35 +366,35 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
     	total_errors.put(rnext.getLineNumber(), rnext);
     }
     while(i1.hasMoreElements()) {
-    	class_c rnext = i1.nextElement();
-    	total_errors.put(rnext.getLineNumber(), rnext);
+    	class_c inext = i1.nextElement();
+    	total_errors.put(inext.getLineNumber(), inext);
     }
     int max = 0;
    	 max = Collections.max(total_errors.keySet(), null);
    	for(int i = 0; i < max+1; i++){
    		class_c semanter = total_errors.get(i);
    		if(semanter != null) {
-   			if (cycledefs_lbls.contains(semanter.getName().toString())) {
+   			if (cycledefs_lbls.contains(semanter.getName().toString()) &&  cycledefs_linenum.contains(semanter.getLineNumber())) {
    				semantError(semanter);
 				String errnmcl = semanter.getName().toString();
 				errorStream.append("Class "+errnmcl+ " or an ancestor of " + errnmcl + ", is involved in an inheritance cycle.\n");
 
    			}
-   			if (undefs_lbls.contains(semanter.getName().toString())) {
+   			if (undefs_lbls.contains(semanter.getName().toString()) && undefs_linenum.contains(semanter.getLineNumber())) {
+   				 semantError(semanter);
    				 String errcl = semanter.getName().toString();
     			 String errcl_2 = semanter.getParent().toString();
-    			 semantError(semanter);
     			 errorStream.append("Class " + errcl + " inherits from undefined class " + errcl_2 + ".\n");
    				
    			}
-   			if (redefs_lbls.contains(semanter.getName().toString())) {
+   			if (redefs_lbls.contains(semanter.getName().toString()) && redefs_linenum.contains(semanter.getLineNumber())) {
    				 semantError(semanter);
 				 String errnmcl = semanter.getName().toString();
 				 errorStream.append("Class "+errnmcl+ " was previously defined.\n");
 
    				
    			}
-   			if (indefs_lbls.contains(semanter.getName().toString())) {
+   			if (indefs_lbls.contains(semanter.getName().toString()) && indefs_linenum.contains(semanter.getLineNumber())) {
    				  semantError(semanter);
    				  String parerr = semanter.getParent().toString();
     			  String roerr = semanter.getName().toString();
@@ -417,6 +438,7 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 			semantErrors++;
 			cycledefs_lbls.addElement(root.getParent().thisNode());
 			cycledefs.addElement(root.getParent().thisClassNode());
+			cycledefs_linenum.addElement(root.getParent().thisClassNode().getLineNumber());
 			return root;
 			
 		}
@@ -438,15 +460,16 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
     		}
 
     	}
+    	visited.addElement(root.thisNode());
     	HierarchyNode parent = root.getParent();
-    	//System.out.println(root.thisNode());
     	if(parent != null && (parent.thisNode().equals("String") || parent.thisNode().equals("Bool") || parent.thisNode().equals("Int"))) {
     		semantErrors++;
     		indefs.add(root.thisClassNode());
     		indefs_lbls.add(root.thisNode());
+    		indefs_linenum.add(root.thisClassNode().getLineNumber());
+
     		return false;
     	}
-    	visited.addElement(root.thisNode());
     	if(root.isLeaf()) {
     		return true;
     	}
