@@ -273,14 +273,25 @@ class programc extends Program {
     public void semant() {
     /* ClassTable constructor may do some semantic analysis */
     ClassTable classTable = new ClassTable(classes);
-   
-    
-    /* some semantic analysis code may go here */
-
     if (classTable.errors()) {
         System.err.println("Compilation halted due to static semantic errors.");
         System.exit(1);
     }
+
+    /*Go through all the classes */
+    for(Enumeration e = classes.getElements(); e.hasMoreElements() ; ) {
+       Class_ to_check =  (Class_)e.nextElement();
+       //AbstractTable 
+      // Features f_check = to_check.getFeatures();
+       /*Go through the features */
+       
+       
+
+
+    }
+    Vector<class_c> valid_classes_1 = classTable.goodClasses();
+
+     /* some semantic analysis code may go here */
     }
 
 }

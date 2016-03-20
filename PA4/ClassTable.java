@@ -42,6 +42,8 @@ class ClassTable {
 	protected Vector<String> redefs_lbls;
 	protected Vector<String> cycledefs_lbls;
 	protected Vector<String> indefs_lbls;
+	protected Vector<class_c> good_nodes;
+	protected Vector<HierarchyNode> list_of_class_trees;
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -237,6 +239,8 @@ class ClassTable {
 	indefs_lbls = new Vector<String>(0);
 	bad_nodes = new Vector<class_c>(0);
 	bad_node_names = new Vector<String>(0);
+	good_nodes = new Vector<class_c>(0);
+	list_of_class_trees = new Vector<HierarchyNode>(0);
 	/* Collect all of the classes into a vector */
 	for(int i=0; i< cls.getLength(); i++) {
 		class_c curr_elem = (class_c) cls.getNth(i);
@@ -247,10 +251,17 @@ class ClassTable {
 		}
 		else {
 			semantErrors++;
+			AbstractSymbol parent = curr_elem.getParent();
+    		if((parent.toString().equals("String")) || (parent.toString().equals("Bool"))|| (parent.toString().equals("Int"))) {
+    		semantErrors++;
+    		indefs.add(curr_elem);
+    		indefs_lbls.add(curr_elem.getName().toString());
+    	}
 			redefs.add(curr_elem);
 			redefs_lbls.add(curr_elem.getName().toString());
 		}
 	}
+	/*Find the root node (Object class) and build the tree of all valid classes */
 	String root = "_no_class";
 	for(Enumeration<class_c> enums1 = ll_cls.elements(); enums1.hasMoreElements();) {
 		 class_c e1 = enums1.nextElement();
@@ -258,6 +269,7 @@ class ClassTable {
 		 	  root_1 = new HierarchyNode(e1);
 		 	  root_1 = populate_Tree(root_1, 0);
 		 	  traverse_Graph(root_1, visited);
+		 	  list_of_class_trees.addElement(root_1);
 		 	  	
 		 }
 		 
@@ -274,6 +286,10 @@ class ClassTable {
     			 bad_nodes.addElement(checking_node);
     			 bad_node_names.addElement(checking_node.getName().toString());
     		}
+    		else {
+    			good_nodes.addElement(checking_node);
+    		}
+
     	}
    /* Now we proceed with building graphs for bad nodes. First, we remove all bad nodes who do not have defined parents. Then 
    we have nodes remaining in the bad nodes that are part of cycles (these cycles can be distinct, and errors need to be returned
@@ -297,18 +313,19 @@ class ClassTable {
     		Vector<String> to_be_added = new Vector<String>(0);
     		Vector<String> bad_visited = new Vector<String>(0);
     		populatebad_Tree(bad_root, 0, to_be_added);
-    		
+    		traverse_Graph(bad_root, bad_visited);
     		for(Enumeration<String> checked_bad_ones = to_be_added.elements(); checked_bad_ones.hasMoreElements();) {
     			String checked_one = checked_bad_ones.nextElement();
     			if(bad_node_names.contains(checked_one))  {
     				  int remove_index = bad_node_names.indexOf(checked_one);
-    				 
     				  bad_node_names.remove(remove_index);
     				  bad_nodes.remove(remove_index);
     			}
     		}
     	}
-if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.size() > 0) {
+
+ /* Print out all the errors in order of line numbers */ 
+if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.size() > 0) {
     int lowest_line_num;
     Enumeration<class_c> c1 = cycledefs.elements();
     Enumeration<class_c> u1 = undefs.elements();
@@ -421,13 +438,15 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.siz
     		}
 
     	}
-    	visited.addElement(root.thisNode());
     	HierarchyNode parent = root.getParent();
+    	//System.out.println(root.thisNode());
     	if(parent != null && (parent.thisNode().equals("String") || parent.thisNode().equals("Bool") || parent.thisNode().equals("Int"))) {
     		semantErrors++;
     		indefs.add(root.thisClassNode());
     		indefs_lbls.add(root.thisNode());
+    		return false;
     	}
+    	visited.addElement(root.thisNode());
     	if(root.isLeaf()) {
     		return true;
     	}
@@ -436,8 +455,8 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.siz
     		HierarchyNode next_one = children.nextElement();
     		boolean truth = traverse_Graph(next_one, visited);
     		if(truth == false) {
-    			semantErrors++;
-    			semantError(next_one.thisClassNode());
+    			// semantErrors++;
+    			// semantError(next_one.thisClassNode());
     			return false;
     		}
 
@@ -446,6 +465,12 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 | redefs.size() > 0 || indefs.siz
 
     }
 
+
+    /** Return the good_nodes for further type checking */
+
+    public Vector<class_c> goodClasses() {
+    	return good_nodes;
+    }
     /** Prints line number and file name of the given class.
      *
      * Also increments semantic error count.
