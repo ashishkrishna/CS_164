@@ -235,10 +235,12 @@ class programc extends Program {
       * @param lineNumber the line in the source file from which this node came.
       * @param a0 initial value for classes
       */
-    int semanticerr;
+    private int semanticerr;
+    private PrintStream errorStream;
     public programc(int lineNumber, Classes a1) {
         super(lineNumber);
         classes = a1;
+        errorStream = System.err;
         semanticerr = 0;
     }
     public TreeNode copy() {
@@ -316,7 +318,8 @@ class programc extends Program {
                 }
                 else {
                    semanticerr++;
-                   System.err.println("Attribute " + attr_1.name + " is an attribute of an inherited class.");
+                    semantError(to_check_class.getFilename(), attr_1);
+                   errorStream.append("Attribute " + attr_1.name + " is an attribute of an inherited class.\n");
                 }
                 }
             else if (alpha.getClass().equals(method.class)) {
@@ -325,8 +328,8 @@ class programc extends Program {
                     symtab.addId(method_1.name, method_1);
                 }
                 else {
-                   semanticerr++;
-                   System.err.println("Method " + method_1.name + " is a method of an inherited class.");
+                   // semanticerr++;
+                   // System.err.println("Method " + method_1.name + " is a method of an inherited class.");
                 }
             }
         }
@@ -349,6 +352,33 @@ class programc extends Program {
             symtab.exitScope();
             return;
         }
+    }
+    
+
+    /** Prints the file name and the line number of the given tree node.
+     *
+     * Also increments semantic error count.
+     *
+     * @param filename the file name
+     * @param t the tree node
+     * @return a print stream to which the rest of the error message is
+     * to be printed.
+     *
+     * */
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    /** Increments semantic error count and returns the print stream for
+     * error messages.
+     *
+     * @return a print stream to which the error message is
+     * to be printed.
+     *
+     * */
+    public PrintStream semantError() {
+    return errorStream;
     }
 
 }
