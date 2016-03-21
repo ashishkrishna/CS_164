@@ -111,6 +111,7 @@ abstract class Formal extends TreeNode {
         super(lineNumber);
     }
     public abstract void dump_with_types(PrintStream out, int n);
+    /*public abstract void set_type(SymbolTable s); */
 
 }
 
@@ -232,6 +233,7 @@ class Cases extends ListNode {
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class programc extends Program {
     protected Classes classes;
+    private Vector<String> classNames;
     /** Creates "programc" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -283,6 +285,9 @@ class programc extends Program {
         System.err.println("Compilation halted due to static semantic errors.");
         System.exit(1);
     }
+   classNames = classTable.classNames();
+   classNames.addElement("null");
+   classNames.addElement("SELF_TYPE");
 
     /*Go through all the classes */
     SymbolTable attr_checker = new SymbolTable();
@@ -308,7 +313,7 @@ class programc extends Program {
                 if(symtab_1.lookup(attr_1.name) == null) {
                     if(!attr_1.check_attr(to_check_class))
                         semanticerr++;      
-                    symtab_1.addId(attr_1.name, attr_1.init);
+                    symtab_1.addId(attr_1.name, attr_1.copy());
                 }
                 else {
                    semanticerr++;
@@ -318,14 +323,16 @@ class programc extends Program {
                 }
             else if (alpha.getClass().equals(method.class)) {
                 method method_1 = (method) alpha;
-                symtab_2.addId(method_1.name, method_1);
+                symtab_2.addId(method_1.name, method_1.copy());
+                symtab_1.enterScope();
+                if(!method_1.ret_and_formal_chk(symtab_1, classNames, to_check_class)) 
+                    semanticerr++;
                 if(!method_1.type_chk(symtab_1, to_check_class)) 
                     semanticerr++;
-            
+                symtab_1.exitScope();
 
             }
         }
-
         if(root.isLeaf()) {
             symtab_1.exitScope();
             symtab_2.exitScope();
@@ -422,6 +429,7 @@ class method extends Feature {
     protected AbstractSymbol return_type;
     protected Expression expr;
     private PrintStream errorStream;
+    private SymbolTable aleph;
     /** Creates "method" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -437,8 +445,8 @@ class method extends Feature {
         return_type = a3;
         expr = a4;
         errorStream = System.err;
-
-    }
+        aleph = null;
+}
     public TreeNode copy() {
         return new method(lineNumber, copy_AbstractSymbol(name), (Formals)formals.copy(), copy_AbstractSymbol(return_type), (Expression)expr.copy());
     }
@@ -448,6 +456,20 @@ class method extends Feature {
         formals.dump(out, n+2);
         dump_AbstractSymbol(out, n+2, return_type);
         expr.dump(out, n+2);
+    }
+
+    public boolean ret_and_formal_chk(SymbolTable aleph, Vector<String> class_names, class_c checker) {
+        if(!class_names.contains(return_type.toString())) {
+             semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Undefined return type " + this.return_type + " in method " + this.name +  ".\n");
+            return false;
+        // }
+        // for (Enumeration<formalc> formals_enum; formals_enum.hasMoreElements()) {
+        //     if(!formals_enum.nextElement().type_chk(aleph, class_names)) {
+
+        //     }
+        }
+        return true;
     }
 
     public boolean type_chk(SymbolTable aleph, class_c to_check) {
@@ -460,13 +482,20 @@ class method extends Feature {
             return false;
         }
         return true;
-    }
+        }
         if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class)) {
             if(!this.expr.type_chk(to_check, aleph)) {
                 return false;
             }
             return true;
         }
+        if(!(this.expr.get_type() == null)) {
+
+        if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE"))) {
+            semantError(to_check.getFilename(), (TreeNode) this);
+            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+        }
+    }
 
     return true;
 }
@@ -550,6 +579,10 @@ class attr extends Feature {
         }
         return true;
     }
+
+    public AbstractSymbol get_type() {
+        return this.type_decl;
+    }
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
     errorStream.print(filename + ":" + t.getLineNumber() + ": ");
     return semantError();
@@ -578,9 +611,16 @@ class formalc extends Formal {
         name = a1;
         type_decl = a2;
     }
+
     public TreeNode copy() {
         return new formalc(lineNumber, copy_AbstractSymbol(name), copy_AbstractSymbol(type_decl));
     }
+
+    // public void formal_chk(SymbolTable symtab, Vector<String> classnames) {
+    //     if(classnames.contains(type_decl.toString())) {
+    //         //error
+    //     }
+    // }
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "formalc\n");
         dump_AbstractSymbol(out, n+2, name);
@@ -1553,6 +1593,9 @@ class new_ extends Expression {
     public new_(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         type_name = a1;
+        AbstractSymbol n_val = AbstractTable.stringtable.addString(type_name.toString());
+        super.set_type(n_val);
+
     }
     public TreeNode copy() {
         return new new_(lineNumber, copy_AbstractSymbol(type_name));
@@ -1658,9 +1701,12 @@ class object extends Expression {
     
     public void set_type(SymbolTable aleph) {
         if(aleph.lookup(name)!= null) {
-         Expression obj_chk = (Expression) aleph.lookup(name);
-        AbstractSymbol obj_value = AbstractTable.stringtable.addString(obj_chk.get_type().toString());
-        super.set_type(obj_value);
+            if(aleph.lookup(name).getClass().equals(attr.class)) {
+                attr obj_chk = (attr) aleph.lookup(name);
+                Expression obj_chk_1 = (Expression) obj_chk.init;
+                AbstractSymbol obj_value = AbstractTable.stringtable.addString(obj_chk.get_type().toString());
+                super.set_type(obj_value);
+            }
 
         }
     }

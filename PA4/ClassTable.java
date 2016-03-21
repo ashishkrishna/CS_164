@@ -1,17 +1,14 @@
 /*
 Copyright (c) 2000 The Regents of the University of California.
 All rights reserved.
-
 Permission to use, copy, modify, and distribute this software for any
 purpose, without fee, and without written agreement is hereby granted,
 provided that the above copyright notice and the following two
 paragraphs appear in all copies of this software.
-
 IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
 DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
 OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF
 CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
 INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
 AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
@@ -48,6 +45,7 @@ class ClassTable {
 	protected Vector<Integer> indefs_linenum; /*Container for invalid node line nums */ 
 	protected Vector<class_c> good_nodes; /*Container for good nodes in graph traversal */
 	protected Vector<HierarchyNode> list_of_class_trees; /* Container for class trees to be used in future */
+	private Vector<String> named;
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -235,7 +233,7 @@ class ClassTable {
 	installBasicClasses();
 	HierarchyNode root_1;
 	HierarchyNode bad_root;
-	Vector<String> named = new Vector<String>(0);
+	named = new Vector<String>(0);
 	/* Storing the names of all the visited classes */
 	Vector<String> visited = new Vector<String>(0);
 	undefs = new Vector<class_c>(0);
@@ -290,6 +288,7 @@ class ClassTable {
 	String root = "_no_class";
 	for(Enumeration<class_c> enums1 = ll_cls.elements(); enums1.hasMoreElements();) {
 		 class_c e1 = enums1.nextElement();
+		 //System.out.println(e1.getParent());
 		 if(e1.getParent().equalString(root, root.length())) {
 		 	  root_1 = new HierarchyNode(e1);
 		 	  root_1 = populate_Tree(root_1, 0);
@@ -309,6 +308,7 @@ class ClassTable {
     		if(!visited.contains(checking_node.getName().toString()))    {  
     			 semantErrors++;
     			 bad_nodes.addElement(checking_node);
+    			 //System.out.println(checking_node.getName().toString());
     			 bad_node_names.addElement(checking_node.getName().toString());
     		}
     		else {
@@ -445,8 +445,11 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 			cycledefs.addElement(root.getParent().thisClassNode());
 			cycledefs_linenum.addElement(root.getParent().thisClassNode().getLineNumber());
 			return root;
+			
 		}
-	}	
+	}
+		
+    	
     }
     return root;
 }
@@ -470,7 +473,6 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
     		indefs_lbls.add(root.thisNode());
     		indefs_linenum.add(root.thisClassNode().getLineNumber());
 
-    		return false;
     	}
     	if(root.isLeaf()) {
     		return true;
@@ -494,6 +496,9 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
     	return list_of_class_trees.elementAt(0);
     }
 
+    public Vector<String> classNames() {
+    	return named;
+    }
     /** Return the good_nodes for further type checking */
 
    
@@ -591,5 +596,5 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 	public HierarchyNode getParent() {
 		return this.parent;
 	}
-}		  
+}			  
     
