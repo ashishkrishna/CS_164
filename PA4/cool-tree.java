@@ -327,8 +327,10 @@ class programc extends Program {
                 symtab_1.enterScope();
                 if(!method_1.ret_and_formal_chk(symtab_1, classNames, to_check_class)) 
                     semanticerr++;
+                    
                 if(!method_1.type_chk(symtab_1, to_check_class)) 
                     semanticerr++;
+                   
                 symtab_1.exitScope();
 
             }
@@ -458,21 +460,22 @@ class method extends Feature {
         expr.dump(out, n+2);
     }
 
-    public boolean ret_and_formal_chk(SymbolTable aleph, Vector<String> class_names, class_c checker) {
-        if(!class_names.contains(return_type.toString())) {
-             semantError(checker.getFilename(), (TreeNode) this);
+    public boolean ret_and_formal_chk(SymbolTable aleph, Vector<String> bet, class_c gimel) {
+        if(!bet.contains(return_type.toString())) {
+             semantError(gimel.getFilename(), (TreeNode) this);
             errorStream.append("Undefined return type " + this.return_type + " in method " + this.name +  ".\n");
             return false;
-        // }
-        // for (Enumeration<formalc> formals_enum; formals_enum.hasMoreElements()) {
-        //     if(!formals_enum.nextElement().type_chk(aleph, class_names)) {
-
-        //     }
+         }
+         for (Enumeration<formalc> formals_enum = formals.getElements(); formals_enum.hasMoreElements();) {
+            if(!formals_enum.nextElement().formal_chk(aleph, bet, gimel)) {
+                return false;
+            }
         }
         return true;
     }
 
     public boolean type_chk(SymbolTable aleph, class_c to_check) {
+        if(!(this.expr.get_type() == null)) {
         if (this.expr.getClass().equals(object.class)) {
             object expr_1 =  (object) this.expr;
             expr_1.set_type(aleph);
@@ -489,12 +492,13 @@ class method extends Feature {
             }
             return true;
         }
-        if(!(this.expr.get_type() == null)) {
 
         if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE"))) {
             semantError(to_check.getFilename(), (TreeNode) this);
             errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+            
         }
+        return true;
     }
 
     return true;
@@ -600,6 +604,7 @@ class attr extends Feature {
 class formalc extends Formal {
     protected AbstractSymbol name;
     protected AbstractSymbol type_decl;
+    protected PrintStream errorStream;
     /** Creates "formalc" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -610,17 +615,24 @@ class formalc extends Formal {
         super(lineNumber);
         name = a1;
         type_decl = a2;
+        errorStream = System.err;
     }
 
     public TreeNode copy() {
         return new formalc(lineNumber, copy_AbstractSymbol(name), copy_AbstractSymbol(type_decl));
     }
 
-    // public void formal_chk(SymbolTable symtab, Vector<String> classnames) {
-    //     if(classnames.contains(type_decl.toString())) {
-    //         //error
-    //     }
-    // }
+    public boolean formal_chk(SymbolTable symtab, Vector<String> classnames, class_c to_check_class) {
+        if(type_decl.toString().equals("SELF_TYPE")) {
+             semantError(to_check_class.getFilename(), this);
+             errorStream.append("Formal parameter " + this.name + " cannot have type TreeConstants.SELF_TYPE.\n");
+            return false;
+        }
+        if(!classnames.contains(type_decl.toString())) {
+            return false;
+        }
+        return true;
+    }
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "formalc\n");
         dump_AbstractSymbol(out, n+2, name);
@@ -633,6 +645,15 @@ class formalc extends Formal {
         out.println(Utilities.pad(n) + "_formal");
         dump_AbstractSymbol(out, n + 2, name);
         dump_AbstractSymbol(out, n + 2, type_decl);
+    }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
     }
 
 }
