@@ -951,7 +951,11 @@ class block extends Expression {
     public block(int lineNumber, Expressions a1) {
         super(lineNumber);
         body = a1;
+        Expression aleph = (Expression) a1.getNth(a1.getLength()-1);
+        AbstractSymbol block_val = AbstractTable.stringtable.addString(aleph.get_type().toString());
+        super.set_type(block_val);
     }
+
     public TreeNode copy() {
         return new block(lineNumber, (Expressions)body.copy());
     }
@@ -1341,6 +1345,8 @@ class lt extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
+        AbstractSymbol lt_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(lt_val);
     }
     public TreeNode copy() {
         return new lt(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1417,6 +1423,8 @@ class leq extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
+        AbstractSymbol l_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(l_val);
     }
     public TreeNode copy() {
         return new leq(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1452,6 +1460,8 @@ class comp extends Expression {
     public comp(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
+        AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(bool_val);
     }
     public TreeNode copy() {
         return new comp(lineNumber, (Expression)e1.copy());
