@@ -328,7 +328,7 @@ class programc extends Program {
                 if(!method_1.ret_and_formal_chk(symtab_1, classNames, to_check_class)) 
                     semanticerr++;
                     
-                if(!method_1.type_chk(symtab_1, to_check_class)) 
+                if(!method_1.type_chk(symtab_1, to_check_class, root)) 
                     semanticerr++;
                    
                 symtab_1.exitScope();
@@ -414,6 +414,17 @@ class class_c extends Class_ {
         }
         out.println(Utilities.pad(n + 2) + ")");
     }
+
+    public boolean inherits_class(HierarchyNode aleph_node, String aleph_name) {
+        while(!(aleph_node == null)) {
+            String bet = aleph_node.thisNode();
+            if(bet.equals(aleph_name)) {
+                return true;
+            }
+            aleph_node = aleph_node.getParent();
+        }
+        return false;
+    }
     public AbstractSymbol getName()     { return name; }
     public AbstractSymbol getParent()   { return parent; }
     public AbstractSymbol getFilename() { return filename; }
@@ -474,7 +485,7 @@ class method extends Feature {
         return true;
     }
 
-    public boolean type_chk(SymbolTable aleph, class_c to_check) {
+    public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root) {
         if(!(this.expr.get_type() == null)) {
         if (this.expr.getClass().equals(object.class)) {
             object expr_1 =  (object) this.expr;
@@ -493,7 +504,7 @@ class method extends Feature {
             return true;
         }
 
-        if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE"))) {
+        if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(root, return_type.toString())) {
             semantError(to_check.getFilename(), (TreeNode) this);
             errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
             
