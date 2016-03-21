@@ -442,7 +442,7 @@ class method extends Feature {
     protected AbstractSymbol return_type;
     protected Expression expr;
     private PrintStream errorStream;
-    private SymbolTable aleph;
+    private SymbolTable method_scoping;
     /** Creates "method" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -458,7 +458,7 @@ class method extends Feature {
         return_type = a3;
         expr = a4;
         errorStream = System.err;
-        aleph = null;
+        method_scoping = new SymbolTable();
 }
     public TreeNode copy() {
         return new method(lineNumber, copy_AbstractSymbol(name), (Formals)formals.copy(), copy_AbstractSymbol(return_type), (Expression)expr.copy());
@@ -478,9 +478,17 @@ class method extends Feature {
             return false;
          }
          for (Enumeration<formalc> formals_enum = formals.getElements(); formals_enum.hasMoreElements();) {
-            if(!formals_enum.nextElement().formal_chk(aleph, bet, gimel)) {
+            formalc next_formal = formals_enum.nextElement();
+            if(!next_formal.formal_chk(aleph, bet, gimel)) {
                 return false;
             }
+            if(!(aleph.probe(next_formal.name) == null)) {
+                semantError(gimel.getFilename(), (TreeNode) this);
+                errorStream.append("Formal parameter " + next_formal.name.toString() + " is multiply defined.\n");
+                return false;
+            }
+            aleph.addId(next_formal.name, next_formal.copy());
+
         }
         return true;
     }
@@ -507,7 +515,7 @@ class method extends Feature {
         if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(root, return_type.toString())) {
             semantError(to_check.getFilename(), (TreeNode) this);
             errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
-            
+            return false;
         }
         return true;
     }
