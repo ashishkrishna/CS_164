@@ -150,6 +150,8 @@ abstract class Expression extends TreeNode {
     private AbstractSymbol type = null;                                 
     public AbstractSymbol get_type() { return type; }           
     public Expression set_type(AbstractSymbol s) { type = s; return this; } 
+    public void set_type(SymbolTable s) { return; }
+    public boolean type_chk(class_c to_check, SymbolTable aleph) {return true; }
     public abstract void dump_with_types(PrintStream out, int n);
     public void dump_type(PrintStream out, int n) {
         if (type != null)
@@ -317,7 +319,7 @@ class programc extends Program {
             else if (alpha.getClass().equals(method.class)) {
                 method method_1 = (method) alpha;
                 symtab_2.addId(method_1.name, method_1);
-                if(!method_1.type_chk(symtab_1)) 
+                if(!method_1.type_chk(symtab_1, to_check_class)) 
                     semanticerr++;
             
 
@@ -448,15 +450,24 @@ class method extends Feature {
         expr.dump(out, n+2);
     }
 
-    public boolean type_chk(SymbolTable aleph) {
+    public boolean type_chk(SymbolTable aleph, class_c to_check) {
         if (this.expr.getClass().equals(object.class)) {
             object expr_1 =  (object) this.expr;
-            expr_1.type_set(aleph);
+            expr_1.set_type(aleph);
         if(!expr_1.get_type().toString().equals(return_type.toString())) {
+            semantError(to_check.getFilename(), (TreeNode) this);
+            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
             return false;
         }
         return true;
     }
+        if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class)) {
+            if(!this.expr.type_chk(to_check, aleph)) {
+                return false;
+            }
+            return true;
+        }
+
     return true;
 }
 
@@ -976,6 +987,7 @@ class let extends Expression {
 class plus extends Expression {
     protected Expression e1;
     protected Expression e2;
+    private PrintStream errorStream;
     /** Creates "plus" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -986,6 +998,8 @@ class plus extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
+        AbstractSymbol plus_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(plus_val);
     }
     public TreeNode copy() {
         return new plus(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -996,7 +1010,33 @@ class plus extends Expression {
         e2.dump(out, n+2);
     }
 
-    
+    public boolean type_chk(class_c checker, SymbolTable sym_1) {
+         if(e1.get_type() == null) {
+                e1.set_type(sym_1);
+            }
+            if(e2.get_type() == null) {
+                e2.set_type(sym_1);
+            }
+        if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
+            return true;
+        }
+        else {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " + " + e2.get_type() +".\n");
+            return false;
+        }
+    }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+
+    }
+
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_plus");
@@ -1014,6 +1054,7 @@ class plus extends Expression {
 class sub extends Expression {
     protected Expression e1;
     protected Expression e2;
+    private PrintStream errorStream;
     /** Creates "sub" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1024,6 +1065,9 @@ class sub extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
+        errorStream = System.err;
+        AbstractSymbol sub_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(sub_val);
     }
     public TreeNode copy() {
         return new sub(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1034,7 +1078,32 @@ class sub extends Expression {
         e2.dump(out, n+2);
     }
 
-    
+    public boolean type_chk(class_c checker, SymbolTable sym_1) {
+         if(e1.get_type() == null) {
+                e1.set_type(sym_1);
+            }
+            if(e2.get_type() == null) {
+                e2.set_type(sym_1);
+            }
+        if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
+            return true;
+        }
+        else {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " - " + e2.get_type() +".\n");
+            return false;
+        }
+    }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+
+    }
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_sub");
@@ -1052,6 +1121,7 @@ class sub extends Expression {
 class mul extends Expression {
     protected Expression e1;
     protected Expression e2;
+    private PrintStream errorStream;
     /** Creates "mul" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1062,6 +1132,9 @@ class mul extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
+        errorStream = System.err;
+        AbstractSymbol mul_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(mul_val);
     }
     public TreeNode copy() {
         return new mul(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1070,6 +1143,23 @@ class mul extends Expression {
         out.print(Utilities.pad(n) + "mul\n");
         e1.dump(out, n+2);
         e2.dump(out, n+2);
+    }
+
+    public boolean type_chk(class_c checker, SymbolTable sym_1) {
+         if(e1.get_type() == null) {
+                e1.set_type(sym_1);
+            }
+            if(e2.get_type() == null) {
+                e2.set_type(sym_1);
+            }
+        if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
+            return true;
+        }
+        else {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " * " + e2.get_type() +".\n");
+            return false;
+        }
     }
 
     
@@ -1081,6 +1171,16 @@ class mul extends Expression {
     dump_type(out, n);
     }
 
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+
+
+}
 }
 
 
@@ -1090,6 +1190,7 @@ class mul extends Expression {
 class divide extends Expression {
     protected Expression e1;
     protected Expression e2;
+    private PrintStream errorStream;
     /** Creates "divide" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1100,6 +1201,9 @@ class divide extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
+        errorStream = System.err;
+        AbstractSymbol div_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(div_val);
     }
     public TreeNode copy() {
         return new divide(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1108,6 +1212,23 @@ class divide extends Expression {
         out.print(Utilities.pad(n) + "divide\n");
         e1.dump(out, n+2);
         e2.dump(out, n+2);
+    }
+
+    public boolean type_chk(class_c checker, SymbolTable sym_1) {
+         if(e1.get_type() == null) {
+                e1.set_type(sym_1);
+            }
+            if(e2.get_type() == null) {
+                e2.set_type(sym_1);
+            }
+        if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
+            return true;
+        }
+        else {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " / " + e2.get_type() +".\n");
+            return false;
+        }
     }
 
     
@@ -1119,6 +1240,15 @@ class divide extends Expression {
     dump_type(out, n);
     }
 
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+
+}
 }
 
 
@@ -1526,7 +1656,7 @@ class object extends Expression {
         dump_AbstractSymbol(out, n+2, name);
     }
     
-    public void type_set(SymbolTable aleph) {
+    public void set_type(SymbolTable aleph) {
         if(aleph.lookup(name)!= null) {
          Expression obj_chk = (Expression) aleph.lookup(name);
         AbstractSymbol obj_value = AbstractTable.stringtable.addString(obj_chk.get_type().toString());
