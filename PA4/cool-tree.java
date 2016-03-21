@@ -304,22 +304,23 @@ class programc extends Program {
             if(alpha.getClass().equals(attr.class)) {
                 attr attr_1 = (attr) alpha;
                 if(symtab_1.lookup(attr_1.name) == null) {
-                    if(!attr_1.check_attr()){
-                        semanticerr++;
-                        semantError(to_check_class.getFilename(), attr_1);
-                        errorStream.append("Inferred type " + attr_1.init.get_type() + " of initialization of attribute " + attr_1.name + " does not conform to declared type " + attr_1.type_decl + ".\n");
-                    }
-                    symtab_1.addId(attr_1.name, attr_1);
+                    if(!attr_1.check_attr(to_check_class))
+                        semanticerr++;      
+                    symtab_1.addId(attr_1.name, attr_1.init);
                 }
                 else {
                    semanticerr++;
-                    semantError(to_check_class.getFilename(), attr_1);
+                   semantError(to_check_class.getFilename(), attr_1);
                    errorStream.append("Attribute " + attr_1.name + " is an attribute of an inherited class.\n");
                 }
                 }
             else if (alpha.getClass().equals(method.class)) {
                 method method_1 = (method) alpha;
                 symtab_2.addId(method_1.name, method_1);
+                if(!method_1.type_chk(symtab_1)) 
+                    semanticerr++;
+            
+
             }
         }
 
@@ -360,6 +361,7 @@ class class_c extends Class_ {
     protected AbstractSymbol parent;
     protected Features features;
     protected AbstractSymbol filename;
+    private PrintStream errorStream;
     /** Creates "class_c" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -374,6 +376,7 @@ class class_c extends Class_ {
         parent = a2;
         features = a3;
         filename = a4;
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new class_c(lineNumber, copy_AbstractSymbol(name), copy_AbstractSymbol(parent), (Features)features.copy(), copy_AbstractSymbol(filename));
@@ -416,6 +419,7 @@ class method extends Feature {
     protected Formals formals;
     protected AbstractSymbol return_type;
     protected Expression expr;
+    private PrintStream errorStream;
     /** Creates "method" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -430,6 +434,8 @@ class method extends Feature {
         formals = a2;
         return_type = a3;
         expr = a4;
+        errorStream = System.err;
+
     }
     public TreeNode copy() {
         return new method(lineNumber, copy_AbstractSymbol(name), (Formals)formals.copy(), copy_AbstractSymbol(return_type), (Expression)expr.copy());
@@ -442,7 +448,26 @@ class method extends Feature {
         expr.dump(out, n+2);
     }
 
-    
+    public boolean type_chk(SymbolTable aleph) {
+        if (this.expr.getClass().equals(object.class)) {
+            object expr_1 =  (object) this.expr;
+            expr_1.type_set(aleph);
+        if(!expr_1.get_type().toString().equals(return_type.toString())) {
+            return false;
+        }
+        return true;
+    }
+    return true;
+}
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_method");
@@ -453,6 +478,7 @@ class method extends Feature {
         dump_AbstractSymbol(out, n + 2, return_type);
     expr.dump_with_types(out, n + 2);
     }
+
 
 }
 
@@ -498,18 +524,28 @@ class attr extends Feature {
     init.dump_with_types(out, n + 2);
     }
 
-    public boolean check_attr() {
+    public boolean check_attr(class_c to_check) {
         /*Verify the type */
         if(init.get_type() == null) {
             return true;
         }
         else {
-            if(!init.get_type().equals(type_decl)) {
+            if(!init.get_type().equals(type_decl)) {         
+                semantError(to_check.getFilename(), (TreeNode) this);
+                errorStream.append("Inferred type " + this.init.get_type() + " of initialization of attribute " + this.name + " does not conform to declared type " + this.type_decl + ".\n");
                 return false;
             }
 
         }
         return true;
+    }
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
     }
 }
 
@@ -1489,7 +1525,15 @@ class object extends Expression {
         out.print(Utilities.pad(n) + "object\n");
         dump_AbstractSymbol(out, n+2, name);
     }
+    
+    public void type_set(SymbolTable aleph) {
+        if(aleph.lookup(name)!= null) {
+         Expression obj_chk = (Expression) aleph.lookup(name);
+        AbstractSymbol obj_value = AbstractTable.stringtable.addString(obj_chk.get_type().toString());
+        super.set_type(obj_value);
 
+        }
+    }
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
