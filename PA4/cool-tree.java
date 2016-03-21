@@ -283,38 +283,33 @@ class programc extends Program {
     }
 
     /*Go through all the classes */
-    SymbolTable class_checker = new SymbolTable();
+    SymbolTable attr_checker = new SymbolTable();
+    SymbolTable method_checker = new SymbolTable();
     HierarchyNode root_1 = classTable.goodClasses();
-    checkClasses(root_1, class_checker);
+    checkClasses(root_1, attr_checker, method_checker);
     if(semanticerr > 0) {
         System.err.println("Compilation halted due to static semantic errors.");
         System.exit(1);
     }
-
-
-       //AbstractTable 
-      // Features f_check = to_check.getFeatures();
-       /*Go through the features */
-       
-       
-
-
-    
-    
-
      /* some semantic analysis code may go here */
     }
 
-    public void checkClasses(HierarchyNode root, SymbolTable symtab) {
-        symtab.enterScope();
+    public void checkClasses(HierarchyNode root, SymbolTable symtab_1, SymbolTable symtab_2) {
+        symtab_1.enterScope();
+        symtab_2.enterScope();
         class_c to_check_class = root.thisClassNode();
         Features this_classes_features = to_check_class.getFeatures();
         for(Enumeration<Feature> list_of_features = this_classes_features.getElements(); list_of_features.hasMoreElements();) {
             Feature alpha = list_of_features.nextElement();
             if(alpha.getClass().equals(attr.class)) {
                 attr attr_1 = (attr) alpha;
-                if(symtab.lookup(attr_1.name) == null) {
-                    symtab.addId(attr_1.name, attr_1);
+                if(symtab_1.lookup(attr_1.name) == null) {
+                    if(!attr_1.check_attr()){
+                        semanticerr++;
+                        semantError(to_check_class.getFilename(), attr_1);
+                        errorStream.append("Inferred type " + attr_1.init.get_type() + " of initialization of attribute " + attr_1.name + " does not conform to declared type " + attr_1.type_decl + ".\n");
+                    }
+                    symtab_1.addId(attr_1.name, attr_1);
                 }
                 else {
                    semanticerr++;
@@ -324,59 +319,32 @@ class programc extends Program {
                 }
             else if (alpha.getClass().equals(method.class)) {
                 method method_1 = (method) alpha;
-                if(symtab.lookup(method_1.name) == null) {
-                    symtab.addId(method_1.name, method_1);
-                }
-                else {
-                   // semanticerr++;
-                   // System.err.println("Method " + method_1.name + " is a method of an inherited class.");
-                }
+                symtab_2.addId(method_1.name, method_1);
             }
         }
 
         if(root.isLeaf()) {
-            symtab.exitScope();
+            symtab_1.exitScope();
+            symtab_2.exitScope();
             return;
         }
         else {
-            /*Returned symtab at the very end should just have base Object attributes*/
-            /*Record size of symtab here */
             Enumeration<HierarchyNode> childclasses = root.getChildren();
             while(childclasses.hasMoreElements()) {
                 HierarchyNode child_class = childclasses.nextElement();
-                checkClasses(child_class, symtab);
-                /*Pop till symtab matches the original */
-                
-                
+                checkClasses(child_class, symtab_1, symtab_2);
             }
-            symtab.exitScope();
+            symtab_1.exitScope();
+            symtab_2.exitScope();
             return;
         }
     }
     
-
-    /** Prints the file name and the line number of the given tree node.
-     *
-     * Also increments semantic error count.
-     *
-     * @param filename the file name
-     * @param t the tree node
-     * @return a print stream to which the rest of the error message is
-     * to be printed.
-     *
-     * */
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
     errorStream.print(filename + ":" + t.getLineNumber() + ": ");
     return semantError();
     }
 
-    /** Increments semantic error count and returns the print stream for
-     * error messages.
-     *
-     * @return a print stream to which the error message is
-     * to be printed.
-     *
-     * */
     public PrintStream semantError() {
     return errorStream;
     }
@@ -496,6 +464,7 @@ class attr extends Feature {
     protected AbstractSymbol name;
     protected AbstractSymbol type_decl;
     protected Expression init;
+    protected PrintStream errorStream;
     /** Creates "attr" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -508,6 +477,7 @@ class attr extends Feature {
         name = a1;
         type_decl = a2;
         init = a3;
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new attr(lineNumber, copy_AbstractSymbol(name), copy_AbstractSymbol(type_decl), (Expression)init.copy());
@@ -528,6 +498,19 @@ class attr extends Feature {
     init.dump_with_types(out, n + 2);
     }
 
+    public boolean check_attr() {
+        /*Verify the type */
+        if(init.get_type() == null) {
+            return true;
+        }
+        else {
+            if(!init.get_type().equals(type_decl)) {
+                return false;
+            }
+
+        }
+        return true;
+    }
 }
 
 
@@ -1296,6 +1279,9 @@ class int_const extends Expression {
     public int_const(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         token = a1;
+        AbstractSymbol int_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(int_val);
+
     }
     public TreeNode copy() {
         return new int_const(lineNumber, copy_AbstractSymbol(token));
@@ -1329,6 +1315,8 @@ class bool_const extends Expression {
     public bool_const(int lineNumber, Boolean a1) {
         super(lineNumber);
         val = a1;
+        AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(bool_val);
     }
     public TreeNode copy() {
         return new bool_const(lineNumber, copy_Boolean(val));
@@ -1362,6 +1350,8 @@ class string_const extends Expression {
     public string_const(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         token = a1;
+        AbstractSymbol string_val = AbstractTable.stringtable.addString("String");
+        super.set_type(string_val);
     }
     public TreeNode copy() {
         return new string_const(lineNumber, copy_AbstractSymbol(token));

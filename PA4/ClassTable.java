@@ -445,11 +445,8 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 			cycledefs.addElement(root.getParent().thisClassNode());
 			cycledefs_linenum.addElement(root.getParent().thisClassNode().getLineNumber());
 			return root;
-			
 		}
-	}
-		
-    	
+	}	
     }
     return root;
 }
