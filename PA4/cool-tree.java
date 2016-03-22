@@ -532,7 +532,7 @@ class method extends Feature {
     public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method) {
         if(!(this.expr.get_type() == null)) {
         if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class)) {
-            if(!this.expr.type_chk(to_check, aleph)) {
+            if(!this.expr.type_chk(to_check, aleph, hash_method)) {
                 return false;
             }
             return true;
@@ -1088,6 +1088,25 @@ class block extends Expression {
     }
     }
 
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+        int count = 0;
+        for(Enumeration<Expression> statements = body.getElements(); statements.hasMoreElements();) {
+                Expression statement_next = statements.nextElement();
+                if(statement_next.get_type() == null) {
+                    statement_next.getClass().cast(statement_next);
+                    statement_next.type_chk(checker, sym_1, bet);     
+                    if(count == body.getLength()-1) {
+                        AbstractSymbol aleph = AbstractTable.stringtable.addString(statement_next.get_type().toString());
+                        super.set_type(aleph);
+                    }
+                }
+                count++;
+        }
+        return true;
+            
+       
+    }
+
 
 
     public TreeNode copy() {
@@ -1119,6 +1138,7 @@ class let extends Expression {
     protected AbstractSymbol type_decl;
     protected Expression init;
     protected Expression body;
+    private PrintStream errorStream;
     /** Creates "let" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1133,10 +1153,37 @@ class let extends Expression {
         type_decl = a2;
         init = a3;
         body = a4;
+        errorStream = System.err;
     }
+
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+        sym_1.addId(identifier, type_decl);
+        if(init.get_type() == null) {
+                init.getClass().cast(init);
+                init.type_chk(checker, sym_1, bet);            
+            }
+            
+         if(body.get_type() == null) {
+                body.getClass().cast(body);
+                body.type_chk(checker, sym_1, bet);
+            }
+        if(init.get_type().toString().equals(type_decl.toString()) && body.get_type().toString().equals(type_decl.toString()) && init.get_type().toString().equals(body.get_type().toString())) {
+            super.set_type(type_decl);
+            return true;
+        }
+        else {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + body.get_type() + " + " + init.get_type() +".\n");
+            return false;
+        }
+    }
+
+
     public TreeNode copy() {
         return new let(lineNumber, copy_AbstractSymbol(identifier), copy_AbstractSymbol(type_decl), (Expression)init.copy(), (Expression)body.copy());
     }
+
+
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "let\n");
         dump_AbstractSymbol(out, n+2, identifier);
@@ -1144,6 +1191,17 @@ class let extends Expression {
         init.dump(out, n+2);
         body.dump(out, n+2);
     }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+
+    }
+
 
     
     public void dump_with_types(PrintStream out, int n) {
@@ -1190,7 +1248,7 @@ class plus extends Expression {
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
         if(e1.get_type() == null) {
-                 e1.getClass().cast(e1);
+                e1.getClass().cast(e1);
                 e1.type_chk(checker, sym_1, bet);
                        
             }
@@ -1868,6 +1926,11 @@ class object extends Expression {
                 Expression obj_chk_1 = (Expression) obj_chk.init;
                 AbstractSymbol obj_value = AbstractTable.stringtable.addString(obj_chk.get_type().toString());
                 super.set_type(obj_value);
+                return true;
+            }
+            if(gimel.lookup(name).getClass().equals(IdSymbol.class)) {
+                IdSymbol aleph = (IdSymbol) gimel.lookup(name);
+                super.set_type(aleph);
                 return true;
             }
 
