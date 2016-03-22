@@ -529,25 +529,7 @@ class method extends Feature {
     }
 
     public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method) {
-        //System.out.println(this.expr.getClass().toString());
-         if(this.expr.getClass().equals(dispatch.class)) {
-            dispatch expr_del = (dispatch) this.expr;
-            if(!expr_del.type_chk(to_check, aleph, hash_method)) {
-                return false;
-            }
-            return true;
-        }
         if(!(this.expr.get_type() == null)) {
-        if (this.expr.getClass().equals(object.class)) {
-            object expr_1 =  (object) this.expr;
-            expr_1.set_type(aleph);
-        if(!expr_1.get_type().toString().equals(return_type.toString())) {
-            semantError(to_check.getFilename(), (TreeNode) this);
-            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
-            return false;
-        }
-        return true;
-        }
         if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class)) {
             if(!this.expr.type_chk(to_check, aleph)) {
                 return false;
@@ -562,6 +544,27 @@ class method extends Feature {
         }
         return true;
     }
+
+    if(this.expr.getClass().equals(dispatch.class)) {
+            dispatch expr_del = (dispatch) this.expr;
+            if(!expr_del.type_chk(to_check, aleph, hash_method)) {
+                return false;
+            }
+            return true;
+        }
+    if (this.expr.getClass().equals(object.class)) {
+            object expr_1 =  (object) this.expr;
+            expr_1.set_type(aleph);
+            if(this.expr.get_type() == null) {
+                return false;
+            }
+        if(!this.expr.get_type().toString().equals(return_type.toString())) {
+            semantError(to_check.getFilename(), (TreeNode) this);
+            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+            return false;
+        }
+        return true;
+        }
 
     return true;
 }
@@ -895,6 +898,10 @@ class dispatch extends Expression {
                         errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
                         return false;
                     }
+                    AbstractSymbol aleph = AbstractTable.stringtable.addString(iter1.return_type.toString());
+                    super.set_type(aleph);
+
+
                 }
             }
             return true;
