@@ -551,36 +551,9 @@ class method extends Feature {
        if(!(this.expr.type_chk(to_check, aleph, hash_method))) {
         return false;
        }
-    return true;
+     return true;
+     }
     }
-
-    // if(this.expr.getClass().equals(dispatch.class)) {
-    //         dispatch expr_del = (dispatch) this.expr;
-    //         if(!expr_del.type_chk(to_check, aleph, hash_method)) {
-    //             return false;
-    //         }
-    //         return true;
-    //     }
-    // if (this.expr.getClass().equals(object.class)) {
-    //         object expr_1 =  (object) this.expr;
-    //         expr_1.type_chk(to_check, aleph, hash_method);
-    //         if(this.expr.get_type() == null) {
-    //             return false;
-    //         }
-    //     if(!this.expr.get_type().toString().equals(return_type.toString())) {
-    //         semantError(to_check.getFilename(), (TreeNode) this);
-    //         errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
-    //         return false;
-    //     }
-    //     return true;
-    //     }
-    // if(this.expr.getClass().equals(block.class)) {
-    //     block del = (block) this.expr;
-    //     del.type_chk(to_check, aleph, hash_method);
-    // }
-
-    // return true;
-}
 
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
     errorStream.print(filename + ":" + t.getLineNumber() + ": ");
