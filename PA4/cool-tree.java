@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.util.HashMap;
 
 /** Defines simple phylum Program */
 abstract class Program extends TreeNode {
@@ -234,6 +235,9 @@ class Cases extends ListNode {
 class programc extends Program {
     protected Classes classes;
     private Vector<String> classNames;
+    private SymbolTable attr_checker;
+    private SymbolTable method_checker;
+    private HashMap<String, Vector<method>> methods_per_class;
     /** Creates "programc" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -246,6 +250,7 @@ class programc extends Program {
         classes = a1;
         errorStream = System.err;
         semanticerr = 0;
+        methods_per_class = new HashMap<String, Vector<method>>(0);
     }
     public TreeNode copy() {
         return new programc(lineNumber, (Classes)classes.copy());
@@ -292,7 +297,9 @@ class programc extends Program {
     /*Go through all the classes */
     SymbolTable attr_checker = new SymbolTable();
     SymbolTable method_checker = new SymbolTable();
+    methods_per_class = new HashMap<String, Vector<method>>();
     HierarchyNode root_1 = classTable.goodClasses();
+    annotateMethods(root_1);
     checkClasses(root_1, attr_checker, method_checker);
     if(semanticerr > 0) {
         System.err.println("Compilation halted due to static semantic errors.");
@@ -327,17 +334,15 @@ class programc extends Program {
                 symtab_1.enterScope();
                 if(!method_1.ret_and_formal_chk(symtab_1, classNames, to_check_class)) 
                     semanticerr++;
-                    
-                if(!method_1.type_chk(symtab_1, to_check_class, root)) 
+                if(!method_1.type_chk(symtab_1, to_check_class, root, methods_per_class)) 
                     semanticerr++;
-                   
-                symtab_1.exitScope();
+                 symtab_1.exitScope();
 
             }
         }
         if(root.isLeaf()) {
-            symtab_1.exitScope();
-            symtab_2.exitScope();
+             symtab_1.exitScope();
+             symtab_2.exitScope();
             return;
         }
         else {
@@ -346,10 +351,40 @@ class programc extends Program {
                 HierarchyNode child_class = childclasses.nextElement();
                 checkClasses(child_class, symtab_1, symtab_2);
             }
-            symtab_1.exitScope();
-            symtab_2.exitScope();
+             symtab_1.exitScope();
+             symtab_2.exitScope();
             return;
         }
+    }
+
+    public void  annotateMethods(HierarchyNode root) {
+        class_c to_check_class = root.thisClassNode();
+        Vector<method> class_methods = new Vector<method>();
+         Features this_classes_features = to_check_class.getFeatures();
+         for(Enumeration<Feature> enums = this_classes_features.getElements(); enums.hasMoreElements(); ) {
+            Feature alpha = enums.nextElement();
+            if(alpha.getClass().equals(method.class)) {
+                method alpha_1 = (method) alpha;
+                class_methods.addElement(alpha_1);
+
+            }
+         }
+         methods_per_class.put(to_check_class.getName().toString(), class_methods);
+         if(root.isLeaf()) {
+            return;
+        }
+        else {
+            Enumeration<HierarchyNode> childclasses = root.getChildren();
+            while(childclasses.hasMoreElements()) {
+                HierarchyNode child_class = childclasses.nextElement();
+                annotateMethods(child_class);
+            }
+            return;
+        }
+
+    
+
+
     }
     
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
@@ -493,7 +528,15 @@ class method extends Feature {
         return true;
     }
 
-    public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root) {
+    public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method) {
+        //System.out.println(this.expr.getClass().toString());
+         if(this.expr.getClass().equals(dispatch.class)) {
+            dispatch expr_del = (dispatch) this.expr;
+            if(!expr_del.type_chk(to_check, aleph, hash_method)) {
+                return false;
+            }
+            return true;
+        }
         if(!(this.expr.get_type() == null)) {
         if (this.expr.getClass().equals(object.class)) {
             object expr_1 =  (object) this.expr;
@@ -817,6 +860,7 @@ class dispatch extends Expression {
     protected Expression expr;
     protected AbstractSymbol name;
     protected Expressions actual;
+    private PrintStream errorStream;
     /** Creates "dispatch" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -829,6 +873,7 @@ class dispatch extends Expression {
         expr = a1;
         name = a2;
         actual = a3;
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new dispatch(lineNumber, (Expression)expr.copy(), copy_AbstractSymbol(name), (Expressions)actual.copy());
@@ -839,6 +884,31 @@ class dispatch extends Expression {
         dump_AbstractSymbol(out, n+2, name);
         actual.dump(out, n+2);
     }
+
+    public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet) {
+            Vector<method> chck = bet.get(expr.get_type().toString());
+            for(Enumeration<method> iterchck= chck.elements(); iterchck.hasMoreElements(); ) {
+                method iter1 = iterchck.nextElement();
+                if(iter1.name.toString().equals(this.name.toString())) {
+                    if(!(iter1.formals.getLength() == this.actual.getLength())) {
+                        semantError(to_check.getFilename(), this);
+                        errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
+                        return false;
+                    }
+                }
+            }
+            return true;
+
+    }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }   
 
     
     public void dump_with_types(PrintStream out, int n) {
