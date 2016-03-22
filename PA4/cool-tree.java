@@ -154,6 +154,7 @@ abstract class Expression extends TreeNode {
     public Expression set_type(AbstractSymbol s) { type = s; return this; } 
     public void set_type(SymbolTable s) { return; }
     public boolean type_chk(class_c to_check, SymbolTable aleph) {return true; }
+    public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet) {return true;}
     public abstract void dump_with_types(PrintStream out, int n);
     public void dump_type(PrintStream out, int n) {
         if (type != null)
@@ -545,28 +546,40 @@ class method extends Feature {
         return true;
     }
 
-    if(this.expr.getClass().equals(dispatch.class)) {
-            dispatch expr_del = (dispatch) this.expr;
-            if(!expr_del.type_chk(to_check, aleph, hash_method)) {
-                return false;
-            }
-            return true;
-        }
-    if (this.expr.getClass().equals(object.class)) {
-            object expr_1 =  (object) this.expr;
-            expr_1.set_type(aleph);
-            if(this.expr.get_type() == null) {
-                return false;
-            }
-        if(!this.expr.get_type().toString().equals(return_type.toString())) {
-            semantError(to_check.getFilename(), (TreeNode) this);
-            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
-            return false;
-        }
-        return true;
-        }
-
+    else {
+        this.expr.getClass().cast(this.expr);
+       if(!(this.expr.type_chk(to_check, aleph, hash_method))) {
+        return false;
+       }
     return true;
+    }
+
+    // if(this.expr.getClass().equals(dispatch.class)) {
+    //         dispatch expr_del = (dispatch) this.expr;
+    //         if(!expr_del.type_chk(to_check, aleph, hash_method)) {
+    //             return false;
+    //         }
+    //         return true;
+    //     }
+    // if (this.expr.getClass().equals(object.class)) {
+    //         object expr_1 =  (object) this.expr;
+    //         expr_1.type_chk(to_check, aleph, hash_method);
+    //         if(this.expr.get_type() == null) {
+    //             return false;
+    //         }
+    //     if(!this.expr.get_type().toString().equals(return_type.toString())) {
+    //         semantError(to_check.getFilename(), (TreeNode) this);
+    //         errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+    //         return false;
+    //     }
+    //     return true;
+    //     }
+    // if(this.expr.getClass().equals(block.class)) {
+    //     block del = (block) this.expr;
+    //     del.type_chk(to_check, aleph, hash_method);
+    // }
+
+    // return true;
 }
 
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
@@ -1069,9 +1082,13 @@ class block extends Expression {
         super(lineNumber);
         body = a1;
         Expression aleph = (Expression) a1.getNth(a1.getLength()-1);
+        if(!(aleph.get_type() == null)) {
         AbstractSymbol block_val = AbstractTable.stringtable.addString(aleph.get_type().toString());
         super.set_type(block_val);
     }
+    }
+
+
 
     public TreeNode copy() {
         return new block(lineNumber, (Expressions)body.copy());
@@ -1171,12 +1188,16 @@ class plus extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1) {
-         if(e1.get_type() == null) {
-                e1.set_type(sym_1);
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+        if(e1.get_type() == null) {
+                 e1.getClass().cast(e1);
+                e1.type_chk(checker, sym_1, bet);
+                       
             }
-            if(e2.get_type() == null) {
-                e2.set_type(sym_1);
+            
+         if(e2.get_type() == null) {
+                e2.getClass().cast(e1);
+                e2.type_chk(checker, sym_1, bet);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1239,12 +1260,16 @@ class sub extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1) {
-         if(e1.get_type() == null) {
-                e1.set_type(sym_1);
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+        if(e1.get_type() == null) {
+                 e1.getClass().cast(e1);
+                e1.type_chk(checker, sym_1, bet);
+                       
             }
-            if(e2.get_type() == null) {
-                e2.set_type(sym_1);
+            
+         if(e2.get_type() == null) {
+                e2.getClass().cast(e1);
+                e2.type_chk(checker, sym_1, bet);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1306,12 +1331,16 @@ class mul extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
          if(e1.get_type() == null) {
-                e1.set_type(sym_1);
+                 e1.getClass().cast(e1);
+                e1.type_chk(checker, sym_1, bet);
+                       
             }
-            if(e2.get_type() == null) {
-                e2.set_type(sym_1);
+            
+         if(e2.get_type() == null) {
+                e2.getClass().cast(e1);
+                e2.type_chk(checker, sym_1, bet);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1375,12 +1404,16 @@ class divide extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
          if(e1.get_type() == null) {
-                e1.set_type(sym_1);
+                 e1.getClass().cast(e1);
+                e1.type_chk(checker, sym_1, bet);
+                       
             }
-            if(e2.get_type() == null) {
-                e2.set_type(sym_1);
+            
+         if(e2.get_type() == null) {
+                e2.getClass().cast(e1);
+                e2.type_chk(checker, sym_1, bet);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1502,6 +1535,8 @@ class eq extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
+        AbstractSymbol e_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(e_val);
     }
     public TreeNode copy() {
         return new eq(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1826,16 +1861,19 @@ class object extends Expression {
         dump_AbstractSymbol(out, n+2, name);
     }
     
-    public void set_type(SymbolTable aleph) {
-        if(aleph.lookup(name)!= null) {
-            if(aleph.lookup(name).getClass().equals(attr.class)) {
-                attr obj_chk = (attr) aleph.lookup(name);
+     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet) {
+        if(gimel.lookup(name)!= null) {
+            if(gimel.lookup(name).getClass().equals(attr.class)) {
+                attr obj_chk = (attr) gimel.lookup(name);
                 Expression obj_chk_1 = (Expression) obj_chk.init;
                 AbstractSymbol obj_value = AbstractTable.stringtable.addString(obj_chk.get_type().toString());
                 super.set_type(obj_value);
+                return true;
             }
 
         }
+        return true;
+
     }
     
     public void dump_with_types(PrintStream out, int n) {
