@@ -499,6 +499,29 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
     public Vector<String> classNames() {
     	return named;
     }
+
+    public HierarchyNode getClassbyName(String className, HierarchyNode root) {
+    	if(root.thisNode().equals(className)) {
+    		return root;
+    	}
+    	else {
+    	if(root.isLeaf()) {
+    		return null;
+    	}
+    	Enumeration<HierarchyNode> children = root.getChildren();
+    		while(children.hasMoreElements()) {
+    		HierarchyNode next_one = children.nextElement();
+    		HierarchyNode to_return = getClassbyName(className, next_one);
+    		if((to_return!= null)) {
+    			return to_return;
+    		}
+
+    	}
+    	return null;
+    }
+
+    }
+
     /** Return the good_nodes for further type checking */
 
    

@@ -154,7 +154,7 @@ abstract class Expression extends TreeNode {
     public Expression set_type(AbstractSymbol s) { type = s; return this; } 
     public void set_type(SymbolTable s) { return; }
     public boolean type_chk(class_c to_check, SymbolTable aleph) {return true; }
-    public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet) {return true;}
+    public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {return true;}
     public abstract void dump_with_types(PrintStream out, int n);
     public void dump_type(PrintStream out, int n) {
         if (type != null)
@@ -301,7 +301,7 @@ class programc extends Program {
     methods_per_class = new HashMap<String, Vector<method>>();
     HierarchyNode root_1 = classTable.goodClasses();
     annotateMethods(root_1);
-    checkClasses(root_1, attr_checker, method_checker);
+    checkClasses(root_1, attr_checker, method_checker, classTable);
     if(semanticerr > 0) {
         System.err.println("Compilation halted due to static semantic errors.");
         System.exit(1);
@@ -309,7 +309,7 @@ class programc extends Program {
      /* some semantic analysis code may go here */
     }
 
-    public void checkClasses(HierarchyNode root, SymbolTable symtab_1, SymbolTable symtab_2) {
+    public void checkClasses(HierarchyNode root, SymbolTable symtab_1, SymbolTable symtab_2, ClassTable classTable) {
         symtab_1.enterScope();
         symtab_2.enterScope();
         class_c to_check_class = root.thisClassNode();
@@ -335,7 +335,7 @@ class programc extends Program {
                 symtab_1.enterScope();
                 if(!method_1.ret_and_formal_chk(symtab_1, classNames, to_check_class)) 
                     semanticerr++;
-                if(!method_1.type_chk(symtab_1, to_check_class, root, methods_per_class)) 
+                if(!method_1.type_chk(symtab_1, to_check_class, root, methods_per_class, classTable)) 
                     semanticerr++;
                  symtab_1.exitScope();
 
@@ -350,7 +350,7 @@ class programc extends Program {
             Enumeration<HierarchyNode> childclasses = root.getChildren();
             while(childclasses.hasMoreElements()) {
                 HierarchyNode child_class = childclasses.nextElement();
-                checkClasses(child_class, symtab_1, symtab_2);
+                checkClasses(child_class, symtab_1, symtab_2, classTable);
             }
              symtab_1.exitScope();
              symtab_2.exitScope();
@@ -529,10 +529,10 @@ class method extends Feature {
         return true;
     }
 
-    public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method) {
+    public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method, ClassTable classTable) {
         if(!(this.expr.get_type() == null)) {
         if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class)) {
-            if(!this.expr.type_chk(to_check, aleph, hash_method)) {
+            if(!this.expr.type_chk(to_check, aleph, hash_method, root, classTable)) {
                 return false;
             }
             return true;
@@ -548,7 +548,7 @@ class method extends Feature {
 
     else {
         this.expr.getClass().cast(this.expr);
-       if(!(this.expr.type_chk(to_check, aleph, hash_method))) {
+       if(!(this.expr.type_chk(to_check, aleph, hash_method, root, classTable))) {
         return false;
        }
      return true;
@@ -874,8 +874,11 @@ class dispatch extends Expression {
         actual.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet) {
-            Vector<method> chck = bet.get(expr.get_type().toString());
+    public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+            HierarchyNode root_of_good_tree = classTable.goodClasses();
+            HierarchyNode root_1 = classTable.getClassbyName(expr.get_type().toString(), root_of_good_tree);
+            while(root_1 != null) {
+            Vector<method> chck = bet.get(root_1.thisClassNode().getName().toString());
             for(Enumeration<method> iterchck= chck.elements(); iterchck.hasMoreElements(); ) {
                 method iter1 = iterchck.nextElement();
                 if(iter1.name.toString().equals(this.name.toString())) {
@@ -884,13 +887,20 @@ class dispatch extends Expression {
                         errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
                         return false;
                     }
+                    if(iter1.return_type.toString().equals("SELF_TYPE")) {
+                        AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
+                        super.set_type(aleph);
+                        return true;
+                    }
                     AbstractSymbol aleph = AbstractTable.stringtable.addString(iter1.return_type.toString());
                     super.set_type(aleph);
-
+                    return true;
 
                 }
             }
-            return true;
+            root_1 = root_1.getParent();
+        }
+        return false;
 
     }
 
@@ -1061,13 +1071,13 @@ class block extends Expression {
     }
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         int count = 0;
         for(Enumeration<Expression> statements = body.getElements(); statements.hasMoreElements();) {
                 Expression statement_next = statements.nextElement();
                 if(statement_next.get_type() == null) {
                     statement_next.getClass().cast(statement_next);
-                    statement_next.type_chk(checker, sym_1, bet);     
+                    statement_next.type_chk(checker, sym_1, bet, root, classTable);     
                     if(count == body.getLength()-1) {
                         AbstractSymbol aleph = AbstractTable.stringtable.addString(statement_next.get_type().toString());
                         super.set_type(aleph);
@@ -1129,16 +1139,16 @@ class let extends Expression {
         errorStream = System.err;
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         sym_1.addId(identifier, type_decl);
         if(init.get_type() == null) {
                 init.getClass().cast(init);
-                init.type_chk(checker, sym_1, bet);            
+                init.type_chk(checker, sym_1, bet, root, classTable);            
             }
             
          if(body.get_type() == null) {
                 body.getClass().cast(body);
-                body.type_chk(checker, sym_1, bet);
+                body.type_chk(checker, sym_1, bet, root, classTable);
             }
         if(init.get_type().toString().equals(type_decl.toString()) && body.get_type().toString().equals(type_decl.toString()) && init.get_type().toString().equals(body.get_type().toString())) {
             super.set_type(type_decl);
@@ -1219,16 +1229,16 @@ class plus extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         if(e1.get_type() == null) {
                 e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet);
+                e1.type_chk(checker, sym_1, bet, root, classTable);
                        
             }
             
          if(e2.get_type() == null) {
                 e2.getClass().cast(e1);
-                e2.type_chk(checker, sym_1, bet);
+                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1291,16 +1301,16 @@ class sub extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         if(e1.get_type() == null) {
                  e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet);
+                e1.type_chk(checker, sym_1, bet, root, classTable);
                        
             }
             
          if(e2.get_type() == null) {
                 e2.getClass().cast(e1);
-                e2.type_chk(checker, sym_1, bet);
+                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1362,16 +1372,16 @@ class mul extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
          if(e1.get_type() == null) {
                  e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet);
+                e1.type_chk(checker, sym_1, bet, root, classTable);
                        
             }
             
          if(e2.get_type() == null) {
                 e2.getClass().cast(e1);
-                e2.type_chk(checker, sym_1, bet);
+                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1435,16 +1445,16 @@ class divide extends Expression {
         e2.dump(out, n+2);
     }
 
-    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet) {
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
          if(e1.get_type() == null) {
                  e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet);
+                e1.type_chk(checker, sym_1, bet, root, classTable);
                        
             }
             
          if(e2.get_type() == null) {
                 e2.getClass().cast(e1);
-                e2.type_chk(checker, sym_1, bet);
+                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1892,7 +1902,7 @@ class object extends Expression {
         dump_AbstractSymbol(out, n+2, name);
     }
     
-     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet) {
+     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         if(gimel.lookup(name)!= null) {
             if(gimel.lookup(name).getClass().equals(attr.class)) {
                 attr obj_chk = (attr) gimel.lookup(name);
