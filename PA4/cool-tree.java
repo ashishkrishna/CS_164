@@ -785,6 +785,19 @@ class assign extends Expression {
             expr.getClass().cast(expr);
         }
         expr.type_chk(to_check, gimel, bet, root, classTable);
+        if(gimel.lookup(name) != null) {
+            if(gimel.lookup(name).getClass().equals(attr.class)) {
+                HierarchyNode root_of_good_tree = classTable.goodClasses();
+                attr alepha = (attr) gimel.lookup(name);
+                HierarchyNode super_class = classTable.getClassbyName(alepha.type_decl.toString(), root_of_good_tree);
+                if(!classTable.isChildClass(expr.get_type().toString(), super_class)) {
+                    return false;
+                    //Print error to be added
+                }
+        }
+          
+    }
+
          AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
          super.set_type(aleph);
          return true;
@@ -1163,7 +1176,7 @@ class let extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        sym_1.addId(identifier, type_decl);
+        //sym_1.addId(identifier, type_decl);
         if(init.get_type() == null) {
                 init.getClass().cast(init);            
             }  
@@ -1945,6 +1958,8 @@ class object extends Expression {
                 super.set_type(obj_value);
                 return true;
             }
+
+            //Let expression variables or local variables
             if(gimel.lookup(name).getClass().equals(IdSymbol.class)) {
                 IdSymbol aleph = (IdSymbol) gimel.lookup(name);
                 super.set_type(aleph);

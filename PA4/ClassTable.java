@@ -523,6 +523,30 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 
     }
 
+    public boolean isChildClass(String className, HierarchyNode start) {
+    	if(start == null) {
+    		return false;
+    	}
+    	if(start.thisNode().equals(className)) {
+    		return true;
+    	}
+    	else {
+    	if(start.isLeaf()) {
+    		return false;
+    	}
+    	Enumeration<HierarchyNode> children = start.getChildren();
+    		while(children.hasMoreElements()) {
+    		HierarchyNode next_one = children.nextElement();
+    		boolean to_return = isChildClass(className, next_one);
+    		if((to_return!= false)) {
+    			return true;
+    		}
+
+    	}
+    	return false;
+    }
+
+    }
     /** Return the good_nodes for further type checking */
 
    
