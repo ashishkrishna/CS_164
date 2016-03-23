@@ -280,6 +280,7 @@ class ClassTable {
 		}
 	}
 	if(!named.contains("Main")) {
+			semantErrors++;
 			errorStream.print("<basic class>:0: ");
 			errorStream.append("Class Main is not defined.\n");
 	}
