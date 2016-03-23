@@ -888,10 +888,15 @@ class dispatch extends Expression {
 
     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
             if(expr.get_type() == null) {
-                expr.type_chk(to_check,  gimel, bet, root,  classTable);
+                expr.getClass().cast(expr);
             }
+            expr.type_chk(to_check,  gimel, bet, root,  classTable);
             HierarchyNode root_of_good_tree = classTable.goodClasses();
-            HierarchyNode root_1 = classTable.getClassbyName(expr.get_type().toString(), root_of_good_tree);
+            String class_name = expr.get_type().toString();
+            if(class_name.equals("SELF_TYPE")) {
+                class_name = to_check.getName().toString();
+            }
+            HierarchyNode root_1 = classTable.getClassbyName(class_name, root_of_good_tree);
             while(root_1 != null) {
             Vector<method> chck = bet.get(root_1.thisClassNode().getName().toString());
             for(Enumeration<method> iterchck= chck.elements(); iterchck.hasMoreElements(); ) {
@@ -902,11 +907,17 @@ class dispatch extends Expression {
                         errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
                         return false;
                     }
+                    for(Enumeration<Expression> element_check = actual.getElements(); element_check.hasMoreElements();) {
+                        Expression next_elem_expr = element_check.nextElement();
+                        next_elem_expr.getClass().cast(next_elem_expr);
+                        next_elem_expr.type_chk(to_check, gimel, bet, root, classTable);
+                    }
                     if(iter1.return_type.toString().equals("SELF_TYPE")) {
                         AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
                         super.set_type(aleph);
                         return true;
                     }
+
                     AbstractSymbol aleph = AbstractTable.stringtable.addString(iter1.return_type.toString());
                     super.set_type(aleph);
                     return true;
@@ -1154,13 +1165,19 @@ class let extends Expression {
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         sym_1.addId(identifier, type_decl);
         if(init.get_type() == null) {
-                init.getClass().cast(init);
-                init.type_chk(checker, sym_1, bet, root, classTable);            
+                init.getClass().cast(init);            
             }  
+        init.type_chk(checker, sym_1, bet, root, classTable);
+        sym_1.addId(this.identifier, this.type_decl);
          if(body.get_type() == null) {
                 body.getClass().cast(body);
-                body.type_chk(checker, sym_1, bet, root, classTable);
             }
+        body.type_chk(checker, sym_1, bet, root, classTable);
+        if(body.get_type().toString().equals("SELF_TYPE")){
+            AbstractSymbol alepha = AbstractTable.stringtable.addString("SELF_TYPE");
+            super.set_type(alepha);
+            return true;
+        }
         if(init.get_type().toString().equals(type_decl.toString()) && body.get_type().toString().equals(type_decl.toString()) && init.get_type().toString().equals(body.get_type().toString())) {
             super.set_type(type_decl);
             return true;
