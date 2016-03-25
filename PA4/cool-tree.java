@@ -621,11 +621,12 @@ class attr extends Feature {
 
     public boolean check_attr(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method, ClassTable classTable) {
         /*Verify the type */
-        if( init.get_type() == null) {
+        if(init.get_type() == null) {
             init.getClass().cast(init);
-            init.type_chk(to_check,  aleph, hash_method,  root,  classTable);
-            return true;
         }
+        if(init.type_chk(to_check,  aleph, hash_method,  root,  classTable))
+            return true;
+        
         else {
             if(!init.get_type().equals(type_decl)) {         
                 semantError(to_check.getFilename(), (TreeNode) this);
@@ -865,7 +866,55 @@ class static_dispatch extends Expression {
         dump_AbstractSymbol(out, n+2, name);
         actual.dump(out, n+2);
     }
+     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+            
 
+            if(expr.get_type() == null) {
+                expr.getClass().cast(expr);
+            }
+            expr.type_chk(to_check,  gimel, bet, root,  classTable);
+            HierarchyNode root_of_good_tree = classTable.goodClasses();
+            HierarchyNode super_class = classTable.getClassbyName(type_name.toString(), root_of_good_tree);
+                if(!classTable.isChildClass(expr.get_type().toString(), super_class)) {
+                    return false;
+                }
+            String class_name = expr.get_type().toString();
+            if(class_name.equals("SELF_TYPE")) {
+                class_name = to_check.getName().toString();
+            }
+            HierarchyNode root_1 = classTable.getClassbyName(class_name, root_of_good_tree);
+            while(root_1 != null) {
+            Vector<method> chck = bet.get(root_1.thisClassNode().getName().toString());
+            for(Enumeration<method> iterchck= chck.elements(); iterchck.hasMoreElements(); ) {
+                method iter1 = iterchck.nextElement();
+                if(iter1.name.toString().equals(this.name.toString())) {
+                    if(!(iter1.formals.getLength() == this.actual.getLength())) {
+                        //semantError(to_check.getFilename(), this);
+                        //errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
+                        return false;
+                    }
+                    // Subtype checking needs work
+                    for(Enumeration<Expression> element_check = actual.getElements(); element_check.hasMoreElements();) {
+                        Expression next_elem_expr = element_check.nextElement();
+                        next_elem_expr.getClass().cast(next_elem_expr);
+                        next_elem_expr.type_chk(to_check, gimel, bet, root, classTable);
+                    }
+                    if(iter1.return_type.toString().equals("SELF_TYPE")) {
+                        AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
+                        super.set_type(aleph);
+                        return true;
+                    }
+
+                    AbstractSymbol aleph = AbstractTable.stringtable.addString(iter1.return_type.toString());
+                    super.set_type(aleph);
+                    return true;
+                }
+            }
+            root_1 = root_1.getParent();
+        }
+        return false;
+
+    }
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -1361,14 +1410,12 @@ class plus extends Expression {
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         if(e1.get_type() == null) {
                 e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet, root, classTable);
-                       
             }
-            
+          e1.type_chk(checker, sym_1, bet, root, classTable);  
          if(e2.get_type() == null) {
                 e2.getClass().cast(e2);
-                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
+        e2.type_chk(checker, sym_1, bet, root, classTable);
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
         }
