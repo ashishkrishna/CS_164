@@ -493,6 +493,34 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 
     }
 
+    public Vector<HierarchyNode> find_join_outer(HierarchyNode root, Vector<String>class_list, Vector<HierarchyNode> node_list) {
+    	if(!find_join_inner(root, class_list)) {
+    		return node_list;
+    	}
+    	node_list.addElement(root);
+    	if(root.isLeaf()) {
+    		return node_list;
+    	}
+    	Enumeration<HierarchyNode> children  = root.getChildren();
+    	while(children.hasMoreElements()) {
+    		HierarchyNode next_one = children.nextElement();
+    		node_list = find_join_outer(next_one, class_list, node_list);
+    	}
+
+    	return node_list;
+    }
+
+    public boolean find_join_inner(HierarchyNode root, Vector<String> class_list) {
+    	Vector<String> visited = new Vector<String>(0);
+    	traverse_Graph(root, visited);
+    	for(Enumeration<String> nodes = class_list.elements(); nodes.hasMoreElements();){
+    		if(!(visited.contains(nodes.nextElement()))) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+
     public HierarchyNode goodClasses() {
     	return list_of_class_trees.elementAt(0);
     }
@@ -607,17 +635,20 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 	protected Vector<HierarchyNode> children;
 	protected String NodeName;
 	protected class_c classnd;
+	protected int hits;
 	public HierarchyNode(class_c Node1) {
 		this.NodeName = Node1.getName().toString();
 		this.parent = null;
 		this.classnd = Node1;
 		this.children = new Vector<HierarchyNode>(0);
+		this.hits = 0;
 	}
 	public HierarchyNode(class_c Node1, HierarchyNode Node2) {
 		this.NodeName = Node1.getName().toString();
 		this.parent = Node2;
 		this.classnd = Node1;
 		this.children  = new Vector<HierarchyNode>(0);
+		this.hits = 0;
 	}
 	public String thisNode() {
 		return this.NodeName;
@@ -633,6 +664,17 @@ if (cycledefs.size()  > 0 || undefs.size() > 0 || redefs.size() > 0 || indefs.si
 		}
 		return false;
 	} 
+
+	public void incHits() {
+		hits++;
+	}
+	public int returnHits() {
+		return hits;
+	}
+
+	public void clearHits() {
+		this.hits = 0;
+	}
 
 	public void addChild(HierarchyNode child) {
 		this.children.addElement(child);

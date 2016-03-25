@@ -732,9 +732,27 @@ class branch extends Case {
         type_decl = a2;
         expr = a3;
     }
+
+    public AbstractSymbol type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+       gimel.enterScope();
+        gimel.addId(name, type_decl);
+        if(expr == null) {
+            expr.getClass().cast(expr);
+        }
+        if(expr.type_chk(to_check, gimel, bet, root, classTable)) {
+            gimel.exitScope();
+            return expr.get_type();
+        }
+        gimel.exitScope();
+        return null;
+
+    }
+
     public TreeNode copy() {
         return new branch(lineNumber, copy_AbstractSymbol(name), copy_AbstractSymbol(type_decl), (Expression)expr.copy());
     }
+
+
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "branch\n");
         dump_AbstractSymbol(out, n+2, name);
@@ -797,7 +815,6 @@ class assign extends Expression {
         }
           
     }
-
          AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
          super.set_type(aleph);
          return true;
@@ -920,6 +937,7 @@ class dispatch extends Expression {
                         errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
                         return false;
                     }
+                    // Subtype checking needs work
                     for(Enumeration<Expression> element_check = actual.getElements(); element_check.hasMoreElements();) {
                         Expression next_elem_expr = element_check.nextElement();
                         next_elem_expr.getClass().cast(next_elem_expr);
@@ -987,6 +1005,7 @@ class cond extends Expression {
         pred = a1;
         then_exp = a2;
         else_exp = a3;
+
     }
     public TreeNode copy() {
         return new cond(lineNumber, (Expression)pred.copy(), (Expression)then_exp.copy(), (Expression)else_exp.copy());
@@ -1027,6 +1046,9 @@ class loop extends Expression {
         super(lineNumber);
         pred = a1;
         body = a2;
+        AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
+        super.set_type(loop_sym);
+
     }
     public TreeNode copy() {
         return new loop(lineNumber, (Expression)pred.copy(), (Expression)body.copy());
@@ -1037,6 +1059,21 @@ class loop extends Expression {
         body.dump(out, n+2);
     }
 
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(pred.get_type() == null) {
+            pred.getClass().cast(pred);
+        }
+        pred.type_chk(checker, sym_1, bet, root, classTable);
+        if(body.get_type() == null) {
+            body.getClass().cast(body);
+        }
+        body.type_chk(checker, sym_1, bet, root, classTable);
+        if(!pred.get_type().toString().equals("Bool")) {
+            return false;
+            //Error print 
+        }
+        return true;
+    }
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -1066,6 +1103,39 @@ class typcase extends Expression {
         expr = a1;
         cases = a2;
     }
+
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(expr.get_type() == null) {
+            expr.getClass().cast(expr);
+        }
+        Vector<String> case_classes = new Vector<String>(0);
+        expr.type_chk(checker, sym_1, bet, root, classTable);
+        AbstractSymbol type_expr = expr.get_type();
+        for(Enumeration<Case> case_chks = cases.getElements(); case_chks.hasMoreElements();) {
+            Case case_1 = case_chks.nextElement();
+            if(case_1.getClass().equals(branch.class)) {
+                branch b1 = (branch) case_1;
+                AbstractSymbol beta = b1.type_chk(checker, sym_1, bet, root, classTable);
+                if(beta != null) {
+                    case_classes.addElement(beta.toString());
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        //Find the most common class
+        HierarchyNode root_of_good_tree = classTable.goodClasses();
+        Vector<HierarchyNode> node_list = new Vector<HierarchyNode>(0);
+        node_list = classTable.find_join_outer(root_of_good_tree, case_classes, node_list);
+        int i = node_list.size();
+        AbstractSymbol delta = AbstractTable.stringtable.addString(node_list.elementAt(i-1).thisNode());
+        super.set_type(delta);
+        return true;
+    }
     public TreeNode copy() {
         return new typcase(lineNumber, (Expression)expr.copy(), (Cases)cases.copy());
     }
@@ -1074,6 +1144,8 @@ class typcase extends Expression {
         expr.dump(out, n+2);
         cases.dump(out, n+2);
     }
+
+
 
     
     public void dump_with_types(PrintStream out, int n) {
@@ -1176,12 +1248,12 @@ class let extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        //sym_1.addId(identifier, type_decl);
+        sym_1.enterScope();
+        sym_1.addId(identifier, type_decl);
         if(init.get_type() == null) {
                 init.getClass().cast(init);            
             }  
         init.type_chk(checker, sym_1, bet, root, classTable);
-        sym_1.addId(this.identifier, this.type_decl);
          if(body.get_type() == null) {
                 body.getClass().cast(body);
             }
@@ -1189,15 +1261,31 @@ class let extends Expression {
         if(body.get_type().toString().equals("SELF_TYPE")){
             AbstractSymbol alepha = AbstractTable.stringtable.addString("SELF_TYPE");
             super.set_type(alepha);
+            sym_1.exitScope();
             return true;
         }
-        if(init.get_type().toString().equals(type_decl.toString()) && body.get_type().toString().equals(type_decl.toString()) && init.get_type().toString().equals(body.get_type().toString())) {
+        //Provisions for no initialization 
+        if(init.get_type() == null) {
+            //Check body and type declaration
+            if(!body.get_type().toString().equals(type_decl.toString())) {
+                sym_1.exitScope();
+                return false;
+            }
+            sym_1.exitScope();
             super.set_type(type_decl);
             return true;
         }
+        //If initialized check the three ways (body - type decl && init -type decl && body - type)
+        if(init.get_type().toString().equals(type_decl.toString()) && body.get_type().toString().equals(type_decl.toString()) && init.get_type().toString().equals(body.get_type().toString())) {
+            super.set_type(type_decl);
+            sym_1.exitScope();
+            return true;
+        }
         else {
+
             semantError(checker.getFilename(), (TreeNode) this);
             errorStream.append("Non-Tree Constants.Int arguments: " + body.get_type() + " + " + init.get_type() +".\n");
+            sym_1.exitScope();
             return false;
         }
     }
@@ -1541,6 +1629,8 @@ class neg extends Expression {
     public neg(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
+        AbstractSymbol neg_type = AbstractTable.stringtable.addString("Int");
+        super.set_type(neg_type);
     }
     public TreeNode copy() {
         return new neg(lineNumber, (Expression)e1.copy());
@@ -1549,6 +1639,7 @@ class neg extends Expression {
         out.print(Utilities.pad(n) + "neg\n");
         e1.dump(out, n+2);
     }
+
 
     
     public void dump_with_types(PrintStream out, int n) {
