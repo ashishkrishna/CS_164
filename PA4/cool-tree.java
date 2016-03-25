@@ -969,7 +969,14 @@ class dispatch extends Expression {
             if(expr.get_type() == null) {
                 expr.getClass().cast(expr);
             }
-            expr.type_chk(to_check,  gimel, bet, root,  classTable);
+            if(!expr.type_chk(to_check,  gimel, bet, root,  classTable))  {
+                return false;
+            }
+            if(expr.get_type() == null) {
+                System.out.println(expr.getClass().toString());
+                return false;
+            }
+
             HierarchyNode root_of_good_tree = classTable.goodClasses();
             String class_name = expr.get_type().toString();
             if(class_name.equals("SELF_TYPE")) {
@@ -1065,6 +1072,37 @@ class cond extends Expression {
         pred.dump(out, n+2);
         then_exp.dump(out, n+2);
         else_exp.dump(out, n+2);
+    }
+
+      public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(pred.get_type() == null) {
+            pred.getClass().cast(pred);
+        }
+        if(!pred.type_chk(checker, sym_1, bet, root, classTable)) {
+            return false;
+        }
+        if(!pred.get_type().toString().equals("Bool")) {
+            return false;
+        }
+        if(then_exp.get_type() == null) {
+            then_exp.getClass().cast(then_exp);
+        }
+        if(else_exp.get_type() == null) {
+            else_exp.getClass().cast(else_exp);
+        }
+        if(!then_exp.type_chk(checker, sym_1, bet, root, classTable) || !(else_exp.type_chk(checker, sym_1, bet, root, classTable))) {
+            return false;
+        }
+        Vector<String> classes = new Vector<String>(0);
+        classes.addElement(then_exp.get_type().toString());
+        classes.addElement(else_exp.get_type().toString());
+        HierarchyNode root_of_good_tree = classTable.goodClasses();
+        Vector<HierarchyNode> node_list = new Vector<HierarchyNode>(0);
+        node_list = classTable.find_join_outer(root_of_good_tree, classes, node_list);
+        int i = node_list.size();
+        AbstractSymbol delta = AbstractTable.stringtable.addString(node_list.elementAt(i-1).thisNode());
+        super.set_type(delta);
+        return true;
     }
 
     
@@ -1728,6 +1766,18 @@ class lt extends Expression {
         e1.dump(out, n+2);
         e2.dump(out, n+2);
     }
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(e1.get_type() == null)
+            e1.getClass().cast(e1);
+        if(e2.get_type() == null)
+            e2.getClass().cast(e2);
+        if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
+            return false;
+        if(e1.get_type().toString().equals("Int") || e2.get_type().toString().equals("Int"))
+            return false;
+        return true;
+    }
+
 
     
     public void dump_with_types(PrintStream out, int n) {
@@ -1769,6 +1819,17 @@ class eq extends Expression {
         e2.dump(out, n+2);
     }
 
+ public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(e1.get_type() == null)
+            e1.getClass().cast(e1);
+        if(e2.get_type() == null)
+            e2.getClass().cast(e2);
+        if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
+            return false;
+        if(!e1.get_type().toString().equals(e2.get_type().toString()))
+            return false;
+        return true;
+    }
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -1808,7 +1869,17 @@ class leq extends Expression {
         e1.dump(out, n+2);
         e2.dump(out, n+2);
     }
-
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(e1.get_type() == null)
+            e1.getClass().cast(e1);
+        if(e2.get_type() == null)
+            e2.getClass().cast(e2);
+        if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
+            return false;
+        if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int"))
+            return false;
+        return true;
+    }
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -2013,6 +2084,8 @@ class isvoid extends Expression {
     public isvoid(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
+        AbstractSymbol a_sym = AbstractTable.stringtable.addString("Bool");
+        super.set_type(a_sym);
     }
     public TreeNode copy() {
         return new isvoid(lineNumber, (Expression)e1.copy());
@@ -2103,6 +2176,11 @@ class object extends Expression {
             if(gimel.lookup(name).getClass().equals(IdSymbol.class)) {
                 IdSymbol aleph = (IdSymbol) gimel.lookup(name);
                 super.set_type(aleph);
+                return true;
+            }
+            if(gimel.lookup(name).getClass().equals(formalc.class)) {
+                formalc aleph = (formalc) gimel.lookup(name);
+                super.set_type(aleph.type_decl);
                 return true;
             }
 
