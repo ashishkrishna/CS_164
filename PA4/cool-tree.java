@@ -531,7 +531,7 @@ class method extends Feature {
 
     public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method, ClassTable classTable) {
         if(!(this.expr.get_type() == null)) {
-        if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class)) {
+        if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class) || this.expr.getClass().equals(block.class)) {
             if(!this.expr.type_chk(to_check, aleph, hash_method, root, classTable)) {
                 return false;
             }
@@ -1005,6 +1005,7 @@ class dispatch extends Expression {
             }
             root_1 = root_1.getParent();
         }
+        System.exit(-1);
         return false;
 
     }
@@ -1234,16 +1235,17 @@ class block extends Expression {
         int count = 0;
         for(Enumeration<Expression> statements = body.getElements(); statements.hasMoreElements();) {
                 Expression statement_next = statements.nextElement();
-                if(statement_next.get_type() == null) {
+                if(statement_next.get_type() == null) 
                     statement_next.getClass().cast(statement_next);
-                    statement_next.type_chk(checker, sym_1, bet, root, classTable);     
-                    if(count == body.getLength()-1) {
-                        AbstractSymbol aleph = AbstractTable.stringtable.addString(statement_next.get_type().toString());
-                        super.set_type(aleph);
+                statement_next.type_chk(checker, sym_1, bet, root, classTable);     
+                if(count == body.getLength()-1) {
+                    AbstractSymbol aleph = AbstractTable.stringtable.addString(statement_next.get_type().toString());
+                    super.set_type(aleph);
                     }
-                }
                 count++;
-        }
+                }
+                
+        
         return true;
     }
 
