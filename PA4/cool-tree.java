@@ -329,8 +329,11 @@ class programc extends Program {
                    errorStream.append("Attribute " + attr_1.name + " is an attribute of an inherited class.\n");
                 }
                 }
-            else if (alpha.getClass().equals(method.class)) {
-                method method_1 = (method) alpha;
+            }
+        for(Enumeration<Feature> list_of_features_2 = this_classes_features.getElements(); list_of_features_2.hasMoreElements();) {
+            Feature alpha_2 = list_of_features_2.nextElement();
+            if (alpha_2.getClass().equals(method.class)) {
+                method method_1 = (method) alpha_2;
                 symtab_2.addId(method_1.name, method_1.copy());
                 symtab_1.enterScope();
                 if(!method_1.ret_and_formal_chk(symtab_1, classNames, to_check_class)) 
@@ -1833,7 +1836,9 @@ class eq extends Expression {
         if(e2.get_type() == null)
             e2.getClass().cast(e2);
         //Print error on each case
-        if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
+        boolean a_1  = e1.type_chk(checker, sym_1, bet, root, classTable);
+        boolean a_2 = e2.type_chk(checker,sym_1, bet, root, classTable);
+        if(!a_1 || !a_2)
             return false;
         if(!e1.get_type().toString().equals(e2.get_type().toString()))
             return false;
@@ -1926,7 +1931,13 @@ class comp extends Expression {
         e1.dump(out, n+2);
     }
 
-    
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(e1.get_type() == null)
+            e1.getClass().cast(e1);
+        if(!(e1.type_chk(checker, sym_1, bet, root, classTable)))
+            return false; //Error printing needed
+        return true;
+        }
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_comp");
