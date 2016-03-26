@@ -1275,7 +1275,9 @@ class block extends Expression {
                 Expression statement_next = statements.nextElement();
                 if(statement_next.get_type() == null) 
                     statement_next.getClass().cast(statement_next);
-                statement_next.type_chk(checker, sym_1, bet, root, classTable);     
+                if(!statement_next.type_chk(checker, sym_1, bet, root, classTable)) {
+                    return false;
+                }   
                 if(count == body.getLength()-1) {
                     AbstractSymbol aleph = AbstractTable.stringtable.addString(statement_next.get_type().toString());
                     super.set_type(aleph);
@@ -1338,46 +1340,44 @@ class let extends Expression {
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         sym_1.enterScope();
-        sym_1.addId(identifier, type_decl);
-        if(init.get_type() == null) {
-                init.getClass().cast(init);            
-            }  
-        init.type_chk(checker, sym_1, bet, root, classTable);
-         if(body.get_type() == null) {
-                body.getClass().cast(body);
-            }
-        body.type_chk(checker, sym_1, bet, root, classTable);
-        if(body.get_type().toString().equals("SELF_TYPE")){
-            AbstractSymbol alepha = AbstractTable.stringtable.addString("SELF_TYPE");
-            super.set_type(alepha);
-            sym_1.exitScope();
-            return true;
-        }
-        //Provisions for no initialization 
-        if(init.get_type() == null) {
-            //Check body and type declaration
-            if(!body.get_type().toString().equals(type_decl.toString())) {
-                sym_1.exitScope();
-                return false;
-            }
-            sym_1.exitScope();
-            super.set_type(type_decl);
-            return true;
-        }
-        //If initialized check the three ways (body - type decl && init -type decl && body - type)
-        if(init.get_type().toString().equals(type_decl.toString()) && body.get_type().toString().equals(type_decl.toString()) && init.get_type().toString().equals(body.get_type().toString())) {
-            super.set_type(type_decl);
-            sym_1.exitScope();
-            return true;
-        }
-        else {
-
-            semantError(checker.getFilename(), (TreeNode) this);
-            errorStream.append("Non-Tree Constants.Int arguments: " + body.get_type() + " + " + init.get_type() +".\n");
+        AbstractSymbol T_zero = type_decl;
+        if(type_decl.toString().equals("SELF_TYPE"))
+            T_zero = AbstractTable.stringtable.addString(checker.getName().toString());
+        if(init.get_type() == null) 
+            init.getClass().cast(init);
+        if(!init.type_chk(checker, sym_1, bet, root, classTable)) {
             sym_1.exitScope();
             return false;
         }
-    }
+        if(init.get_type() != null) {
+            HierarchyNode root_of_good_tree = classTable.goodClasses();
+            HierarchyNode root_of_small = classTable.getClassbyName(T_zero.toString(), root_of_good_tree);
+            if(!classTable.isChildClass(init.get_type().toString(), root_of_small)) {
+                sym_1.exitScope();
+                return false;
+            }
+            sym_1.addId(identifier, T_zero);
+            if(body.get_type() == null) 
+                body.getClass().cast(body);
+            if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
+                sym_1.exitScope();
+                return false;
+            }
+            super.set_type(body.get_type());
+            sym_1.exitScope();
+            return true;
+        }
+        sym_1.addId(identifier, T_zero);
+        if(body.get_type() == null)
+            body.getClass().cast(body);
+        if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
+            sym_1.exitScope();
+            return false;
+        }
+        super.set_type(body.get_type());
+        sym_1.exitScope();
+        return true;
+}
 
 
     public TreeNode copy() {
@@ -1451,7 +1451,7 @@ class plus extends Expression {
         if(e1.get_type() == null) {
                 e1.getClass().cast(e1);
             }
-          e1.type_chk(checker, sym_1, bet, root, classTable);  
+         e1.type_chk(checker, sym_1, bet, root, classTable);  
          if(e2.get_type() == null) {
                 e2.getClass().cast(e2);
             }
@@ -1519,19 +1519,18 @@ class sub extends Expression {
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         if(e1.get_type() == null) {
-                 e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet, root, classTable);
-                       
+                 e1.getClass().cast(e1);                       
             }
-            
+         e1.type_chk(checker, sym_1, bet, root, classTable);
          if(e2.get_type() == null) {
                 e2.getClass().cast(e2);
-                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
+        e2.type_chk(checker, sym_1, bet, root, classTable);
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
         }
         else {
+            //Print error for this case
             semantError(checker.getFilename(), (TreeNode) this);
             errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " - " + e2.get_type() +".\n");
             return false;
@@ -1591,18 +1590,17 @@ class mul extends Expression {
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
          if(e1.get_type() == null) {
                  e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet, root, classTable);
-                       
             }
-            
+         e1.type_chk(checker, sym_1, bet, root, classTable);  
          if(e2.get_type() == null) {
                 e2.getClass().cast(e2);
-                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
+        e2.type_chk(checker, sym_1, bet, root, classTable);
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
         }
         else {
+            //Print error for this case
             semantError(checker.getFilename(), (TreeNode) this);
             errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " * " + e2.get_type() +".\n");
             return false;
@@ -1664,18 +1662,17 @@ class divide extends Expression {
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
          if(e1.get_type() == null) {
                  e1.getClass().cast(e1);
-                e1.type_chk(checker, sym_1, bet, root, classTable);
-                       
             }
-            
+         e1.type_chk(checker, sym_1, bet, root, classTable);
          if(e2.get_type() == null) {
                 e2.getClass().cast(e2);
-                e2.type_chk(checker, sym_1, bet, root, classTable);
             }
+        e2.type_chk(checker, sym_1, bet, root, classTable);
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
         }
         else {
+            //Print error on case
             semantError(checker.getFilename(), (TreeNode) this);
             errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " / " + e2.get_type() +".\n");
             return false;
@@ -1726,6 +1723,16 @@ class neg extends Expression {
         out.print(Utilities.pad(n) + "neg\n");
         e1.dump(out, n+2);
     }
+     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(e1.get_type() == null)
+            e1.getClass().cast(e1);
+        if(!e1.type_chk(checker, sym_1, bet, root, classTable))
+            return false;
+        if(e1.get_type() != null && !e1.get_type().toString().equals("Int"))
+            return false;
+        return true;
+    }
+        
 
 
     
@@ -1771,9 +1778,10 @@ class lt extends Expression {
             e1.getClass().cast(e1);
         if(e2.get_type() == null)
             e2.getClass().cast(e2);
+        //Print error on each case
         if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
             return false;
-        if(e1.get_type().toString().equals("Int") || e2.get_type().toString().equals("Int"))
+        if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int"))
             return false;
         return true;
     }
@@ -1824,6 +1832,7 @@ class eq extends Expression {
             e1.getClass().cast(e1);
         if(e2.get_type() == null)
             e2.getClass().cast(e2);
+        //Print error on each case
         if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
             return false;
         if(!e1.get_type().toString().equals(e2.get_type().toString()))
@@ -1874,6 +1883,7 @@ class leq extends Expression {
             e1.getClass().cast(e1);
         if(e2.get_type() == null)
             e2.getClass().cast(e2);
+        //Print error on each case
         if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
             return false;
         if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int"))
@@ -2185,7 +2195,8 @@ class object extends Expression {
             }
 
         }
-        return true;
+        //Print error
+        return false;
 
     }
     
