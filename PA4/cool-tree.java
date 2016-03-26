@@ -2111,6 +2111,15 @@ class isvoid extends Expression {
     public TreeNode copy() {
         return new isvoid(lineNumber, (Expression)e1.copy());
     }
+
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        if(e1.get_type() == null)
+            e1.getClass().cast(e1);
+        if(!(e1.type_chk(checker, sym_1, bet, root, classTable)))
+            return false; //Error printing needed
+        return true;
+        }
+        
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "isvoid\n");
         e1.dump(out, n+2);
