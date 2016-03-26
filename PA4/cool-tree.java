@@ -1078,31 +1078,44 @@ class cond extends Expression {
     }
 
       public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        if(pred.get_type() == null) {
-            pred.getClass().cast(pred);
-        }
+        pred.getClass().cast(pred);
         if(!pred.type_chk(checker, sym_1, bet, root, classTable)) {
             return false;
         }
         if(!pred.get_type().toString().equals("Bool")) {
             return false;
         }
-        if(then_exp.get_type() == null) {
-            then_exp.getClass().cast(then_exp);
-        }
-        if(else_exp.get_type() == null) {
-            else_exp.getClass().cast(else_exp);
-        }
-        if(!then_exp.type_chk(checker, sym_1, bet, root, classTable) || !(else_exp.type_chk(checker, sym_1, bet, root, classTable))) {
+        then_exp.getClass().cast(then_exp);
+        else_exp.getClass().cast(else_exp);
+        boolean a_1 = then_exp.type_chk(checker, sym_1, bet, root, classTable);
+        boolean a_2 = else_exp.type_chk(checker, sym_1, bet, root, classTable);
+        if(!a_1 || !a_2) {
             return false;
         }
         Vector<String> classes = new Vector<String>(0);
-        classes.addElement(then_exp.get_type().toString());
-        classes.addElement(else_exp.get_type().toString());
+        if(then_exp.get_type() != null) {
+            if(then_exp.get_type().toString().equals("SELF_TYPE"))
+                classes.addElement(checker.getName().toString());
+            else
+                classes.addElement(then_exp.get_type().toString());
+        }
+        if(else_exp.get_type() != null) {
+        if(else_exp.get_type().toString().equals("SELF_TYPE"))
+                classes.addElement(checker.getName().toString());
+            else
+                classes.addElement(else_exp.get_type().toString());
+        }
+        if(then_exp.get_type() == null && else_exp.get_type() == null)
+            return false;
         HierarchyNode root_of_good_tree = classTable.goodClasses();
         Vector<HierarchyNode> node_list = new Vector<HierarchyNode>(0);
         node_list = classTable.find_join_outer(root_of_good_tree, classes, node_list);
         int i = node_list.size();
+        if(i==0) {
+            System.out.println(classes.elementAt(0));
+            System.out.println(classes.size());
+            return false;
+        }
         AbstractSymbol delta = AbstractTable.stringtable.addString(node_list.elementAt(i-1).thisNode());
         super.set_type(delta);
         return true;
@@ -1151,18 +1164,18 @@ class loop extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        if(pred.get_type() == null) {
-            pred.getClass().cast(pred);
-        }
-        pred.type_chk(checker, sym_1, bet, root, classTable);
-        if(body.get_type() == null) {
-            body.getClass().cast(body);
-        }
-        body.type_chk(checker, sym_1, bet, root, classTable);
+        pred.getClass().cast(pred);
+        if(!pred.type_chk(checker, sym_1, bet, root, classTable))
+            return false;
+        body.getClass().cast(body);
+        if(!body.type_chk(checker, sym_1, bet, root, classTable))
+            return false;
         if(!pred.get_type().toString().equals("Bool")) {
             return false;
             //Error print 
         }
+        AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
+        super.set_type(loop_sym);
         return true;
     }
     
@@ -1196,9 +1209,7 @@ class typcase extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        if(expr.get_type() == null) {
-            expr.getClass().cast(expr);
-        }
+        expr.getClass().cast(expr);
         Vector<String> case_classes = new Vector<String>(0);
         expr.type_chk(checker, sym_1, bet, root, classTable);
         AbstractSymbol type_expr = expr.get_type();
@@ -1346,8 +1357,7 @@ class let extends Expression {
         AbstractSymbol T_zero = type_decl;
         if(type_decl.toString().equals("SELF_TYPE"))
             T_zero = AbstractTable.stringtable.addString(checker.getName().toString());
-        if(init.get_type() == null) 
-            init.getClass().cast(init);
+        init.getClass().cast(init);
         if(!init.type_chk(checker, sym_1, bet, root, classTable)) {
             sym_1.exitScope();
             return false;
@@ -1359,9 +1369,8 @@ class let extends Expression {
                 sym_1.exitScope();
                 return false;
             }
-            sym_1.addId(identifier, T_zero);
-            if(body.get_type() == null) 
-                body.getClass().cast(body);
+            sym_1.addId(identifier, T_zero); 
+            body.getClass().cast(body);
             if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
                 sym_1.exitScope();
                 return false;
@@ -1371,8 +1380,7 @@ class let extends Expression {
             return true;
         }
         sym_1.addId(identifier, T_zero);
-        if(body.get_type() == null)
-            body.getClass().cast(body);
+        body.getClass().cast(body);
         if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
             sym_1.exitScope();
             return false;
@@ -1782,8 +1790,11 @@ class lt extends Expression {
         if(e2.get_type() == null)
             e2.getClass().cast(e2);
         //Print error on each case
-        if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
+        boolean a_1 = e1.type_chk(checker, sym_1, bet, root, classTable);
+        boolean a_2 = e2.type_chk(checker, sym_1, bet, root, classTable);
+        if(!a_1 || !a_2) {
             return false;
+        }
         if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int"))
             return false;
         return true;
@@ -1884,13 +1895,14 @@ class leq extends Expression {
         e2.dump(out, n+2);
     }
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        if(e1.get_type() == null)
-            e1.getClass().cast(e1);
-        if(e2.get_type() == null)
-            e2.getClass().cast(e2);
+        e1.getClass().cast(e1);
+        e2.getClass().cast(e2);
         //Print error on each case
-        if(!e1.type_chk(checker,sym_1,bet,root,classTable) || !e2.type_chk(checker, sym_1, bet, root, classTable))
+        boolean a_1 = e1.type_chk(checker, sym_1, bet, root, classTable);
+        boolean a_2 = e2.type_chk(checker, sym_1, bet, root, classTable);
+        if(!a_1 || !a_2) {
             return false;
+        }
         if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int"))
             return false;
         return true;
@@ -2119,7 +2131,7 @@ class isvoid extends Expression {
             return false; //Error printing needed
         return true;
         }
-        
+
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "isvoid\n");
         e1.dump(out, n+2);
