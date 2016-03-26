@@ -554,6 +554,9 @@ class method extends Feature {
        if(!(this.expr.type_chk(to_check, aleph, hash_method, root, classTable))) {
         return false;
        }
+    // if(this.expr.get_type() != null && this.expr.get_type().toString().equals("SELF_TYPE") && !return_type.toString().equals("SELF_TYPE")) {
+    //     this.expr.set_type(return_type);
+    // }
      return true;
      }
     }
@@ -969,14 +972,12 @@ class dispatch extends Expression {
     }
 
     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-            if(expr.get_type() == null) {
-                expr.getClass().cast(expr);
-            }
+            expr.getClass().cast(expr);
             if(!expr.type_chk(to_check,  gimel, bet, root,  classTable))  {
                 return false;
             }
             if(expr.get_type() == null) {
-                System.out.println(expr.getClass().toString());
+                //System.out.println(expr.getClass().toString());
                 return false;
             }
 
@@ -1080,6 +1081,7 @@ class cond extends Expression {
       public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         pred.getClass().cast(pred);
         if(!pred.type_chk(checker, sym_1, bet, root, classTable)) {
+            //System.out.println(pred.getClass().toString());
             return false;
         }
         if(!pred.get_type().toString().equals("Bool")) {
@@ -1100,10 +1102,13 @@ class cond extends Expression {
                 classes.addElement(then_exp.get_type().toString());
         }
         if(else_exp.get_type() != null) {
-        if(else_exp.get_type().toString().equals("SELF_TYPE"))
-                classes.addElement(checker.getName().toString());
-            else
-                classes.addElement(else_exp.get_type().toString());
+         if(else_exp.get_type().toString().equals("SELF_TYPE")) {
+            AbstractSymbol delta = AbstractTable.stringtable.addString("SELF_TYPE");
+            super.set_type(delta);
+            return true;
+        }
+        else
+            classes.addElement(else_exp.get_type().toString());
         }
         if(then_exp.get_type() == null && else_exp.get_type() == null)
             return false;
@@ -1112,8 +1117,8 @@ class cond extends Expression {
         node_list = classTable.find_join_outer(root_of_good_tree, classes, node_list);
         int i = node_list.size();
         if(i==0) {
-            System.out.println(classes.elementAt(0));
-            System.out.println(classes.size());
+            //System.out.println(classes.elementAt(0));
+            //System.out.println(classes.size());
             return false;
         }
         AbstractSymbol delta = AbstractTable.stringtable.addString(node_list.elementAt(i-1).thisNode());
@@ -1294,7 +1299,11 @@ class block extends Expression {
                 }   
                 if(count == body.getLength()-1) {
                     AbstractSymbol aleph = AbstractTable.stringtable.addString(statement_next.get_type().toString());
+                    if(statement_next.get_type().toString().equals("SELF_TYPE"))
+                        aleph = AbstractTable.stringtable.addString("SELF_TYPE");
+
                     super.set_type(aleph);
+                    return true;
                     }
                 count++;
                 }
@@ -1842,17 +1851,15 @@ class eq extends Expression {
     }
 
  public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        if(e1.get_type() == null)
-            e1.getClass().cast(e1);
-        if(e2.get_type() == null)
-            e2.getClass().cast(e2);
+         e1.getClass().cast(e1);
+         e2.getClass().cast(e2);
         //Print error on each case
         boolean a_1  = e1.type_chk(checker, sym_1, bet, root, classTable);
         boolean a_2 = e2.type_chk(checker,sym_1, bet, root, classTable);
         if(!a_1 || !a_2)
             return false;
-        if(!e1.get_type().toString().equals(e2.get_type().toString()))
-            return false;
+        // if(!e1.get_type().toString().equals(e2.get_type().toString()))
+        //     return false;
         return true;
     }
     
