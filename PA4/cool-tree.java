@@ -875,13 +875,12 @@ class static_dispatch extends Expression {
      public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
             
 
-            if(expr.get_type() == null) {
-                expr.getClass().cast(expr);
-            }
+            
+            expr.getClass().cast(expr);
             expr.type_chk(to_check,  gimel, bet, root,  classTable);
             HierarchyNode root_of_good_tree = classTable.goodClasses();
             HierarchyNode super_class = classTable.getClassbyName(type_name.toString(), root_of_good_tree);
-                if(!classTable.isChildClass(expr.get_type().toString(), super_class)) {
+                if(!expr.get_type().toString().equals("SELF_TYPE") && !classTable.isChildClass(expr.get_type().toString(), super_class)) {
                     return false;
                 }
             String class_name = expr.get_type().toString();
@@ -1229,8 +1228,9 @@ class typcase extends Expression {
                 branch b1 = (branch) case_1;
                 AbstractSymbol beta = b1.type_chk(checker, sym_1, bet, root, classTable);
                 if(beta != null) {
-                    if(beta.toString().equals("SELF_TYPE"))
+                    if(beta.toString().equals("SELF_TYPE"))  {
                         beta = AbstractTable.stringtable.addString(checker.getName().toString());
+                    }
                     case_classes.addElement(beta.toString());
                 }
                 else {
@@ -1307,13 +1307,14 @@ class block extends Expression {
                 if(statement_next.get_type() == null) 
                     statement_next.getClass().cast(statement_next);
                 if(!statement_next.type_chk(checker, sym_1, bet, root, classTable)) {
+                    // System.out.println("HERE");
+                    // System.out.println(statement_next.getClass().toString());
                     return false;
                 }   
                 if(count == body.getLength()-1) {
                     AbstractSymbol aleph = AbstractTable.stringtable.addString(statement_next.get_type().toString());
                     if(statement_next.get_type().toString().equals("SELF_TYPE"))
                         aleph = AbstractTable.stringtable.addString("SELF_TYPE");
-
                     super.set_type(aleph);
                     return true;
                     }
