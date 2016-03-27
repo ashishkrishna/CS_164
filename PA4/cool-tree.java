@@ -1229,6 +1229,8 @@ class typcase extends Expression {
                 branch b1 = (branch) case_1;
                 AbstractSymbol beta = b1.type_chk(checker, sym_1, bet, root, classTable);
                 if(beta != null) {
+                    if(beta.toString().equals("SELF_TYPE"))
+                        beta = AbstractTable.stringtable.addString(checker.getName().toString());
                     case_classes.addElement(beta.toString());
                 }
                 else {
@@ -1245,6 +1247,11 @@ class typcase extends Expression {
         node_list = classTable.find_join_outer(root_of_good_tree, case_classes, node_list);
         int i = node_list.size();
         AbstractSymbol delta = AbstractTable.stringtable.addString(node_list.elementAt(i-1).thisNode());
+        if(node_list.elementAt(i-1).thisNode().equals(checker.getName().toString())) {
+            delta = AbstractTable.stringtable.addString("SELF_TYPE");
+            super.set_type(delta);
+            return true;
+        }
         super.set_type(delta);
         return true;
     }
