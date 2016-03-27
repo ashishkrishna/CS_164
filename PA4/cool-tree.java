@@ -976,7 +976,6 @@ class dispatch extends Expression {
                 return false;
             }
             if(expr.get_type() == null) {
-                //System.out.println(expr.getClass().toString());
                 return false;
             }
 
@@ -1307,8 +1306,6 @@ class block extends Expression {
                 if(statement_next.get_type() == null) 
                     statement_next.getClass().cast(statement_next);
                 if(!statement_next.type_chk(checker, sym_1, bet, root, classTable)) {
-                    // System.out.println("HERE");
-                    // System.out.println(statement_next.getClass().toString());
                     return false;
                 }   
                 if(count == body.getLength()-1) {
