@@ -1103,10 +1103,15 @@ class cond extends Expression {
         }
         if(else_exp.get_type() != null) {
          if(else_exp.get_type().toString().equals("SELF_TYPE")) {
-            AbstractSymbol delta = AbstractTable.stringtable.addString("SELF_TYPE");
-            super.set_type(delta);
-            return true;
-        }
+            if(!else_exp.getClass().equals(object.class)) {
+             AbstractSymbol delta = AbstractTable.stringtable.addString("SELF_TYPE");
+             super.set_type(delta);
+             return true;
+         }
+            else
+                classes.addElement(checker.getName().toString());
+        
+    }
         else
             classes.addElement(else_exp.get_type().toString());
         }
