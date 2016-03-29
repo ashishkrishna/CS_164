@@ -555,6 +555,18 @@ class method extends Feature {
        if(!(this.expr.type_chk(to_check, aleph, hash_method, root, classTable))) {
         return false;
        }
+       if(!(this.expr.get_type() == null)) {
+        HierarchyNode this_class_node = classTable.getClassbyName(this.expr.get_type().toString(), classTable.goodClasses());
+        if(!return_type.toString().equals(this.expr.get_type().toString()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(this_class_node, return_type.toString())) {
+            // if(to_check.inherits_class(root, return_type.toString())) {
+            //     return true;
+            // }
+            semantError(to_check.getFilename(), (TreeNode) this);
+            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+            return false;
+       }
+
+       }
       
        // if (this.expr.get_type() == null) {
        //  return false;
@@ -562,12 +574,8 @@ class method extends Feature {
        // if (this.return_type == null) {
        //  return false;
        // }
-      
-       // if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(root, return_type.toString())) {
-       //      semantError(to_check.getFilename(), (TreeNode) this);
-       //      errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
-       //      return false;
-       // }
+       
+
      return true;
      // }
      // return true;
