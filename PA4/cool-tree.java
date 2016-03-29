@@ -533,30 +533,44 @@ class method extends Feature {
     }
 
     public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method, ClassTable classTable) {
-        if(!(this.expr.get_type() == null)) {
-        if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class) || this.expr.getClass().equals(block.class)) {
-            if(!this.expr.type_chk(to_check, aleph, hash_method, root, classTable)) {
-                return false;
-            }
-            return true;
-        }
+        // if(!(this.expr.get_type() == null)) {
+        // if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class) || this.expr.getClass().equals(block.class)) {
+        //     if(!this.expr.type_chk(to_check, aleph, hash_method, root, classTable)) {
+        //         return false;
+        //     }
+        //     return true;
+        // }
 
-        if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(root, return_type.toString())) {
-            semantError(to_check.getFilename(), (TreeNode) this);
-            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
-            return false;
-        }
-        return true;
-    }
+        // if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(root, return_type.toString())) {
+        //     semantError(to_check.getFilename(), (TreeNode) this);
+        //     errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+        //     return false;
+        // }
+        // return true;
+    // }
 
-    else {
+    // else {
+
         this.expr.getClass().cast(this.expr);
        if(!(this.expr.type_chk(to_check, aleph, hash_method, root, classTable))) {
         return false;
        }
-
+      
+       // if (this.expr.get_type() == null) {
+       //  return false;
+       // }
+       // if (this.return_type == null) {
+       //  return false;
+       // }
+      
+       // if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(root, return_type.toString())) {
+       //      semantError(to_check.getFilename(), (TreeNode) this);
+       //      errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+       //      return false;
+       // }
      return true;
-     }
+     // }
+     // return true;
     }
 
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
@@ -1159,8 +1173,8 @@ class loop extends Expression {
         super(lineNumber);
         pred = a1;
         body = a2;
-        AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
-        super.set_type(loop_sym);
+        // AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
+        // super.set_type(loop_sym);
 
     }
     public TreeNode copy() {
@@ -1173,6 +1187,8 @@ class loop extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        // AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
+        // super.set_type(loop_sym);
         pred.getClass().cast(pred);
         if(!pred.type_chk(checker, sym_1, bet, root, classTable))
             return false;
@@ -1293,14 +1309,15 @@ class block extends Expression {
     public block(int lineNumber, Expressions a1) {
         super(lineNumber);
         body = a1;
-        Expression aleph = (Expression) a1.getNth(a1.getLength()-1);
-        if(!(aleph.get_type() == null)) {
-        AbstractSymbol block_val = AbstractTable.stringtable.addString(aleph.get_type().toString());
-        super.set_type(block_val);
-    }
+        
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        Expression aleph_1 = (Expression) body.getNth(body.getLength()-1);
+        if(!(aleph_1.get_type() == null)) {
+        AbstractSymbol block_val = AbstractTable.stringtable.addString(aleph_1.get_type().toString());
+        super.set_type(block_val);
+    }
         int count = 0;
         for(Enumeration<Expression> statements = body.getElements(); statements.hasMoreElements();) {
                 Expression statement_next = statements.nextElement();
@@ -1466,8 +1483,8 @@ class plus extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        AbstractSymbol plus_val = AbstractTable.stringtable.addString("Int");
-        super.set_type(plus_val);
+        // AbstractSymbol plus_val = AbstractTable.stringtable.addString("Int");
+        // super.set_type(plus_val);
     }
     public TreeNode copy() {
         return new plus(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1479,6 +1496,8 @@ class plus extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol plus_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(plus_val);
         if(e1.get_type() == null) {
                 e1.getClass().cast(e1);
             }
@@ -1536,8 +1555,8 @@ class sub extends Expression {
         e1 = a1;
         e2 = a2;
         errorStream = System.err;
-        AbstractSymbol sub_val = AbstractTable.stringtable.addString("Int");
-        super.set_type(sub_val);
+        // AbstractSymbol sub_val = AbstractTable.stringtable.addString("Int");
+        // super.set_type(sub_val);
     }
     public TreeNode copy() {
         return new sub(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1549,6 +1568,8 @@ class sub extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol sub_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(sub_val);
         if(e1.get_type() == null) {
                  e1.getClass().cast(e1);                       
             }
@@ -1606,8 +1627,8 @@ class mul extends Expression {
         e1 = a1;
         e2 = a2;
         errorStream = System.err;
-        AbstractSymbol mul_val = AbstractTable.stringtable.addString("Int");
-        super.set_type(mul_val);
+        // AbstractSymbol mul_val = AbstractTable.stringtable.addString("Int");
+        // super.set_type(mul_val);
     }
     public TreeNode copy() {
         return new mul(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1619,6 +1640,8 @@ class mul extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+         AbstractSymbol mul_val = AbstractTable.stringtable.addString("Int");
+         super.set_type(mul_val);
          if(e1.get_type() == null) {
                  e1.getClass().cast(e1);
             }
@@ -1678,8 +1701,8 @@ class divide extends Expression {
         e1 = a1;
         e2 = a2;
         errorStream = System.err;
-        AbstractSymbol div_val = AbstractTable.stringtable.addString("Int");
-        super.set_type(div_val);
+        // AbstractSymbol div_val = AbstractTable.stringtable.addString("Int");
+        // super.set_type(div_val);
     }
     public TreeNode copy() {
         return new divide(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1691,6 +1714,8 @@ class divide extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+          AbstractSymbol div_val = AbstractTable.stringtable.addString("Int");
+          super.set_type(div_val);
          if(e1.get_type() == null) {
                  e1.getClass().cast(e1);
             }
@@ -1744,8 +1769,8 @@ class neg extends Expression {
     public neg(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
-        AbstractSymbol neg_type = AbstractTable.stringtable.addString("Int");
-        super.set_type(neg_type);
+        // AbstractSymbol neg_type = AbstractTable.stringtable.addString("Int");
+        // super.set_type(neg_type);
     }
     public TreeNode copy() {
         return new neg(lineNumber, (Expression)e1.copy());
@@ -1755,6 +1780,8 @@ class neg extends Expression {
         e1.dump(out, n+2);
     }
      public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol neg_type = AbstractTable.stringtable.addString("Int");
+        super.set_type(neg_type);
         if(e1.get_type() == null)
             e1.getClass().cast(e1);
         if(!e1.type_chk(checker, sym_1, bet, root, classTable))
@@ -1793,8 +1820,8 @@ class lt extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        AbstractSymbol lt_val = AbstractTable.stringtable.addString("Bool");
-        super.set_type(lt_val);
+        // AbstractSymbol lt_val = AbstractTable.stringtable.addString("Bool");
+        // super.set_type(lt_val);
     }
     public TreeNode copy() {
         return new lt(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1805,6 +1832,8 @@ class lt extends Expression {
         e2.dump(out, n+2);
     }
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol lt_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(lt_val);
         if(e1.get_type() == null)
             e1.getClass().cast(e1);
         if(e2.get_type() == null)
@@ -1849,8 +1878,8 @@ class eq extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        AbstractSymbol e_val = AbstractTable.stringtable.addString("Bool");
-        super.set_type(e_val);
+        // AbstractSymbol e_val = AbstractTable.stringtable.addString("Bool");
+        // super.set_type(e_val);
     }
     public TreeNode copy() {
         return new eq(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1862,6 +1891,8 @@ class eq extends Expression {
     }
 
  public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+         AbstractSymbol e_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(e_val);
          e1.getClass().cast(e1);
          e2.getClass().cast(e2);
         //Print error on each case
@@ -1901,8 +1932,8 @@ class leq extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        AbstractSymbol l_val = AbstractTable.stringtable.addString("Bool");
-        super.set_type(l_val);
+        // AbstractSymbol l_val = AbstractTable.stringtable.addString("Bool");
+        // super.set_type(l_val);
     }
     public TreeNode copy() {
         return new leq(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1913,6 +1944,8 @@ class leq extends Expression {
         e2.dump(out, n+2);
     }
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol l_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(l_val);
         e1.getClass().cast(e1);
         e2.getClass().cast(e2);
         //Print error on each case
@@ -1950,8 +1983,8 @@ class comp extends Expression {
     public comp(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
-        AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
-        super.set_type(bool_val);
+        // AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
+        // super.set_type(bool_val);
     }
     public TreeNode copy() {
         return new comp(lineNumber, (Expression)e1.copy());
@@ -1962,6 +1995,8 @@ class comp extends Expression {
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(bool_val);
         if(e1.get_type() == null)
             e1.getClass().cast(e1);
         if(!(e1.type_chk(checker, sym_1, bet, root, classTable)))
@@ -1991,8 +2026,8 @@ class int_const extends Expression {
     public int_const(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         token = a1;
-        AbstractSymbol int_val = AbstractTable.stringtable.addString("Int");
-        super.set_type(int_val);
+        // AbstractSymbol int_val = AbstractTable.stringtable.addString("Int");
+        // super.set_type(int_val);
 
     }
     public TreeNode copy() {
@@ -2001,6 +2036,12 @@ class int_const extends Expression {
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "int_const\n");
         dump_AbstractSymbol(out, n+2, token);
+    }
+
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol string_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(string_val);
+        return true;
     }
 
     
@@ -2027,11 +2068,17 @@ class bool_const extends Expression {
     public bool_const(int lineNumber, Boolean a1) {
         super(lineNumber);
         val = a1;
-        AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
-        super.set_type(bool_val);
+        // AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
+        // super.set_type(bool_val);
     }
     public TreeNode copy() {
         return new bool_const(lineNumber, copy_Boolean(val));
+    }
+
+     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol string_val = AbstractTable.stringtable.addString("Bool");
+        super.set_type(string_val);
+        return true;
     }
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "bool_const\n");
@@ -2068,6 +2115,12 @@ class string_const extends Expression {
     public TreeNode copy() {
         return new string_const(lineNumber, copy_AbstractSymbol(token));
     }
+
+     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol string_val = AbstractTable.stringtable.addString("String");
+        super.set_type(string_val);
+        return true;
+    }
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "string_const\n");
         dump_AbstractSymbol(out, n+2, token);
@@ -2099,12 +2152,18 @@ class new_ extends Expression {
     public new_(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         type_name = a1;
-        AbstractSymbol n_val = AbstractTable.stringtable.addString(type_name.toString());
-        super.set_type(n_val);
+        // AbstractSymbol n_val = AbstractTable.stringtable.addString(type_name.toString());
+        // super.set_type(n_val);
 
     }
     public TreeNode copy() {
         return new new_(lineNumber, copy_AbstractSymbol(type_name));
+    }
+
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol n_val = AbstractTable.stringtable.addString(type_name.toString());
+        super.set_type(n_val);
+        return true;
     }
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "new_\n");
@@ -2135,14 +2194,16 @@ class isvoid extends Expression {
     public isvoid(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
-        AbstractSymbol a_sym = AbstractTable.stringtable.addString("Bool");
-        super.set_type(a_sym);
+        // AbstractSymbol a_sym = AbstractTable.stringtable.addString("Bool");
+        // super.set_type(a_sym);
     }
     public TreeNode copy() {
         return new isvoid(lineNumber, (Expression)e1.copy());
     }
 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        AbstractSymbol a_sym = AbstractTable.stringtable.addString("Bool");
+        super.set_type(a_sym);
         if(e1.get_type() == null)
             e1.getClass().cast(e1);
         if(!(e1.type_chk(checker, sym_1, bet, root, classTable)))
