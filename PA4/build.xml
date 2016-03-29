@@ -70,6 +70,22 @@
     <exec executable="python"> <arg line="compare-semant.py tests/bad3.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad4.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad5.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad5.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad6.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad7.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad8.test"/> </exec>
+  <!--   <exec executable="python"> <arg line="compare-semant.py tests/bad9.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad10.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad11.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad12.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad13.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad14.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad15.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad16.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad17.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad18.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad19.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad20.test"/> </exec> -->
     <echo>
 You can check 'tests/NAME.test.diff" to know more about a failed test case.
     </echo>

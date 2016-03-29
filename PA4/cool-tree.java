@@ -785,6 +785,7 @@ class branch extends Case {
 class assign extends Expression {
     protected AbstractSymbol name;
     protected Expression expr;
+    private PrintStream errorStream;
     /** Creates "assign" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -795,6 +796,7 @@ class assign extends Expression {
         super(lineNumber);
         name = a1;
         expr = a2;
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new assign(lineNumber, copy_AbstractSymbol(name), (Expression)expr.copy());
@@ -817,10 +819,10 @@ class assign extends Expression {
                 HierarchyNode super_class = classTable.getClassbyName(alepha.type_decl.toString(), root_of_good_tree);
                 if(!classTable.isChildClass(expr.get_type().toString(), super_class)) {
                     return false;
-                    //Print error to be added
+                    //Add error message
                 }
         }
-          
+      // errorStream.append("Inferred type " + this.name.toString() + " of initialization of " +  this.name.toString() + " does not conform to identifier\'s declared type " + this.type.toString() + ".\n");    
     }
          AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
          super.set_type(aleph);
@@ -959,6 +961,7 @@ class dispatch extends Expression {
         name = a2;
         actual = a3;
         errorStream = System.err;
+
     }
     public TreeNode copy() {
         return new dispatch(lineNumber, (Expression)expr.copy(), copy_AbstractSymbol(name), (Expressions)actual.copy());
@@ -1018,7 +1021,7 @@ class dispatch extends Expression {
         return false;
 
     }
-
+ 
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
     errorStream.print(filename + ":" + t.getLineNumber() + ": ");
     return semantError();
