@@ -554,9 +554,7 @@ class method extends Feature {
        if(!(this.expr.type_chk(to_check, aleph, hash_method, root, classTable))) {
         return false;
        }
-    // if(this.expr.get_type() != null && this.expr.get_type().toString().equals("SELF_TYPE") && !return_type.toString().equals("SELF_TYPE")) {
-    //     this.expr.set_type(return_type);
-    // }
+
      return true;
      }
     }
@@ -641,7 +639,7 @@ class attr extends Feature {
             }
 
         }
-        return true;
+        return false;
     }
 
     public AbstractSymbol get_type() {
@@ -1017,7 +1015,7 @@ class dispatch extends Expression {
             }
             root_1 = root_1.getParent();
         }
-        System.exit(-1);
+        //System.exit(-1);
         return false;
 
     }
