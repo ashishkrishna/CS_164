@@ -296,13 +296,13 @@ class programc extends Program {
    classNames.addElement("SELF_TYPE");
 
     /*Go through all the classes */
-    SymbolTable attr_checker = new SymbolTable();
-    SymbolTable method_checker = new SymbolTable();
+    SymbolTable attr_checker = new SymbolTable(); //initialize attribute log
+    SymbolTable method_checker = new SymbolTable(); //initialize method log
     methods_per_class = new HashMap<String, Vector<method>>();
     HierarchyNode root_1 = classTable.goodClasses();
     annotateMethods(root_1);
     checkClasses(root_1, attr_checker, method_checker, classTable);
-    if(semanticerr > 0) {
+    if(semanticerr > 0) {  //There shouldn't be any semantic errors
         System.err.println("Compilation halted due to static semantic errors.");
         System.exit(1);
     }
@@ -310,15 +310,15 @@ class programc extends Program {
     }
 
     public void checkClasses(HierarchyNode root, SymbolTable symtab_1, SymbolTable symtab_2, ClassTable classTable) {
-        symtab_1.enterScope();
+        symtab_1.enterScope(); 
         symtab_2.enterScope();
         class_c to_check_class = root.thisClassNode();
-        Features this_classes_features = to_check_class.getFeatures();
-        for(Enumeration<Feature> list_of_features = this_classes_features.getElements(); list_of_features.hasMoreElements();) {
+        Features this_classes_features = to_check_class.getFeatures(); //Check features of the class
+        for(Enumeration<Feature> list_of_features = this_classes_features.getElements(); list_of_features.hasMoreElements();) { //stop when there are no more elements
             Feature alpha = list_of_features.nextElement();
-            if(alpha.getClass().equals(attr.class)) {
+            if(alpha.getClass().equals(attr.class)) {  //If it's an attribute
                 attr attr_1 = (attr) alpha;
-                if(symtab_1.lookup(attr_1.name) == null) {
+                if(symtab_1.lookup(attr_1.name) == null) { 
                     if(!attr_1.check_attr(symtab_1, to_check_class, root, methods_per_class, classTable))
                         semanticerr++;     
                     symtab_1.addId(attr_1.name, attr_1.copy());
@@ -332,7 +332,7 @@ class programc extends Program {
             }
         for(Enumeration<Feature> list_of_features_2 = this_classes_features.getElements(); list_of_features_2.hasMoreElements();) {
             Feature alpha_2 = list_of_features_2.nextElement();
-            if (alpha_2.getClass().equals(method.class)) {
+            if (alpha_2.getClass().equals(method.class)) { //If it's a method
                 method method_1 = (method) alpha_2;
                 symtab_2.addId(method_1.name, method_1.copy());
                 symtab_1.enterScope();

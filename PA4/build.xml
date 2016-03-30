@@ -73,8 +73,8 @@
     <exec executable="python"> <arg line="compare-semant.py tests/bad6.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad7.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad8.test"/> </exec>
-  <!--   <exec executable="python"> <arg line="compare-semant.py tests/bad9.test"/> </exec>
-    <exec executable="python"> <arg line="compare-semant.py tests/bad10.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad9.test"/> </exec>
+<!--    <exec executable="python"> <arg line="compare-semant.py tests/bad10.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad11.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad12.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad13.test"/> </exec>
