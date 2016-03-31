@@ -298,10 +298,10 @@ class programc extends Program {
     /*Go through all the classes */
     SymbolTable attr_checker = new SymbolTable(); //initialize attribute log
     SymbolTable method_checker = new SymbolTable(); //initialize method log
-    methods_per_class = new HashMap<String, Vector<method>>();
+    methods_per_class = new HashMap<String, Vector<method>>(); //Annotate methods hashtable
     HierarchyNode root_1 = classTable.goodClasses();
     annotateMethods(root_1);
-    if(!checkMain(methods_per_class)) { 
+    if(!checkMain(methods_per_class)) { //if no main method 
         semanticerr++;
         semantError();
         errorStream.append("Main method not defined in Main class.\n");
@@ -324,9 +324,9 @@ class programc extends Program {
             if(alpha.getClass().equals(attr.class)) {  //If it's an attribute
                 attr attr_1 = (attr) alpha;
                 if(symtab_1.lookup(attr_1.name) == null) { 
-                    if(!attr_1.check_attr(symtab_1, to_check_class, root, methods_per_class, classTable))
+                    if(!attr_1.check_attr(symtab_1, to_check_class, root, methods_per_class, classTable)) //Check the attribute declaration
                         semanticerr++;     
-                    symtab_1.addId(attr_1.name, attr_1.copy());
+                    symtab_1.addId(attr_1.name, attr_1.copy()); //Add attr to the symbol table
                 }
                 else {
                    semanticerr++;
@@ -339,7 +339,7 @@ class programc extends Program {
             Feature alpha_2 = list_of_features_2.nextElement();
             if (alpha_2.getClass().equals(method.class)) { //If it's a method
                 method method_1 = (method) alpha_2;
-                symtab_2.addId(method_1.name, method_1.copy());
+                symtab_2.addId(method_1.name, method_1.copy()); //Add method to the symbol table
                 symtab_1.enterScope();
                 if(!method_1.ret_and_formal_chk(symtab_1, classNames, to_check_class)) 
                     semanticerr++;
@@ -349,13 +349,13 @@ class programc extends Program {
 
             }
         }
-        if(root.isLeaf()) {
+        if(root.isLeaf()) { //Climb back up the hierarchy if it's a root
              symtab_1.exitScope();
              symtab_2.exitScope();
             return;
         }
         else {
-            Enumeration<HierarchyNode> childclasses = root.getChildren();
+            Enumeration<HierarchyNode> childclasses = root.getChildren(); //Tree traversal
             while(childclasses.hasMoreElements()) {
                 HierarchyNode child_class = childclasses.nextElement();
                 checkClasses(child_class, symtab_1, symtab_2, classTable);
@@ -366,6 +366,8 @@ class programc extends Program {
         }
     }
 
+    /*This method goes into each class and adds all of the necessary methods. This becomes useful in the dispatch type check where we evaluate whether or not
+    the parameters are valid */
     public void  annotateMethods(HierarchyNode root) {
         class_c to_check_class = root.thisClassNode();
         Vector<method> class_methods = new Vector<method>();
@@ -395,7 +397,7 @@ class programc extends Program {
 
 
     }
-
+    /* Checks whether main() is in class Main */
     public boolean checkMain(HashMap<String, Vector<method>> bet) {
         Vector<method> methods = bet.get("Main");
         for(Enumeration<method> enums = methods.elements(); enums.hasMoreElements(); ) {
@@ -475,6 +477,7 @@ class class_c extends Class_ {
         out.println(Utilities.pad(n + 2) + ")");
     }
 
+    /*Check whether class aleph_node is a subclass of aleph_name */
     public boolean inherits_class(HierarchyNode aleph_node, String aleph_name) {
         while(!(aleph_node == null)) {
             String bet = aleph_node.thisNode();
@@ -531,8 +534,9 @@ class method extends Feature {
         expr.dump(out, n+2);
     }
 
+    /*Checking the return types and formal parameters of the method */
     public boolean ret_and_formal_chk(SymbolTable aleph, Vector<String> bet, class_c gimel) {
-        if(!bet.contains(return_type.toString())) {
+        if(!bet.contains(return_type.toString())) { /*Return type should be defined as a class defined in the file or one of the four basic classes */
              semantError(gimel.getFilename(), (TreeNode) this);
             errorStream.append("Undefined return type " + this.return_type + " in method " + this.name +  ".\n");
             return false;
@@ -553,35 +557,16 @@ class method extends Feature {
         return true;
     }
 
+    /*Type check for methods. Recursively calls type_check on the expr in the method */
     public boolean type_chk(SymbolTable aleph, class_c to_check, HierarchyNode root,HashMap<String, Vector<method>> hash_method, ClassTable classTable) {
-        // if(!(this.expr.get_type() == null)) {
-        // if(this.expr.getClass().equals(divide.class) || this.expr.getClass().equals(mul.class) || this.expr.getClass().equals(plus.class) || this.expr.getClass().equals(sub.class) || this.expr.getClass().equals(block.class)) {
-        //     if(!this.expr.type_chk(to_check, aleph, hash_method, root, classTable)) {
-        //         return false;
-        //     }
-        //     return true;
-        // }
-
-        // if(!return_type.equals(this.expr.get_type()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(root, return_type.toString())) {
-        //     semantError(to_check.getFilename(), (TreeNode) this);
-        //     errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
-        //     return false;
-        // }
-        // return true;
-    // }
-
-    // else {
-
         this.expr.getClass().cast(this.expr);
        if(!(this.expr.type_chk(to_check, aleph, hash_method, root, classTable))) {
         return false;
        }
        if(!(this.expr.get_type() == null)) {
         HierarchyNode this_class_node = classTable.getClassbyName(this.expr.get_type().toString(), classTable.goodClasses());
+        /*Check for return type invariance.*/
         if(!return_type.toString().equals(this.expr.get_type().toString()) && (!this.expr.get_type().toString().equals("SELF_TYPE")) && !to_check.inherits_class(this_class_node, return_type.toString())) {
-            // if(to_check.inherits_class(root, return_type.toString())) {
-            //     return true;
-            // }
             semantError(to_check.getFilename(), (TreeNode) this);
             errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
             return false;
@@ -589,17 +574,11 @@ class method extends Feature {
 
        }
       
-       // if (this.expr.get_type() == null) {
-       //  return false;
-       // }
-       // if (this.return_type == null) {
-       //  return false;
-       // }
+       
        
 
      return true;
-     // }
-     // return true;
+     
     }
 
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
@@ -679,7 +658,8 @@ class attr extends Feature {
         if(!(init.get_type()==null)) {
                 HierarchyNode root_of_good_tree = classTable.goodClasses();
                 HierarchyNode super_class = classTable.getClassbyName(type_decl.toString(), root_of_good_tree);
-                if(!classTable.isChildClass(init.get_type().toString(), super_class)) {        
+                if(!classTable.isChildClass(init.get_type().toString(), super_class)) {  
+                /*Check for initialization conformity */      
                 semantError(to_check.getFilename(), (TreeNode) this);
                 errorStream.append("Inferred type " + this.init.get_type() + " of initialization of attribute " + this.name + " does not conform to declared type " + this.type_decl + ".\n");
                 return false;
@@ -690,6 +670,7 @@ class attr extends Feature {
         return true;
     }
 
+    /*Type of attribute*/
     public AbstractSymbol get_type() {
         return this.type_decl;
     }
@@ -728,6 +709,7 @@ class formalc extends Formal {
         return new formalc(lineNumber, copy_AbstractSymbol(name), copy_AbstractSymbol(type_decl));
     }
 
+    /*Check the declaraiton of the formal as being valid. Ensure that it cannot have SELF_TYPE and that the type is one of the classes defined in file or one of four basic classes*/
     public boolean formal_chk(SymbolTable symtab, Vector<String> classnames, class_c to_check_class) {
         if(type_decl.toString().equals("SELF_TYPE")) {
              semantError(to_check_class.getFilename(), this);
@@ -735,6 +717,8 @@ class formalc extends Formal {
             return false;
         }
         if(!classnames.contains(type_decl.toString())) {
+            semantError(to_check_class.getFilename(), this);
+            errorStream.append("Formal parameter type " + type_decl + " is not declared in file.\n");
             return false;
         }
         return true;
@@ -786,6 +770,7 @@ class branch extends Case {
         expr = a3;
     }
 
+    /*Set the type for the branch in the case expression*/
     public AbstractSymbol type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
        gimel.enterScope();
         gimel.addId(name, type_decl);
@@ -853,11 +838,11 @@ class assign extends Expression {
         expr.dump(out, n+2);
     }
 
+    /*Check the  type of the expr that is involved in assignment. Ensure there is no mismatch*/
     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         if(expr.get_type() == null) {
             expr.getClass().cast(expr);
         }
-        //System.out.println(name.toString());
         expr.type_chk(to_check, gimel, bet, root, classTable);
         if(gimel.lookup(name) != null) {
             if(gimel.lookup(name).getClass().equals(attr.class)) {
@@ -866,14 +851,12 @@ class assign extends Expression {
                 HierarchyNode super_class = classTable.getClassbyName(alepha.type_decl.toString(), root_of_good_tree);
                 if(!classTable.isChildClass(expr.get_type().toString(), super_class)) {
                 semantError(to_check.getFilename(), (TreeNode) this);
-                errorStream.append("initialization type mismatch.\n");
-                //System.out.println("HERE");
+                errorStream.append("Type " + expr.get_type().toString() + " of assigned expression does not conform to declared type "+ alepha.type_decl.toString() + " of identifier " +this.name.toString()+".\n");
+                
                 return false;
-                    //Add error message
                 }
         }
-      // errorStream.append("Inferred type " + this.name.toString() + " of initialization of " +  this.name.toString() + " does not conform to identifier\'s declared type " + this.type.toString() + ".\n");    
-    }
+      }
         
          AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
          super.set_type(aleph);
@@ -923,6 +906,7 @@ class static_dispatch extends Expression {
         type_name = a2;
         name = a3;
         actual = a4;
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new static_dispatch(lineNumber, (Expression)expr.copy(), copy_AbstractSymbol(type_name), copy_AbstractSymbol(name), (Expressions)actual.copy());
@@ -934,15 +918,16 @@ class static_dispatch extends Expression {
         dump_AbstractSymbol(out, n+2, name);
         actual.dump(out, n+2);
     }
-     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-            
 
-            
+    /*Check whether the semantic rules for the static dispatch are satisfied as defined in the cool manual. If there is any issue, error out*/
+     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
             expr.getClass().cast(expr);
             expr.type_chk(to_check,  gimel, bet, root,  classTable);
             HierarchyNode root_of_good_tree = classTable.goodClasses();
             HierarchyNode super_class = classTable.getClassbyName(type_name.toString(), root_of_good_tree);
                 if(!expr.get_type().toString().equals("SELF_TYPE") && !classTable.isChildClass(expr.get_type().toString(), super_class)) {
+                     semantError(to_check.getFilename(), (TreeNode) this);
+                    errorStream.append("Static dispatch called on invalid class " + this.type_name + ".\n");
                     return false;
                 }
             String class_name = expr.get_type().toString();
@@ -956,9 +941,9 @@ class static_dispatch extends Expression {
                 method iter1 = iterchck.nextElement();
                 if(iter1.name.toString().equals(this.name.toString())) {
                     if(!(iter1.formals.getLength() == this.actual.getLength())) {
-                        //semantError(to_check.getFilename(), this);
-                        //errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
-                        return false;
+                        semantError(to_check.getFilename(), this);
+                        errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
+                        return false; /*Error if the parameter length mismatches*/
                     }
                     // Subtype checking needs work
                     for(Enumeration<Expression> element_check = actual.getElements(); element_check.hasMoreElements();) {
@@ -979,9 +964,21 @@ class static_dispatch extends Expression {
             }
             root_1 = root_1.getParent();
         }
+        /*Dispatch is invalid since it is not in the class hierarchy of inheritance */
+        semantError(to_check.getFilename(), this);
+        errorStream.append("Method " + this.name.toString() + " cannot be called by " + root.thisNode() + ".\n");
         return false;
 
     }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }  
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -1032,7 +1029,7 @@ class dispatch extends Expression {
         dump_AbstractSymbol(out, n+2, name);
         actual.dump(out, n+2);
     }
-
+    /*Type check for dispatch. Check if all of the rules specified in the cool manual are satisfied. If any variation, error and return false*/
     public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
             expr.getClass().cast(expr);
             if(!expr.type_chk(to_check,  gimel, bet, root,  classTable))  {
@@ -1055,10 +1052,9 @@ class dispatch extends Expression {
                 if(iter1.name.toString().equals(this.name.toString())) {
                     if(!(iter1.formals.getLength() == this.actual.getLength())) {
                         semantError(to_check.getFilename(), this);
-                        errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n");
+                        errorStream.append("Method " + this.name.toString() + " invoked with wrong number of arguments.\n"); //Wrong number of arguments. Error out here.
                         return false;
                     }
-                    // Subtype checking needs work
                     for(Enumeration<Expression> element_check = actual.getElements(); element_check.hasMoreElements();) {
                         Expression next_elem_expr = element_check.nextElement();
                         next_elem_expr.getClass().cast(next_elem_expr);
@@ -1077,7 +1073,9 @@ class dispatch extends Expression {
             }
             root_1 = root_1.getParent();
         }
-        //System.exit(-1);
+        //Dispatch not applicable for this type Error out here.
+        semantError(to_check.getFilename(), this);
+        errorStream.append("Method " + this.name.toString() + " cannot be called by " + root.thisNode() + ".\n");
         return false;
 
     }
@@ -1115,6 +1113,7 @@ class cond extends Expression {
     protected Expression pred;
     protected Expression then_exp;
     protected Expression else_exp;
+    private PrintStream errorStream;
     /** Creates "cond" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1127,6 +1126,7 @@ class cond extends Expression {
         pred = a1;
         then_exp = a2;
         else_exp = a3;
+        errorStream = System.err;
 
     }
     public TreeNode copy() {
@@ -1139,13 +1139,16 @@ class cond extends Expression {
         else_exp.dump(out, n+2);
     }
 
+      /*Type check for if then else. Evaluate each  (pred, then_exp, else_exp). Then, if else_exp evaluates to SELF_TYPE, the whole expression evals to SELF_TYPE. Otherwise, find the join of the then and else
+      statements. This will be the type of the entire expression */
       public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         pred.getClass().cast(pred);
         if(!pred.type_chk(checker, sym_1, bet, root, classTable)) {
-            //System.out.println(pred.getClass().toString());
             return false;
         }
         if(!pred.get_type().toString().equals("Bool")) {
+            semantError(checker.getFilename(), this);
+            errorStream.append("Predicate not a boolean.\n"); //Wrong number of arguments. Error out here.
             return false;
         }
         then_exp.getClass().cast(then_exp);
@@ -1153,6 +1156,7 @@ class cond extends Expression {
         boolean a_1 = then_exp.type_chk(checker, sym_1, bet, root, classTable);
         boolean a_2 = else_exp.type_chk(checker, sym_1, bet, root, classTable);
         if(!a_1 || !a_2) {
+            //If either type check evals to false, return false. Type check has errored. 
             return false;
         }
         Vector<String> classes = new Vector<String>(0);
@@ -1176,20 +1180,30 @@ class cond extends Expression {
         else
             classes.addElement(else_exp.get_type().toString());
         }
-        if(then_exp.get_type() == null && else_exp.get_type() == null)
+        if(then_exp.get_type() == null && else_exp.get_type() == null) //Exit if the type of both then_exp and else_exp cannot be set.
             return false;
         HierarchyNode root_of_good_tree = classTable.goodClasses();
         Vector<HierarchyNode> node_list = new Vector<HierarchyNode>(0);
         node_list = classTable.find_join_outer(root_of_good_tree, classes, node_list);
         int i = node_list.size();
         if(i==0) {
-            //System.out.println(classes.elementAt(0));
-            //System.out.println(classes.size());
+            //Cannot find join, so exit
+            semantError(checker.getFilename(), this);
+            errorStream.append("No common subclass between these two classes.\n"); //Wrong number of arguments. Error out here.
             return false;
         }
         AbstractSymbol delta = AbstractTable.stringtable.addString(node_list.elementAt(i-1).thisNode());
         super.set_type(delta);
         return true;
+    }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
     }
 
     
@@ -1211,6 +1225,7 @@ class cond extends Expression {
 class loop extends Expression {
     protected Expression pred;
     protected Expression body;
+    private PrintStream errorStream;
     /** Creates "loop" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1221,8 +1236,7 @@ class loop extends Expression {
         super(lineNumber);
         pred = a1;
         body = a2;
-        // AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
-        // super.set_type(loop_sym);
+        errorStream = System.err;
 
     }
     public TreeNode copy() {
@@ -1233,25 +1247,31 @@ class loop extends Expression {
         pred.dump(out, n+2);
         body.dump(out, n+2);
     }
-
+    /* Type check for loop. Evaluate the type checks for pred. Ensure it's a boolean. Evaluate body. Then set the entire expression to Object*/
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-        // AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
-        // super.set_type(loop_sym);
         pred.getClass().cast(pred);
-        if(!pred.type_chk(checker, sym_1, bet, root, classTable))
+        if(!pred.type_chk(checker, sym_1, bet, root, classTable)) 
             return false;
         body.getClass().cast(body);
         if(!body.type_chk(checker, sym_1, bet, root, classTable))
             return false;
         if(!pred.get_type().toString().equals("Bool")) {
+            semantError(checker.getFilename(), this);
+            errorStream.append("Predicate is not of type Bool.\n"); //Wrong number of arguments. Error out here.
             return false;
-            //Error print 
         }
         AbstractSymbol loop_sym = AbstractTable.stringtable.addString("Object");
         super.set_type(loop_sym);
         return true;
     }
-    
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_loop");
@@ -1269,6 +1289,7 @@ class loop extends Expression {
 class typcase extends Expression {
     protected Expression expr;
     protected Cases cases;
+    private PrintStream errorStream;
     /** Creates "typcase" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1279,8 +1300,10 @@ class typcase extends Expression {
         super(lineNumber);
         expr = a1;
         cases = a2;
+        errorStream = System.err;
     }
 
+    /*Type check for case expressions. Evaluate each branch (each case). Store all of the types of these cases. Then, find the join of them all. If there are any errors, exit*/
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         expr.getClass().cast(expr);
         Vector<String> case_classes = new Vector<String>(0);
@@ -1322,6 +1345,14 @@ class typcase extends Expression {
     public TreeNode copy() {
         return new typcase(lineNumber, (Expression)expr.copy(), (Cases)cases.copy());
     }
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "typcase\n");
         expr.dump(out, n+2);
@@ -1349,6 +1380,7 @@ class typcase extends Expression {
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class block extends Expression {
     protected Expressions body;
+    private PrintStream errorStream;
     /** Creates "block" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1357,9 +1389,12 @@ class block extends Expression {
     public block(int lineNumber, Expressions a1) {
         super(lineNumber);
         body = a1;
+        errorStream = System.err;
         
     }
 
+
+    /*Type check for block. Evaluate each expression in the block. Set the type to be the same as that of the last expression in the block */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         Expression aleph_1 = (Expression) body.getNth(body.getLength()-1);
         if(!(aleph_1.get_type() == null)) {
@@ -1398,6 +1433,14 @@ class block extends Expression {
         body.dump(out, n+2);
     }
 
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -1436,7 +1479,8 @@ class let extends Expression {
         body = a4;
         errorStream = System.err;
     }
-
+    /*Type check for let. Evaluate the type_check for init. Ensure that it conforms to type_decl. Enter a new scope in the symbol table. 
+    Add the identifier and its type_decl. Now, in this new scope evaluate the body*/ 
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         sym_1.enterScope();
         AbstractSymbol T_zero = type_decl;
@@ -1451,15 +1495,15 @@ class let extends Expression {
             HierarchyNode root_of_good_tree = classTable.goodClasses();
             HierarchyNode root_of_small = classTable.getClassbyName(T_zero.toString(), root_of_good_tree);
             if(!classTable.isChildClass(init.get_type().toString(), root_of_small)) {
+                semantError(checker.getFilename(), this);
+                errorStream.append("Inferred type " + this.init.get_type().toString() + " of initialization of " + identifier.toString() + " does not conform to identifier's declared type " + this.type_decl.toString() + ".\n"); //Wrong number of arguments. Error out here.
                 sym_1.exitScope();
-                //System.out.println("HERE-1");
                 return false;
             }
             sym_1.addId(identifier, T_zero); 
             body.getClass().cast(body);
             if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
                 sym_1.exitScope();
-                //System.out.println("HERE-2");
                 return false;
             }
             super.set_type(body.get_type());
@@ -1470,7 +1514,6 @@ class let extends Expression {
         body.getClass().cast(body);
         if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
             sym_1.exitScope();
-            //System.out.println("HERE-3");
             return false;
         }
         super.set_type(body.get_type());
@@ -1496,6 +1539,7 @@ class let extends Expression {
     errorStream.print(filename + ":" + t.getLineNumber() + ": ");
     return semantError();
     }
+
 
     public PrintStream semantError() {
     return errorStream;
@@ -1534,8 +1578,6 @@ class plus extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        // AbstractSymbol plus_val = AbstractTable.stringtable.addString("Int");
-        // super.set_type(plus_val);
     }
     public TreeNode copy() {
         return new plus(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1546,6 +1588,7 @@ class plus extends Expression {
         e2.dump(out, n+2);
     }
 
+    /*Type check for plus. Ensure that both expressions are of type Int */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol plus_val = AbstractTable.stringtable.addString("Int");
         super.set_type(plus_val);
@@ -1606,8 +1649,6 @@ class sub extends Expression {
         e1 = a1;
         e2 = a2;
         errorStream = System.err;
-        // AbstractSymbol sub_val = AbstractTable.stringtable.addString("Int");
-        // super.set_type(sub_val);
     }
     public TreeNode copy() {
         return new sub(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1618,6 +1659,8 @@ class sub extends Expression {
         e2.dump(out, n+2);
     }
 
+
+    /*Type check for sub. Ensure that both expressions are of type Int */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol sub_val = AbstractTable.stringtable.addString("Int");
         super.set_type(sub_val);
@@ -1678,8 +1721,6 @@ class mul extends Expression {
         e1 = a1;
         e2 = a2;
         errorStream = System.err;
-        // AbstractSymbol mul_val = AbstractTable.stringtable.addString("Int");
-        // super.set_type(mul_val);
     }
     public TreeNode copy() {
         return new mul(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1690,6 +1731,8 @@ class mul extends Expression {
         e2.dump(out, n+2);
     }
 
+
+    /*Type check for mul. Ensure that both expressions are of type Int */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
          AbstractSymbol mul_val = AbstractTable.stringtable.addString("Int");
          super.set_type(mul_val);
@@ -1752,8 +1795,6 @@ class divide extends Expression {
         e1 = a1;
         e2 = a2;
         errorStream = System.err;
-        // AbstractSymbol div_val = AbstractTable.stringtable.addString("Int");
-        // super.set_type(div_val);
     }
     public TreeNode copy() {
         return new divide(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1764,16 +1805,14 @@ class divide extends Expression {
         e2.dump(out, n+2);
     }
 
+
+    /*Type check for divide. Ensure that both expressions are of type Int */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
-          AbstractSymbol div_val = AbstractTable.stringtable.addString("Int");
-          super.set_type(div_val);
-         if(e1.get_type() == null) {
-                 e1.getClass().cast(e1);
-            }
-         e1.type_chk(checker, sym_1, bet, root, classTable);
-         if(e2.get_type() == null) {
-                e2.getClass().cast(e2);
-            }
+        AbstractSymbol div_val = AbstractTable.stringtable.addString("Int");
+        super.set_type(div_val);
+        e1.getClass().cast(e1);
+        e1.type_chk(checker, sym_1, bet, root, classTable);
+        e2.getClass().cast(e2);
         e2.type_chk(checker, sym_1, bet, root, classTable);
         if(e1.get_type().toString().equals("Int") && e2.get_type().toString().equals("Int")) {
             return true;
@@ -1812,6 +1851,7 @@ class divide extends Expression {
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class neg extends Expression {
     protected Expression e1;
+    private PrintStream errorStream;
     /** Creates "neg" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1820,8 +1860,7 @@ class neg extends Expression {
     public neg(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
-        // AbstractSymbol neg_type = AbstractTable.stringtable.addString("Int");
-        // super.set_type(neg_type);
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new neg(lineNumber, (Expression)e1.copy());
@@ -1830,19 +1869,30 @@ class neg extends Expression {
         out.print(Utilities.pad(n) + "neg\n");
         e1.dump(out, n+2);
     }
+
+    /*Type check for neg. Ensure that expression is type Int. Set type to be Int. */
      public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol neg_type = AbstractTable.stringtable.addString("Int");
         super.set_type(neg_type);
-        if(e1.get_type() == null)
-            e1.getClass().cast(e1);
+        e1.getClass().cast(e1);
         if(!e1.type_chk(checker, sym_1, bet, root, classTable))
             return false;
-        if(e1.get_type() != null && !e1.get_type().toString().equals("Int"))
+        if(e1.get_type() != null && !e1.get_type().toString().equals("Int")) {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() +".\n");
             return false;
+        }
         return true;
     }
         
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
 
+    public PrintStream semantError() {
+    return errorStream;
+    }
 
     
     public void dump_with_types(PrintStream out, int n) {
@@ -1861,6 +1911,7 @@ class neg extends Expression {
 class lt extends Expression {
     protected Expression e1;
     protected Expression e2;
+    private PrintStream errorStream;
     /** Creates "lt" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1871,8 +1922,7 @@ class lt extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        // AbstractSymbol lt_val = AbstractTable.stringtable.addString("Bool");
-        // super.set_type(lt_val);
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new lt(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1882,24 +1932,33 @@ class lt extends Expression {
         e1.dump(out, n+2);
         e2.dump(out, n+2);
     }
+    /*Type check for less than. Check that both expressions are Ints. Set type to be Bool*/
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol lt_val = AbstractTable.stringtable.addString("Bool");
         super.set_type(lt_val);
-        if(e1.get_type() == null)
-            e1.getClass().cast(e1);
-        if(e2.get_type() == null)
-            e2.getClass().cast(e2);
-        //Print error on each case
+        e1.getClass().cast(e1);
+        e2.getClass().cast(e2);
         boolean a_1 = e1.type_chk(checker, sym_1, bet, root, classTable);
         boolean a_2 = e2.type_chk(checker, sym_1, bet, root, classTable);
         if(!a_1 || !a_2) {
             return false;
         }
-        if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int"))
+        if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int")) {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " < " + e2.get_type() +".\n");
             return false;
+        }
         return true;
     }
 
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
 
     
     public void dump_with_types(PrintStream out, int n) {
@@ -1919,6 +1978,7 @@ class lt extends Expression {
 class eq extends Expression {
     protected Expression e1;
     protected Expression e2;
+    private PrintStream errorStream;
     /** Creates "eq" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1929,8 +1989,7 @@ class eq extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        // AbstractSymbol e_val = AbstractTable.stringtable.addString("Bool");
-        // super.set_type(e_val);
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new eq(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1941,6 +2000,7 @@ class eq extends Expression {
         e2.dump(out, n+2);
     }
 
+/*Type check for eq. Check that both expressions are of the same type. Set type to Bool */
  public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
          AbstractSymbol e_val = AbstractTable.stringtable.addString("Bool");
         super.set_type(e_val);
@@ -1951,11 +2011,30 @@ class eq extends Expression {
         boolean a_2 = e2.type_chk(checker,sym_1, bet, root, classTable);
         if(!a_1 || !a_2)
             return false;
-        // if(!e1.get_type().toString().equals(e2.get_type().toString()))
-        //     return false;
+        Vector<String> prim_check = new Vector<String>(0);
+        prim_check.addElement("Int");
+        prim_check.addElement("Bool");
+        prim_check.addElement("String");
+        if(!(e1.get_type() == null) && !(e2.get_type() == null)) {
+            if(prim_check.contains(e1.get_type().toString()) || prim_check.contains(e2.get_type().toString())) { //Check whether e1 or e2 are of any of Int, Bool, or String
+                    if(!(e1.get_type().toString().equals(e2.get_type().toString()))) { //if this is the case, check equality
+                         semantError(checker.getFilename(), (TreeNode) this);
+                         errorStream.append("Type mismatch: " + e1.get_type() + " and " + e2.get_type() +".\n");
+                         return false;
+                    }
+            }
+            return true;
+        }
         return true;
     }
-    
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_eq");
@@ -1973,6 +2052,7 @@ class eq extends Expression {
 class leq extends Expression {
     protected Expression e1;
     protected Expression e2;
+    private PrintStream errorStream;
     /** Creates "leq" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1983,8 +2063,7 @@ class leq extends Expression {
         super(lineNumber);
         e1 = a1;
         e2 = a2;
-        // AbstractSymbol l_val = AbstractTable.stringtable.addString("Bool");
-        // super.set_type(l_val);
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new leq(lineNumber, (Expression)e1.copy(), (Expression)e2.copy());
@@ -1994,6 +2073,8 @@ class leq extends Expression {
         e1.dump(out, n+2);
         e2.dump(out, n+2);
     }
+
+    /*Type check for less than or equal to. Check that both expressions are Ints. Set type to Int. */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol l_val = AbstractTable.stringtable.addString("Bool");
         super.set_type(l_val);
@@ -2005,9 +2086,20 @@ class leq extends Expression {
         if(!a_1 || !a_2) {
             return false;
         }
-        if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int"))
+        if(!e1.get_type().toString().equals("Int") || !e2.get_type().toString().equals("Int")) {
+            semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Non-Tree Constants.Int arguments: " + e1.get_type() + " <= " + e2.get_type() +".\n");
             return false;
+        }
         return true;
+    }
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
     }
     
     public void dump_with_types(PrintStream out, int n) {
@@ -2026,6 +2118,7 @@ class leq extends Expression {
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class comp extends Expression {
     protected Expression e1;
+    private PrintStream errorStream;
     /** Creates "comp" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -2034,8 +2127,7 @@ class comp extends Expression {
     public comp(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
-        // AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
-        // super.set_type(bool_val);
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new comp(lineNumber, (Expression)e1.copy());
@@ -2045,15 +2137,31 @@ class comp extends Expression {
         e1.dump(out, n+2);
     }
 
+/*Type check for complement. Check that expression is Bool. Set type to Bool */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
         super.set_type(bool_val);
-        if(e1.get_type() == null)
-            e1.getClass().cast(e1);
+        e1.getClass().cast(e1);
         if(!(e1.type_chk(checker, sym_1, bet, root, classTable)))
             return false; //Error printing needed
+        if(e1.get_type() == null)
+            return false;
+        if(!e1.get_type().toString().equals("Bool")) {
+             semantError(checker.getFilename(), (TreeNode) this);
+             errorStream.append("Argument not of type Bool. Cannot execute.\n");
+            return false;
+        }
         return true;
         }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_comp");
@@ -2077,8 +2185,6 @@ class int_const extends Expression {
     public int_const(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         token = a1;
-        // AbstractSymbol int_val = AbstractTable.stringtable.addString("Int");
-        // super.set_type(int_val);
 
     }
     public TreeNode copy() {
@@ -2089,6 +2195,7 @@ class int_const extends Expression {
         dump_AbstractSymbol(out, n+2, token);
     }
 
+    /*Type check for int_const. Set type to Int */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol string_val = AbstractTable.stringtable.addString("Int");
         super.set_type(string_val);
@@ -2119,14 +2226,13 @@ class bool_const extends Expression {
     public bool_const(int lineNumber, Boolean a1) {
         super(lineNumber);
         val = a1;
-        // AbstractSymbol bool_val = AbstractTable.stringtable.addString("Bool");
-        // super.set_type(bool_val);
     }
     public TreeNode copy() {
         return new bool_const(lineNumber, copy_Boolean(val));
     }
 
-     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+    /* Type check for bool_cost. Set type to Bool */
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol string_val = AbstractTable.stringtable.addString("Bool");
         super.set_type(string_val);
         return true;
@@ -2135,6 +2241,8 @@ class bool_const extends Expression {
         out.print(Utilities.pad(n) + "bool_const\n");
         dump_Boolean(out, n+2, val);
     }
+
+
 
     
     public void dump_with_types(PrintStream out, int n) {
@@ -2160,14 +2268,13 @@ class string_const extends Expression {
     public string_const(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         token = a1;
-        AbstractSymbol string_val = AbstractTable.stringtable.addString("String");
-        super.set_type(string_val);
     }
     public TreeNode copy() {
         return new string_const(lineNumber, copy_AbstractSymbol(token));
     }
 
-     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+    /*Type check for string_const. Set type to String */
+    public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol string_val = AbstractTable.stringtable.addString("String");
         super.set_type(string_val);
         return true;
@@ -2195,6 +2302,7 @@ class string_const extends Expression {
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class new_ extends Expression {
     protected AbstractSymbol type_name;
+    private PrintStream errorStream;
     /** Creates "new_" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -2203,15 +2311,23 @@ class new_ extends Expression {
     public new_(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         type_name = a1;
-        // AbstractSymbol n_val = AbstractTable.stringtable.addString(type_name.toString());
-        // super.set_type(n_val);
+        errorStream = System.err;
 
     }
     public TreeNode copy() {
         return new new_(lineNumber, copy_AbstractSymbol(type_name));
     }
 
+    /* Type check for new object. Set type to type_name */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        HierarchyNode aleph = classTable.goodClasses();
+        HierarchyNode type_nd = classTable.getClassbyName(type_name.toString(), aleph);
+        if(type_nd == null) { //If type_name is not in class table, then error out
+             semantError(checker.getFilename(), (TreeNode) this);
+            errorStream.append("Type " + this.type_name + " not a declared or built-in class.\n");
+            return false;
+        }
+
         AbstractSymbol n_val = AbstractTable.stringtable.addString(type_name.toString());
         super.set_type(n_val);
         return true;
@@ -2221,7 +2337,15 @@ class new_ extends Expression {
         dump_AbstractSymbol(out, n+2, type_name);
     }
 
-    
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
+
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_new");
@@ -2237,6 +2361,7 @@ class new_ extends Expression {
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class isvoid extends Expression {
     protected Expression e1;
+    private PrintStream errorStream;
     /** Creates "isvoid" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -2245,26 +2370,36 @@ class isvoid extends Expression {
     public isvoid(int lineNumber, Expression a1) {
         super(lineNumber);
         e1 = a1;
-        // AbstractSymbol a_sym = AbstractTable.stringtable.addString("Bool");
-        // super.set_type(a_sym);
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new isvoid(lineNumber, (Expression)e1.copy());
     }
 
+    /*Type check for isvoid. Ensure that expression is type void. Set type to Bool */
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         AbstractSymbol a_sym = AbstractTable.stringtable.addString("Bool");
         super.set_type(a_sym);
         if(e1.get_type() == null)
             e1.getClass().cast(e1);
-        if(!(e1.type_chk(checker, sym_1, bet, root, classTable)))
-            return false; //Error printing needed
+        if(!(e1.type_chk(checker, sym_1, bet, root, classTable))) {
+            return false; 
+        }
         return true;
         }
 
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "isvoid\n");
         e1.dump(out, n+2);
+    }
+
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
     }
 
     
@@ -2311,6 +2446,7 @@ class no_expr extends Expression {
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class object extends Expression {
     protected AbstractSymbol name;
+    private PrintStream errorStream;
     /** Creates "object" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -2319,6 +2455,7 @@ class object extends Expression {
     public object(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         name = a1;
+        errorStream = System.err;
     }
     public TreeNode copy() {
         return new object(lineNumber, copy_AbstractSymbol(name));
@@ -2328,6 +2465,7 @@ class object extends Expression {
         dump_AbstractSymbol(out, n+2, name);
     }
     
+    /*Type check for object. Find the object in the symbol table. and set the type to be what is declared in the symbol table lookup */
      public boolean type_chk(class_c to_check, SymbolTable gimel, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
         if(name.toString().equals("self")) {
             AbstractSymbol obj_value = AbstractTable.stringtable.addString("SELF_TYPE");
@@ -2357,11 +2495,11 @@ class object extends Expression {
             }
 
         }
-        //Print error
         return false;
 
     }
-    
+  
+
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_object");
