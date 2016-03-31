@@ -1,0 +1,26 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,3 ****
+
+  "examples/arith.cl", line 5: parse error at or near '}'
+  "examples/arith.cl", line 8: parse error at or near '}'
+! "examples/arith.cl", line 11: parse error at or near ':'
+--- 1,13 ----
+
+  "examples/arith.cl", line 5: parse error at or near '}'
+  "examples/arith.cl", line 8: parse error at or near '}'
+! java.lang.NullPointerException
+! 	at CoolParser$CUP$CoolParser$actions.CUP$CoolParser$do_action_part00000000(CoolParser.java:1138)
+! 	at CoolParser$CUP$CoolParser$actions.CUP$CoolParser$do_action(CoolParser.java:1168)
+! 	at CoolParser.do_action(CoolParser.java:413)
+! 	at java_cup.runtime.lr_parser.parse_lookahead(lr_parser.java:1193)
+! 	at java_cup.runtime.lr_parser.error_recovery(lr_parser.java:902)
+! 	at java_cup.runtime.lr_parser.parse(lr_parser.java:613)
+! 	at Parser.main(Parser.java:35)
+! java.lang.Throwable: Unexpected exception in parser
+! 	at Utilities.fatalError(Utilities.java:40)
+! 	at Parser.main(Parser.java:45)

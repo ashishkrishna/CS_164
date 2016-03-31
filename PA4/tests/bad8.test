@@ -1,0 +1,11 @@
+class A {
+	some_A() : A {new A};
+};
+
+class Main inherits IO{
+	main(): Object {(new B).some_A().id_b()};
+};
+
+class B inherits A {
+	id_b : Int <- {007};
+};
