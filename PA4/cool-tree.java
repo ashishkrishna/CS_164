@@ -301,6 +301,11 @@ class programc extends Program {
     methods_per_class = new HashMap<String, Vector<method>>();
     HierarchyNode root_1 = classTable.goodClasses();
     annotateMethods(root_1);
+    if(!checkMain(methods_per_class)) { 
+        semanticerr++;
+        semantError();
+        errorStream.append("Main method not defined in Main class.\n");
+    }
     checkClasses(root_1, attr_checker, method_checker, classTable);
     if(semanticerr > 0) {  //There shouldn't be any semantic errors
         System.err.println("Compilation halted due to static semantic errors.");
@@ -390,6 +395,22 @@ class programc extends Program {
 
 
     }
+
+    public boolean checkMain(HashMap<String, Vector<method>> bet) {
+        Vector<method> methods = bet.get("Main");
+        for(Enumeration<method> enums = methods.elements(); enums.hasMoreElements(); ) {
+            method aleph = enums.nextElement();
+            if(aleph.name.toString().equals("main")) {
+                return true;
+            }
+               
+
+            }
+            return false;
+         }
+
+
+    
     
     public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
     errorStream.print(filename + ":" + t.getLineNumber() + ": ");
@@ -650,18 +671,23 @@ class attr extends Feature {
         if(init.get_type() == null) {
             init.getClass().cast(init);
         }
-        if(init.type_chk(to_check,  aleph, hash_method,  root,  classTable))
-            return true;
+        if(!init.type_chk(to_check,  aleph, hash_method,  root,  classTable)){
+            return false;
+        }
+            
         
-        else {
-            if(!init.get_type().equals(type_decl)) {         
+        if(!(init.get_type()==null)) {
+                HierarchyNode root_of_good_tree = classTable.goodClasses();
+                HierarchyNode super_class = classTable.getClassbyName(type_decl.toString(), root_of_good_tree);
+                if(!classTable.isChildClass(init.get_type().toString(), super_class)) {        
                 semantError(to_check.getFilename(), (TreeNode) this);
                 errorStream.append("Inferred type " + this.init.get_type() + " of initialization of attribute " + this.name + " does not conform to declared type " + this.type_decl + ".\n");
                 return false;
             }
-
         }
-        return false;
+
+        
+        return true;
     }
 
     public AbstractSymbol get_type() {
@@ -831,6 +857,7 @@ class assign extends Expression {
         if(expr.get_type() == null) {
             expr.getClass().cast(expr);
         }
+        //System.out.println(name.toString());
         expr.type_chk(to_check, gimel, bet, root, classTable);
         if(gimel.lookup(name) != null) {
             if(gimel.lookup(name).getClass().equals(attr.class)) {
@@ -838,17 +865,29 @@ class assign extends Expression {
                 attr alepha = (attr) gimel.lookup(name);
                 HierarchyNode super_class = classTable.getClassbyName(alepha.type_decl.toString(), root_of_good_tree);
                 if(!classTable.isChildClass(expr.get_type().toString(), super_class)) {
-                    return false;
+                semantError(to_check.getFilename(), (TreeNode) this);
+                errorStream.append("initialization type mismatch.\n");
+                //System.out.println("HERE");
+                return false;
                     //Add error message
                 }
         }
       // errorStream.append("Inferred type " + this.name.toString() + " of initialization of " +  this.name.toString() + " does not conform to identifier\'s declared type " + this.type.toString() + ".\n");    
     }
+        
          AbstractSymbol aleph = AbstractTable.stringtable.addString(expr.get_type().toString());
          super.set_type(aleph);
          return true;
     }
     
+    public PrintStream semantError(AbstractSymbol filename, TreeNode t) {
+    errorStream.print(filename + ":" + t.getLineNumber() + ": ");
+    return semantError();
+    }
+
+    public PrintStream semantError() {
+    return errorStream;
+    }
 
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -869,6 +908,7 @@ class static_dispatch extends Expression {
     protected AbstractSymbol type_name;
     protected AbstractSymbol name;
     protected Expressions actual;
+    private PrintStream errorStream;
     /** Creates "static_dispatch" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -1412,12 +1452,14 @@ class let extends Expression {
             HierarchyNode root_of_small = classTable.getClassbyName(T_zero.toString(), root_of_good_tree);
             if(!classTable.isChildClass(init.get_type().toString(), root_of_small)) {
                 sym_1.exitScope();
+                //System.out.println("HERE-1");
                 return false;
             }
             sym_1.addId(identifier, T_zero); 
             body.getClass().cast(body);
             if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
                 sym_1.exitScope();
+                //System.out.println("HERE-2");
                 return false;
             }
             super.set_type(body.get_type());
@@ -1428,6 +1470,7 @@ class let extends Expression {
         body.getClass().cast(body);
         if(!body.type_chk(checker, sym_1, bet, root, classTable)) {
             sym_1.exitScope();
+            //System.out.println("HERE-3");
             return false;
         }
         super.set_type(body.get_type());
