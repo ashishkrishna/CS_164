@@ -1,5 +1,5 @@
 class A {
-	some_A() : SELF_TYPE {new A};
+	some_A() : A {new A};
 };
 
 class Main inherits IO{
