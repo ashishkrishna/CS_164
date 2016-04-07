@@ -378,9 +378,9 @@ class CgenClassTable extends SymbolTable {
 
 	this.str = str;
 
-	stringclasstag = 0 /* Change to your String class tag here */;
-	intclasstag =    0 /* Change to your Int class tag here */;
-	boolclasstag =   0 /* Change to your Bool class tag here */;
+	stringclasstag = 5 /* Change to your String class tag here */;
+	intclasstag =    3 /* Change to your Int class tag here */;
+	boolclasstag =   4 /* Change to your Bool class tag here */;
 
 	enterScope();
 	if (Flags.cgen_debug) System.out.println("Building CgenClassTable");
@@ -399,12 +399,16 @@ class CgenClassTable extends SymbolTable {
     public void code() {
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
+	CgenNode root_of_tree = root();
+	build_all_dispatch_trees(root_of_tree);
 
 	if (Flags.cgen_debug) System.out.println("choosing gc");
 	codeSelectGc();
 
 	if (Flags.cgen_debug) System.out.println("coding constants");
 	codeConstants();
+
+
 
 	//                 Add your code to emit
 	//                   - prototype objects
@@ -420,6 +424,30 @@ class CgenClassTable extends SymbolTable {
 	//                   - etc...
     }
 
+    public void build_all_dispatch_trees(CgenNode base) {
+    	Vector<method> disp_tbl = dispatch_table_builder(base);
+    	if(!base.getChildren().hasMoreElements()) {
+    		return;
+    	}
+    	for( Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
+    		CgenNode nxt = (CgenNode) children.nextElement();
+    		build_all_dispatch_trees(nxt);
+    	}
+    	return;
+    }
+    /** Building the dispatch table **/
+    public Vector<method> dispatch_table_builder(CgenNode class_1) {
+    	Vector<method> disp_tbl = new Vector<method>(0);
+    	for( Enumeration e = class_1.getFeatures().getElements(); e.hasMoreElements(); ) {
+    			Feature next_feature = (Feature) e.nextElement();
+    			if(next_feature.getClass().equals(method.class)) {
+    				method add_method = (method) next_feature;
+    				disp_tbl.addElement(add_method);
+    			}
+    	}
+    	
+    	return disp_tbl;
+    }
     /** Gets the root of the inheritance tree */
     public CgenNode root() {
 	return (CgenNode)probe(TreeConstants.Object_);
