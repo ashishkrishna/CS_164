@@ -447,9 +447,9 @@ class CgenClassTable extends SymbolTable {
     		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
     		String parent = "";
+    		parent = base.getParentNd().getName().toString()+CgenSupport.CLASSINIT_SUFFIX;
     		if(base.getName().toString().equals("Object"))
     			parent = "null";
-    		parent = base.getParentNd().getName().toString()+CgenSupport.CLASSINIT_SUFFIX;
     		CgenSupport.emitInitializerRef(parent, str);
     		if(!base.getChildren().hasMoreElements()) {
     		return;
