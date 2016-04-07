@@ -399,14 +399,18 @@ class CgenClassTable extends SymbolTable {
     public void code() {
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
-	CgenNode root_of_tree = root();
-	build_all_dispatch_trees(root_of_tree);
+	
+	// CgenNode root_of_tree = root();
+	// build_all_dispatch_trees(root_of_tree);
 
 	if (Flags.cgen_debug) System.out.println("choosing gc");
 	codeSelectGc();
 
 	if (Flags.cgen_debug) System.out.println("coding constants");
 	codeConstants();
+	str.print(CgenSupport.CLASSNAMETAB + CgenSupport.LABEL);
+	CgenNode start = root();
+	build_class_nameTab(start);
 
 
 
@@ -424,6 +428,20 @@ class CgenClassTable extends SymbolTable {
 	//                   - etc...
     }
 
+
+    public void build_class_nameTab(CgenNode base) {
+    		AbstractSymbol aleph = AbstractTable.stringtable.lookup(base.getName().toString());
+    		StringSymbol gimel = (StringSymbol) aleph;
+    		str.print(CgenSupport.WORD); gimel.codeRef(str); str.println("");
+    		if(!base.getChildren().hasMoreElements()) {
+    		return;
+    		}
+    		for( Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
+    		CgenNode nxt = (CgenNode) children.nextElement();
+    		build_class_nameTab(nxt);
+    		}
+    		return;
+    }
     public void build_all_dispatch_trees(CgenNode base) {
     	Vector<method> disp_tbl = dispatch_table_builder(base);
     	if(!base.getChildren().hasMoreElements()) {

@@ -73,7 +73,7 @@ class Flags {
     public static boolean semant_debug = false;
 
     /** Enable code gen debugging */
-    public static boolean cgen_debug = false;
+    public static boolean cgen_debug = true;
 
     /** Emit stabs */
     public static boolean emit_stabs = false;

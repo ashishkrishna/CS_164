@@ -1444,8 +1444,8 @@ class string_const extends Expression {
       * @param s the output stream 
       * */
     public void code(PrintStream s) {
-	CgenSupport.emitLoadString(CgenSupport.ACC,
-                                   (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
+	//CgenSupport.emitLoadString(CgenSupport.ACC,
+                                  // (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
     }
 
 }
