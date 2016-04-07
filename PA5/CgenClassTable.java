@@ -411,6 +411,12 @@ class CgenClassTable extends SymbolTable {
 	str.print(CgenSupport.CLASSOBJTAB + CgenSupport.LABEL);
 	objclasstab_creation(start);
 	build_all_dispatch_trees(start);
+	build_proto("Object", 3, 0);
+	build_proto("String", 5, 5);
+	build_proto("Bool", 4, 4);
+	build_proto("Int", 4, 3);
+	build_proto("IO", 3, 1);
+	build_proto("Main", 3, 2);
 
 
 
@@ -445,6 +451,7 @@ class CgenClassTable extends SymbolTable {
     		return;
     }
 
+
     public void objclasstab_creation(CgenNode base) {
     		str.print(CgenSupport.WORD + base.getName().toString()+CgenSupport.PROTOBJ_SUFFIX); str.println("");
     		str.print(CgenSupport.WORD + base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX); str.println("");
@@ -457,6 +464,23 @@ class CgenClassTable extends SymbolTable {
     		}
     		return;
 
+    }
+
+    public void build_proto(String classtab, int size, int classtag) {
+    	str.print(classtab + CgenSupport.PROTOBJ_SUFFIX + CgenSupport.LABEL); 
+    	str.print(CgenSupport.WORD + String.valueOf(classtag)); str.println("");
+    	str.print(CgenSupport.WORD + String.valueOf(size)); str.println("");
+    	str.print(CgenSupport.WORD + classtab+CgenSupport.DISPTAB_SUFFIX); str.println("");
+    	if(classtab.equals("String") || classtab.equals("Bool") || classtab.equals("Int")) {
+    		str.print(CgenSupport.WORD + String.valueOf(0)); str.println("");
+    	}
+    	if(classtab.equals("String")) {
+    		IntSymbol aleph = (IntSymbol) AbstractTable.inttable.lookup("0");
+    		str.print(CgenSupport.WORD); aleph.codeRef(str); str.println("");
+    	}
+    	if(!classtab.equals("Main")) {
+    		str.print(CgenSupport.WORD + String.valueOf(-1)); str.println(""); 
+    	}
     }
 
     public void initialize_all_classes(CgenNode base) {
