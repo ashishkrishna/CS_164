@@ -343,6 +343,7 @@ class CgenSupport {
 	s.print(sym + CLASSINIT_SUFFIX);
     }
 
+
     /** Emits a reference to class' prototype object.
      * @param sym the name of the class 
      * @param s the output stream
@@ -581,6 +582,28 @@ class CgenSupport {
 	}
 	byteMode(s);
 	s.println("\t.byte\t0\t");
+    }
+
+    /** Emits the initialization code for any class 
+    *@param sym denotes the parent class init
+    * */
+
+    static void emitInitializerRef(String dest_reg, PrintStream s) {
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -12, s);
+        CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, s);
+        CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, s);
+        CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, s);
+        CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
+        if(!dest_reg.equals("null"))
+            CgenSupport.emitJal(dest_reg, s);
+        CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+        CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
+        CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);
+        CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, s);
+        CgenSupport.emitReturn(s);
+        
     }
 }
     

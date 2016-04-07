@@ -400,8 +400,6 @@ class CgenClassTable extends SymbolTable {
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
 	
-	// CgenNode root_of_tree = root();
-	// build_all_dispatch_trees(root_of_tree);
 
 	if (Flags.cgen_debug) System.out.println("choosing gc");
 	codeSelectGc();
@@ -411,6 +409,8 @@ class CgenClassTable extends SymbolTable {
 	str.print(CgenSupport.CLASSNAMETAB + CgenSupport.LABEL);
 	CgenNode start = root();
 	build_class_nameTab(start);
+	
+
 
 
 
@@ -421,6 +421,7 @@ class CgenClassTable extends SymbolTable {
 
 	if (Flags.cgen_debug) System.out.println("coding global text");
 	codeGlobalText();
+	initialize_all_classes(start);
 
 	//                 Add your code to emit
 	//                   - object initializer
@@ -442,6 +443,26 @@ class CgenClassTable extends SymbolTable {
     		}
     		return;
     }
+
+    public void initialize_all_classes(CgenNode base) {
+    		str.println(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
+    		String parent = "";
+    		if(base.getName().toString().equals("Object"))
+    			parent = "null";
+    		parent = base.getParentNd().getName().toString()+CgenSupport.CLASSINIT_SUFFIX;
+    		CgenSupport.emitInitializerRef(parent, str);
+    		if(!base.getChildren().hasMoreElements()) {
+    		return;
+    		}
+    		for(Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
+    		CgenNode nxt = (CgenNode) children.nextElement();
+    		initialize_all_classes(nxt);
+    		}
+    		return;
+    }
+
+
+
     public void build_all_dispatch_trees(CgenNode base) {
     	Vector<method> disp_tbl = dispatch_table_builder(base);
     	if(!base.getChildren().hasMoreElements()) {
