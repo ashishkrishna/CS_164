@@ -408,6 +408,8 @@ class CgenClassTable extends SymbolTable {
 	str.print(CgenSupport.CLASSNAMETAB + CgenSupport.LABEL);
 	CgenNode start = root();
 	build_class_nameTab(start);
+	str.print(CgenSupport.CLASSOBJTAB + CgenSupport.LABEL);
+	objclasstab_creation(start);
 	build_all_dispatch_trees(start);
 
 
@@ -443,6 +445,20 @@ class CgenClassTable extends SymbolTable {
     		return;
     }
 
+    public void objclasstab_creation(CgenNode base) {
+    		str.print(CgenSupport.WORD + base.getName().toString()+CgenSupport.PROTOBJ_SUFFIX); str.println("");
+    		str.print(CgenSupport.WORD + base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX); str.println("");
+    		if(!base.getChildren().hasMoreElements()) {
+    		return;
+    		}
+    		for(Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
+    		CgenNode nxt = (CgenNode) children.nextElement();
+    		objclasstab_creation(nxt);
+    		}
+    		return;
+
+    }
+
     public void initialize_all_classes(CgenNode base) {
     		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
@@ -464,7 +480,7 @@ class CgenClassTable extends SymbolTable {
 
 
     public void build_all_dispatch_trees(CgenNode base) {
-    	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX); str.println("");
+    	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
     	Vector<String> disp_tbl = dispatch_table_builder(base);
     	while(disp_tbl.size() > 0) {
     		str.print(disp_tbl.lastElement()); str.println("");
