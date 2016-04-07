@@ -143,7 +143,6 @@ class CgenClassTable extends SymbolTable {
 	// Add constants that are required by the code generator.
 	AbstractTable.stringtable.addString("");
 	AbstractTable.inttable.addString("0");
-
 	AbstractTable.stringtable.codeStringTable(stringclasstag, str);
 	AbstractTable.inttable.codeStringTable(intclasstag, str);
 	codeBools(boolclasstag);
@@ -409,7 +408,7 @@ class CgenClassTable extends SymbolTable {
 	str.print(CgenSupport.CLASSNAMETAB + CgenSupport.LABEL);
 	CgenNode start = root();
 	build_class_nameTab(start);
-	
+	build_all_dispatch_trees(start);
 
 
 
@@ -445,6 +444,7 @@ class CgenClassTable extends SymbolTable {
     }
 
     public void initialize_all_classes(CgenNode base) {
+    		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
     		String parent = "";
     		if(base.getName().toString().equals("Object"))
@@ -464,7 +464,12 @@ class CgenClassTable extends SymbolTable {
 
 
     public void build_all_dispatch_trees(CgenNode base) {
-    	Vector<method> disp_tbl = dispatch_table_builder(base);
+    	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX); str.println("");
+    	Vector<String> disp_tbl = dispatch_table_builder(base);
+    	while(disp_tbl.size() > 0) {
+    		str.print(disp_tbl.lastElement()); str.println("");
+    		disp_tbl.removeElementAt(disp_tbl.size()-1);
+    	}
     	if(!base.getChildren().hasMoreElements()) {
     		return;
     	}
@@ -475,15 +480,19 @@ class CgenClassTable extends SymbolTable {
     	return;
     }
     /** Building the dispatch table **/
-    public Vector<method> dispatch_table_builder(CgenNode class_1) {
-    	Vector<method> disp_tbl = new Vector<method>(0);
+    public Vector<String> dispatch_table_builder(CgenNode class_1) {
+    	CgenNode start = null;
+    	Vector<String> disp_tbl = new Vector<String>(0);
+    	while(class_1 != null) {
     	for( Enumeration e = class_1.getFeatures().getElements(); e.hasMoreElements(); ) {
     			Feature next_feature = (Feature) e.nextElement();
     			if(next_feature.getClass().equals(method.class)) {
     				method add_method = (method) next_feature;
-    				disp_tbl.addElement(add_method);
+    				disp_tbl.addElement(CgenSupport.WORD + class_1.getName().toString()+"."+add_method.name.toString()); 
     			}
     	}
+    	class_1 = class_1.getParentNd();
+    }
     	
     	return disp_tbl;
     }
