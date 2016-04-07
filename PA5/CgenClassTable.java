@@ -467,6 +467,7 @@ class CgenClassTable extends SymbolTable {
     }
 
     public void build_proto(String classtab, int size, int classtag) {
+    	str.println(CgenSupport.WORD + "-1");
     	str.print(classtab + CgenSupport.PROTOBJ_SUFFIX + CgenSupport.LABEL); 
     	str.print(CgenSupport.WORD + String.valueOf(classtag)); str.println("");
     	str.print(CgenSupport.WORD + String.valueOf(size)); str.println("");
@@ -478,9 +479,7 @@ class CgenClassTable extends SymbolTable {
     		IntSymbol aleph = (IntSymbol) AbstractTable.inttable.lookup("0");
     		str.print(CgenSupport.WORD); aleph.codeRef(str); str.println("");
     	}
-    	if(!classtab.equals("Main")) {
-    		str.print(CgenSupport.WORD + String.valueOf(-1)); str.println(""); 
-    	}
+
     }
 
     public void initialize_all_classes(CgenNode base) {
