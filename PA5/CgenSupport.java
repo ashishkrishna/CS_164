@@ -605,8 +605,17 @@ class CgenSupport {
         CgenSupport.emitReturn(s);
         
     }
+
+
+    static void emitMethodInit(PrintStream s) {
+        CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, s);
+        CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, s);
+        CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, s);
+        CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
+    }
 }
-    
+   
     
     
 
