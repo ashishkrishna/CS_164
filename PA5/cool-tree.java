@@ -702,13 +702,15 @@ class dispatch extends Expression {
             Enumeration m = methods_for_this_class.elements();
             int ind = 0;
             while(m.hasMoreElements()){
-                System.out.println(CgenSupport.WORD+"Main"+"."+name.toString());
-                if(m.nextElement().equals(CgenSupport.WORD+"Main"+"."+name.toString()))
+                String next_elem = (String) m.nextElement();
+                System.out.println(CgenSupport.WORD+"IO"+"."+name.toString());
+                System.out.println(next_elem);
+                if(next_elem.equals(CgenSupport.WORD+"IO"+"."+name.toString()))
                     break;
                 ind++;
             }
             //REPLACE REPLACE REPLACE
-            CgenSupport.emitLoad(CgenSupport.T1, ind-2, CgenSupport.T1, s);
+            CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
             CgenSupport.emitMethodEnd(12, s);
 
