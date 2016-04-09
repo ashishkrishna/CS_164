@@ -693,7 +693,7 @@ class dispatch extends Expression {
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
             CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
-            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); //REPLACE
+            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); //REPLACE Find correct offset
             CgenSupport.emitJal("_dispatch_abort", s);
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
@@ -703,9 +703,9 @@ class dispatch extends Expression {
             int ind = 0;
             while(m.hasMoreElements()){
                 String next_elem = (String) m.nextElement();
-                System.out.println(CgenSupport.WORD+"IO"+"."+name.toString());
-                System.out.println(next_elem);
-                if(next_elem.equals(CgenSupport.WORD+"IO"+"."+name.toString()))
+                //System.out.println(CgenSupport.WORD+"IO"+"."+name.toString());
+                //System.out.println(next_elem);
+                if(next_elem.endsWith(name.toString())) //Should involve a lookup in a symbol table.
                     break;
                 ind++;
             }
@@ -713,7 +713,7 @@ class dispatch extends Expression {
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
             CgenSupport.emitMethodEnd(12, s);
-
+            index++;
 
 
 
