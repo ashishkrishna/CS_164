@@ -608,12 +608,21 @@ class CgenSupport {
     }
 
 
-    static void emitMethodInit(PrintStream s) {
+    static void emitMethodInit(int param, PrintStream s) {
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, param, s);
         CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, s);
         CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, s);
         CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, s);
         CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
+    }
+
+    static void emitMethodEnd(int param, PrintStream s) {
+        CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
+        CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);
+        CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, param, s);
+        CgenSupport.emitReturn(s);
     }
 }
    

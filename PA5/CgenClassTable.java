@@ -436,6 +436,7 @@ class CgenClassTable extends SymbolTable {
 	for(Enumeration e = mains.elements(); e.hasMoreElements();) {
 		method next_method = (method) e.nextElement();
 		str.print("Main."+next_method.name.toString()+CgenSupport.LABEL);
+		CgenSupport.emitMethodInit(-12, str);
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
 		shin.code(str);
@@ -522,7 +523,7 @@ class CgenClassTable extends SymbolTable {
     		reversal.addElement(disp_tbl.lastElement());
     		disp_tbl.removeElementAt(disp_tbl.size()-1);
     	}
-    	virtual_disptbl.put(base.getName().toString(), disp_tbl);
+    	virtual_disptbl.put(base.getName().toString(), reversal);
     	if(!base.getChildren().hasMoreElements()) {
     		return virtual_disptbl;
     	}

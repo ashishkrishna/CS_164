@@ -692,10 +692,25 @@ class dispatch extends Expression {
              }
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
-            CgenSupport.emitLoadString(CgenSupport.T1, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
+            CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
+            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); //REPLACE
             CgenSupport.emitJal("_dispatch_abort", s);
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
+            /* REPLACE WITH GENERAL CASE */ 
+            Vector<String> methods_for_this_class = CgenClassTable.virtual_disptbl.get("Main");
+            Enumeration m = methods_for_this_class.elements();
+            int ind = 0;
+            while(m.hasMoreElements()){
+                System.out.println(CgenSupport.WORD+"Main"+"."+name.toString());
+                if(m.nextElement().equals(CgenSupport.WORD+"Main"+"."+name.toString()))
+                    break;
+                ind++;
+            }
+            //REPLACE REPLACE REPLACE
+            CgenSupport.emitLoad(CgenSupport.T1, ind-2, CgenSupport.T1, s);
+            CgenSupport.emitJalr(CgenSupport.T1, s);
+            CgenSupport.emitMethodEnd(12, s);
 
 
 
