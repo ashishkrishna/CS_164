@@ -58,6 +58,7 @@ class CgenSupport {
     final static String INTCONST_PREFIX     = "int_const";
     final static String STRCONST_PREFIX     = "str_const";
     final static String BOOLCONST_PREFIX    = "bool_const";
+    final static String LABEL_PREFIX        = "label";
 
 
     final static int    EMPTYSLOT           = 0;

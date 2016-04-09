@@ -1,17 +1,14 @@
 /*
 Copyright (c) 2000 The Regents of the University of California.
 All rights reserved.
-
 Permission to use, copy, modify, and distribute this software for any
 purpose, without fee, and without written agreement is hereby granted,
 provided that the above copyright notice and the following two
 paragraphs appear in all copies of this software.
-
 IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
 DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
 OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF
 CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
 INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
 AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
@@ -40,6 +37,8 @@ class CgenClassTable extends SymbolTable {
     private int stringclasstag;
     private int intclasstag;
     private int boolclasstag;
+    protected static  HashMap<String, Vector<String>> virtual_disptbl;
+    protected static HashMap<String, Vector<method>> method_decls;
 
 
     // The following methods emit code for constants and global
@@ -397,7 +396,8 @@ class CgenClassTable extends SymbolTable {
     /** This method is the meat of the code generator.  It is to be
         filled in programming assignment 5 */
     public void code() {
-    HashMap<String, Vector<String>> virtual_disptbl = new HashMap<String, Vector<String>>(0);
+    CgenClassTable.virtual_disptbl = new HashMap<String, Vector<String>>(0);
+    CgenClassTable.method_decls = new HashMap<String, Vector<method>>(0);
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
 	
@@ -412,7 +412,7 @@ class CgenClassTable extends SymbolTable {
 	build_class_nameTab(start);
 	str.print(CgenSupport.CLASSOBJTAB + CgenSupport.LABEL);
 	objclasstab_creation(start);
-	virtual_disptbl = build_all_dispatch_trees(start, virtual_disptbl);
+	virtual_disptbl = build_all_dispatch_trees(start, CgenClassTable.virtual_disptbl);
 	build_proto("Object", 3, 0);
 	build_proto("String", 5, 5);
 	build_proto("Bool", 4, 4);
@@ -431,6 +431,15 @@ class CgenClassTable extends SymbolTable {
 	if (Flags.cgen_debug) System.out.println("coding global text");
 	codeGlobalText();
 	initialize_all_classes(start);
+	Vector<method> mains = CgenClassTable.method_decls.get("Main");
+	//System.out.println(mains.size());
+	for(Enumeration e = mains.elements(); e.hasMoreElements();) {
+		method next_method = (method) e.nextElement();
+		str.print("Main."+next_method.name.toString()+CgenSupport.LABEL);
+		Expression shin = (Expression) next_method.expr;
+		shin.getClass().cast(shin);
+		shin.code(str);
+	}
 
 	//                 Add your code to emit
 	//                   - object initializer
@@ -525,25 +534,32 @@ class CgenClassTable extends SymbolTable {
     }
     /** Building the dispatch table **/
     public Vector<String> dispatch_table_builder(CgenNode class_1) {
-    	CgenNode start = null;
+    	CgenNode start = class_1;
     	Vector<String> disp_tbl = new Vector<String>(0);
-    	while(class_1 != null) {
-    	for( Enumeration e = class_1.getFeatures().getElements(); e.hasMoreElements(); ) {
+    	while(start != null) { 
+    	Vector<method> this_class = new Vector<method>(0);
+    	for( Enumeration e = start.getFeatures().getElements(); e.hasMoreElements(); ) {
     			Feature next_feature = (Feature) e.nextElement();
     			if(next_feature.getClass().equals(method.class)) {
     				method add_method = (method) next_feature;
-    				disp_tbl.addElement(CgenSupport.WORD + class_1.getName().toString()+"."+add_method.name.toString()); 
+    				this_class.addElement(add_method);
+    				disp_tbl.addElement(CgenSupport.WORD + start.getName().toString()+"."+add_method.name.toString()); 
     			}
     	}
-    	class_1 = class_1.getParentNd();
+    	if(class_1.getName().toString() == start.getName().toString()) 
+    		CgenClassTable.method_decls.put(start.getName().toString(), this_class);
+
+    	start = start.getParentNd();
     }
     	
     	return disp_tbl;
     }
+
     /** Gets the root of the inheritance tree */
     public CgenNode root() {
 	return (CgenNode)probe(TreeConstants.Object_);
     }
 }
+
 			  
     

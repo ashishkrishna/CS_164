@@ -632,6 +632,7 @@ class dispatch extends Expression {
     protected Expression expr;
     protected AbstractSymbol name;
     protected Expressions actual;
+    protected int index;
     /** Creates "dispatch" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -644,6 +645,7 @@ class dispatch extends Expression {
         expr = a1;
         name = a2;
         actual = a3;
+        index = 0;
     }
     public TreeNode copy() {
         return new dispatch(lineNumber, (Expression)expr.copy(), copy_AbstractSymbol(name), (Expressions)actual.copy());
@@ -677,7 +679,7 @@ class dispatch extends Expression {
         // ex.getClass().cast(expr);
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
             Expression nxt = (Expression) f.nextElement();
-            nxt.getClass().cast(f);
+            nxt.getClass().cast(nxt);
             nxt.code(s);
             CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
             CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -689,10 +691,12 @@ class dispatch extends Expression {
                 CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
              }
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
-            CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, 0, s);
+            CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
             CgenSupport.emitLoadString(CgenSupport.T1, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
             CgenSupport.emitJal("_dispatch_abort", s);
-            
+            s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+            CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
+
 
 
 
