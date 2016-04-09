@@ -287,6 +287,7 @@ class programc extends Program {
       * */
     public void cgen(PrintStream s) {
 	CgenClassTable codegen_classtable = new CgenClassTable(classes, s);
+
     }
 
 }
@@ -673,6 +674,29 @@ class dispatch extends Expression {
       * @param s the output stream 
       * */
     public void code(PrintStream s) {
+        // ex.getClass().cast(expr);
+        for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
+            Expression nxt = (Expression) f.nextElement();
+            nxt.getClass().cast(f);
+            nxt.code(s);
+            CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+            CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+        }
+            expr.getClass().cast(expr);
+            if(!expr.get_type().toString().equals("SELF_TYPE")) {
+                expr.code(s);
+                CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+                CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+             }
+            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, 0, s);
+            CgenSupport.emitLoadString(CgenSupport.T1, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
+            CgenSupport.emitJal("_dispatch_abort", s);
+            
+
+
+
+
     }
 
 
@@ -1444,8 +1468,8 @@ class string_const extends Expression {
       * @param s the output stream 
       * */
     public void code(PrintStream s) {
-	//CgenSupport.emitLoadString(CgenSupport.ACC,
-                                  // (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
+	CgenSupport.emitLoadString(CgenSupport.ACC,
+                                   (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
     }
 
 }

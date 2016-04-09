@@ -24,6 +24,7 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 import java.io.PrintStream;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 /** This class is used for representing the inheritance tree during code
     generation. You will need to fill in some of its methods and
@@ -396,6 +397,7 @@ class CgenClassTable extends SymbolTable {
     /** This method is the meat of the code generator.  It is to be
         filled in programming assignment 5 */
     public void code() {
+    HashMap<String, Vector<String>> virtual_disptbl = new HashMap<String, Vector<String>>(0);
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
 	
@@ -410,7 +412,7 @@ class CgenClassTable extends SymbolTable {
 	build_class_nameTab(start);
 	str.print(CgenSupport.CLASSOBJTAB + CgenSupport.LABEL);
 	objclasstab_creation(start);
-	build_all_dispatch_trees(start);
+	virtual_disptbl = build_all_dispatch_trees(start, virtual_disptbl);
 	build_proto("Object", 3, 0);
 	build_proto("String", 5, 5);
 	build_proto("Bool", 4, 4);
@@ -502,21 +504,24 @@ class CgenClassTable extends SymbolTable {
 
 
 
-    public void build_all_dispatch_trees(CgenNode base) {
+    public HashMap<String, Vector<String>> build_all_dispatch_trees(CgenNode base, HashMap<String, Vector<String>> virtual_disptbl) {
     	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
     	Vector<String> disp_tbl = dispatch_table_builder(base);
+    	Vector<String> reversal = new Vector<String>(0);
     	while(disp_tbl.size() > 0) {
     		str.print(disp_tbl.lastElement()); str.println("");
+    		reversal.addElement(disp_tbl.lastElement());
     		disp_tbl.removeElementAt(disp_tbl.size()-1);
     	}
+    	virtual_disptbl.put(base.getName().toString(), disp_tbl);
     	if(!base.getChildren().hasMoreElements()) {
-    		return;
+    		return virtual_disptbl;
     	}
     	for( Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
     		CgenNode nxt = (CgenNode) children.nextElement();
-    		build_all_dispatch_trees(nxt);
+    		virtual_disptbl = build_all_dispatch_trees(nxt, virtual_disptbl);
     	}
-    	return;
+    	return virtual_disptbl;
     }
     /** Building the dispatch table **/
     public Vector<String> dispatch_table_builder(CgenNode class_1) {
