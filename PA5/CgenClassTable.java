@@ -440,8 +440,9 @@ class CgenClassTable extends SymbolTable {
 		CgenSupport.emitMethodInit(-12, str);
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
-		shin.code(str, index);
-		++index;
+		index = shin.code(str, index);
+		CgenSupport.emitMethodEnd(12, str);
+		//index++;
 	}
 
 	//                 Add your code to emit
