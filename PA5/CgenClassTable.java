@@ -434,10 +434,16 @@ class CgenClassTable extends SymbolTable {
 	Vector<method> mains = CgenClassTable.method_decls.get("Main");
 	//System.out.println(mains.size());
 	int index = 0;
+	int param = -12;
 	for(Enumeration e = mains.elements(); e.hasMoreElements();) {
 		method next_method = (method) e.nextElement();
 		str.print("Main."+next_method.name.toString()+CgenSupport.LABEL);
-		CgenSupport.emitMethodInit(-12, str);
+		if(next_method.expr.getClass().equals(block.class)) {
+			block nxt_blk = (block) next_method.expr;
+			param = nxt_blk.body.getLength();
+			param = param * -1*4;
+		}
+		CgenSupport.emitMethodInit(param, str);
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
 		index = shin.code(str, index);
