@@ -436,6 +436,7 @@ class CgenClassTable extends SymbolTable {
 	int index = 0;
 	int param = -12;
 	for(Enumeration e = mains.elements(); e.hasMoreElements();) {
+		param = -12;
 		method next_method = (method) e.nextElement();
 		str.print("Main."+next_method.name.toString()+CgenSupport.LABEL);
 		if(next_method.expr.getClass().equals(block.class)) {
