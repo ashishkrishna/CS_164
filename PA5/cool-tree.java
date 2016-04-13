@@ -841,11 +841,14 @@ class loop extends Expression {
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
         index++;
         index = pred.code(s, index, sym);
-        CgenSupport.emitBeqz(CgenSupport.ACC, index, s);
-        index = body.code(s, index, sym);
-        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        int saved_index_2 = index;
+        CgenSupport.emitBeqz(CgenSupport.ACC, saved_index_2, s);
         index++;
+        index = body.code(s, index, sym);
         CgenSupport.emitBranch(saved_index, s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_index_2)+ CgenSupport.LABEL);
+        index++;
+        
         return index;
     }
 
@@ -1348,11 +1351,24 @@ class lt extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = e1.code(s, index, sym);
-        
-        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
         index = e2.code(s, index, sym);
-        
+        CgenSupport.emitMove(CgenSupport.T2, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T2, s);
+        CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
+        CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
+        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        CgenSupport.emitBlt(CgenSupport.T1, CgenSupport.T2, index, s);
+        CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
+        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index++;
         return index;
+        
+        
     }
 
 
