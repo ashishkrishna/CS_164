@@ -692,7 +692,6 @@ class dispatch extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         /// ex.getClass().cast(expr);
-    
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
             Expression nxt = (Expression) f.nextElement();
             nxt.getClass().cast(nxt);
@@ -709,14 +708,9 @@ class dispatch extends Expression {
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
             CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
-            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); //REPLACE Find correct offset
+            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
             CgenSupport.emitJal("_dispatch_abort", s);
             StringSymbol string_ind = null;
-            // while(string_ind == null) {
-            //     AbstractTable.stringtable.lookup(CgenSupport.LABEL_PREFIX+String.valueOf(index));
-            //     index++;
-            // }
-            // AbstractTable.stringtable.addString(CgenSupport.LABEL_PREFIX+String.valueOf(index));
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
             /* REPLACE WITH GENERAL CASE */ 
@@ -725,17 +719,15 @@ class dispatch extends Expression {
             int ind = 0;
             while(m.hasMoreElements()){
                 String next_elem = (String) m.nextElement();
-                //System.out.println(CgenSupport.WORD+"IO"+"."+name.toString());
-                //System.out.println(next_elem);
                 if(next_elem.endsWith(name.toString()))
                     break;
                 ind++;
             }
             //REPLACE REPLACE REPLACE
-            
+            index++;
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
-            return index+1;
+            return index;
 
 
 
@@ -792,6 +784,12 @@ class cond extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = pred.code(s, index, sym);
+        CgenSupport.emitBeqz(CgenSupport.ACC, index, s);
+        index = then_exp.code(s, index, sym);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index = else_exp.code(s, index, sym);
+        index++;
         return index;
     }
 
@@ -870,6 +868,7 @@ class typcase extends Expression {
         out.print(Utilities.pad(n) + "typcase\n");
         expr.dump(out, n+2);
         cases.dump(out, n+2);
+        
     }
 
     
@@ -1392,10 +1391,17 @@ class eq extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = e1.code(s, index, sym);
-        
-        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
         index = e2.code(s, index, sym);
-       
+        CgenSupport.emitMove(CgenSupport.T2, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
+        CgenSupport.emitLoadBool(CgenSupport.A1, new BoolConst(false), s);
+        CgenSupport.emitBne(CgenSupport.T1, CgenSupport.ACC, index, s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index++;
         return index;
     }
 
