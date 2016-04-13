@@ -30,7 +30,7 @@ class Main inherits IO
       recite( 9 ) < recite( 10 );
       recite( 11 ) = recite( 12 );
       recite( 13 ) <= recite( 14 );
-      foo(5);
+      out_int(foo(5)+6);
     }
   };
 };
