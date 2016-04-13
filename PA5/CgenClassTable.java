@@ -432,7 +432,6 @@ class CgenClassTable extends SymbolTable {
 	codeGlobalText();
 	initialize_all_classes(start);
 	Vector<method> mains = CgenClassTable.method_decls.get("Main");
-	//System.out.println(mains.size());
 	int index = 0;
 	int param = -12;
 	int formal_length = 0;
@@ -449,33 +448,17 @@ class CgenClassTable extends SymbolTable {
 		 while(count >= 0) {
 		 	formalc next_form = (formalc) next_method.formals.getNth(count);
 		 	AbstractSymbol aleph = AbstractTable.stringtable.addString(next_form.name.toString());
-		 	//Store offset from frame-pointer
-		 	// System.out.println("HERERREREERERER");
-		 	 //System.out.println(aleph.getClass());
-
-		 	// System.out.println(aleph.toString());
-		 	//System.exit(1);
 		 	var_defs.addId(aleph, count_2);
-		 	//System.out.println(var_defs.lookup(aleph));
-		// 	CgenSupport.emitLoad(CgenSupport.ACC, count, CgenSupport.FP, str);
-		// 	CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, str);
-		// 	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, str);
 		 	count--;
 		 	count_2++;
 		 }
-
-		// if(next_method.expr.getClass().equals(block.class)) {
-		// 	block nxt_blk = (block) next_method.expr;
-		// 	param = nxt_blk.body.getLength();
-		// 	param = param * -1*4;
-		// }
 		CgenClassTable.frame_offset = 12 +  4*formal_length;
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
 		index = shin.code(str, index, var_defs);
 		var_defs.exitScope();
 		CgenSupport.emitMethodEnd(CgenClassTable.frame_offset, str);
-		//index++;
+		
 	}
 
 	//                 Add your code to emit
