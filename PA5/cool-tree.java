@@ -563,6 +563,8 @@ class assign extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
         expr.getClass().cast(expr);
         index = expr.code(s, index, sym);
+        if(expr.getClass().equals(dispatch.class))
+            index++;
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
         Integer f = (Integer) (sym.probe(aleph));
         // System.out.println(f);

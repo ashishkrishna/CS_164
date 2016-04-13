@@ -6,8 +6,16 @@ class Main inherits IO
   recite( value : Int ) : Int
   {
     {
-      out_int( value );
+      out_int( value*2 );
       out_string( "\n" );
+      value;
+    }
+  };
+
+  foo (value : Int) : Int
+  {
+    {
+      value <- recite(value);
       value;
     }
   };
@@ -22,6 +30,7 @@ class Main inherits IO
       recite( 9 ) < recite( 10 );
       recite( 11 ) = recite( 12 );
       recite( 13 ) <= recite( 14 );
+      foo(5);
     }
   };
 };
