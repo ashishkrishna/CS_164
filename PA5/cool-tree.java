@@ -157,7 +157,7 @@ abstract class Expression extends TreeNode {
         else
             { out.println(Utilities.pad(n) + ": _no_type"); }
     }
-    public int code(PrintStream s, int index) { return index; }
+    public int code(PrintStream s, int index, SymbolTable sym) { return index; }
 
 }
 
@@ -560,7 +560,7 @@ class assign extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -621,7 +621,7 @@ class static_dispatch extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -682,20 +682,21 @@ class dispatch extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         // ex.getClass().cast(expr);
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
             Expression nxt = (Expression) f.nextElement();
             nxt.getClass().cast(nxt);
-            index = nxt.code(s, index);
+            index = nxt.code(s, index, sym);
             if(nxt.getClass().equals(dispatch.class))
                 index++;
             CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
             CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+            CgenClassTable.frame_offset = CgenClassTable.frame_offset + 4;
         }
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
-                expr.code(s, index);
+                expr.code(s, index, sym);
                 CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
                 CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
              }
@@ -782,7 +783,7 @@ class cond extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -829,7 +830,7 @@ class loop extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -878,7 +879,7 @@ class typcase extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -922,15 +923,18 @@ class block extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         for (Enumeration e = body.getElements(); e.hasMoreElements();) {
             Expression f = (Expression) e.nextElement();
-            index = f.code(s, index);
+            int trail = 0;
+            index = f.code(s, index, sym);
             if(f.getClass().equals(dispatch.class) || f.getClass().equals(block.class))
                 index++;
-            CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-            CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+            // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+            // CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+            trail++;
         }
+        //CgenSupport.emitAddiu(Cgen)
         return index;
     }
 
@@ -987,7 +991,7 @@ class let extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
 
     }
@@ -1035,7 +1039,7 @@ class plus extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1082,7 +1086,7 @@ class sub extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1129,7 +1133,7 @@ class mul extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1176,7 +1180,7 @@ class divide extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1218,7 +1222,7 @@ class neg extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1265,7 +1269,7 @@ class lt extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1312,7 +1316,7 @@ class eq extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1359,7 +1363,7 @@ class leq extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
     return index;
     }
 
@@ -1401,7 +1405,7 @@ class comp extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1442,9 +1446,11 @@ class int_const extends Expression {
       * to you as an example of code generation.
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadInt(CgenSupport.ACC,
                                 (IntSymbol)AbstractTable.inttable.lookup(token.getString()), s);
+    // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+    // CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
     return index;
     }
 
@@ -1484,8 +1490,10 @@ class bool_const extends Expression {
       * to you as an example of code generation.
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(val), s);
+    // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+    //         CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
     return index;
     }
 
@@ -1527,9 +1535,11 @@ class string_const extends Expression {
       * to you as an example of code generation.
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadString(CgenSupport.ACC,
                                    (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
+    // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+    // CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
     return index;
     }
 
@@ -1570,7 +1580,7 @@ class new_ extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1612,7 +1622,7 @@ class isvoid extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1649,7 +1659,7 @@ class no_expr extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
         return index;
     }
 
@@ -1691,7 +1701,15 @@ class object extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index) {
+    public int code(PrintStream s, int index, SymbolTable sym) {
+        StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
+         Integer f = (Integer) (sym.probe(aleph));
+        // System.out.println(f);
+         System.out.println(sym.toString());
+         
+
+        // Integer m = (Integer) f;
+        CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
         return index;
     }
 
