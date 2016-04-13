@@ -788,8 +788,8 @@ class cond extends Expression {
         CgenSupport.emitBeqz(CgenSupport.ACC, index, s);
         index = then_exp.code(s, index, sym);
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
-        index = else_exp.code(s, index, sym);
         index++;
+        index = else_exp.code(s, index, sym);
         return index;
     }
 
@@ -837,6 +837,15 @@ class loop extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        int saved_index = index;
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index++;
+        index = pred.code(s, index, sym);
+        CgenSupport.emitBeqz(CgenSupport.ACC, index, s);
+        index = body.code(s, index, sym);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index++;
+        CgenSupport.emitBranch(saved_index, s);
         return index;
     }
 
