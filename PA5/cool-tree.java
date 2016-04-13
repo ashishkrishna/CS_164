@@ -1052,16 +1052,14 @@ class plus extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-        // index = e1.code(s, index, sym);
-
-        // StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
-        //  Integer f = (Integer) (sym.probe(aleph));
-        // // System.out.println(f);
-        //  // System.out.println(sym.toString());
-         
-
-        // // Integer m = (Integer) f;
-        // CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
+       index = e1.code(s, index, sym);
+        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        index = e2.code(s, index, sym);
+        CgenSupport.emitJal("Object.copy", s);
+         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
+        CgenSupport.emitAdd(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
+        CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         return index;
     }
 
@@ -1109,6 +1107,14 @@ class sub extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = e1.code(s, index, sym);
+        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        index = e2.code(s, index, sym);
+        CgenSupport.emitJal("Object.copy", s);
+         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
+        CgenSupport.emitSub(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
+        CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         return index;
     }
 
@@ -1217,6 +1223,14 @@ class divide extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = e1.code(s, index, sym);
+        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        index = e2.code(s, index, sym);
+        CgenSupport.emitJal("Object.copy", s);
+         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
+        CgenSupport.emitDiv(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
+        CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         return index;
     }
 
