@@ -683,7 +683,7 @@ class dispatch extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-        // ex.getClass().cast(expr);
+        /// ex.getClass().cast(expr);
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
             Expression nxt = (Expression) f.nextElement();
             nxt.getClass().cast(nxt);
