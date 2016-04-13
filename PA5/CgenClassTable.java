@@ -469,7 +469,7 @@ class CgenClassTable extends SymbolTable {
 		// 	param = nxt_blk.body.getLength();
 		// 	param = param * -1*4;
 		// }
-		CgenClassTable.frame_offset = 16;
+		CgenClassTable.frame_offset = 12 +  4*formal_length;
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
 		index = shin.code(str, index, var_defs);

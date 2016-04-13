@@ -561,6 +561,16 @@ class assign extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        expr.getClass().cast(expr);
+        index = expr.code(s, index, sym);
+        StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
+        Integer f = (Integer) (sym.probe(aleph));
+        // System.out.println(f);
+         // System.out.println(sym.toString());
+         
+
+        // Integer m = (Integer) f;
+        CgenSupport.emitStore(CgenSupport.ACC, f, CgenSupport.FP, s);
         return index;
     }
 
@@ -684,6 +694,7 @@ class dispatch extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         /// ex.getClass().cast(expr);
+    
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
             Expression nxt = (Expression) f.nextElement();
             nxt.getClass().cast(nxt);
@@ -692,7 +703,6 @@ class dispatch extends Expression {
                 index++;
             CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
             CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
-            CgenClassTable.frame_offset = CgenClassTable.frame_offset + 4;
         }
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
@@ -726,6 +736,7 @@ class dispatch extends Expression {
                 ind++;
             }
             //REPLACE REPLACE REPLACE
+            
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
             return index;
@@ -734,6 +745,7 @@ class dispatch extends Expression {
 
 
     }
+
 
 
 }
@@ -1705,7 +1717,7 @@ class object extends Expression {
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
          Integer f = (Integer) (sym.probe(aleph));
         // System.out.println(f);
-         System.out.println(sym.toString());
+         // System.out.println(sym.toString());
          
 
         // Integer m = (Integer) f;
