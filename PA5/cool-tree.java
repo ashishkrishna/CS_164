@@ -1053,8 +1053,12 @@ class plus extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
        index = e1.code(s, index, sym);
+       if(e1.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
         index = e2.code(s, index, sym);
+        if(e2.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitJal("Object.copy", s);
          CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
@@ -1108,8 +1112,12 @@ class sub extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = e1.code(s, index, sym);
+        if(e1.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
         index = e2.code(s, index, sym);
+        if(e2.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitJal("Object.copy", s);
          CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
@@ -1163,8 +1171,12 @@ class mul extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = e1.code(s, index, sym);
+        if(e1.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
         index = e2.code(s, index, sym);
+        if(e2.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitJal("Object.copy", s);
          CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
@@ -1224,8 +1236,12 @@ class divide extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = e1.code(s, index, sym);
+        if(e1.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
         index = e2.code(s, index, sym);
+        if(e2.getClass().equals(dispatch.class))
+            index++;
         CgenSupport.emitJal("Object.copy", s);
          CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
@@ -1320,6 +1336,13 @@ class lt extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = e1.code(s, index, sym);
+        if(e1.getClass().equals(dispatch.class))
+            index++;
+        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        index = e2.code(s, index, sym);
+        if(e2.getClass().equals(dispatch.class))
+            index++;
         return index;
     }
 
@@ -1367,6 +1390,13 @@ class eq extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = e1.code(s, index, sym);
+        if(e1.getClass().equals(dispatch.class))
+            index++;
+        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        index = e2.code(s, index, sym);
+        if(e2.getClass().equals(dispatch.class))
+            index++;
         return index;
     }
 
@@ -1414,7 +1444,14 @@ class leq extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-    return index;
+        index = e1.code(s, index, sym);
+        if(e1.getClass().equals(dispatch.class))
+            index++;
+        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        index = e2.code(s, index, sym);
+        if(e2.getClass().equals(dispatch.class))
+            index++;
+        return index;
     }
 
 
