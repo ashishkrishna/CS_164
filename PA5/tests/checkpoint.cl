@@ -3,7 +3,12 @@ class Main inherits IO {
     out_int(
 		(if 2 < 8
 		then
-			3
+			if 5 < 6
+			then 
+			  5
+			 else
+			   3
+			 fi
 		else
 			0
 		fi)+2

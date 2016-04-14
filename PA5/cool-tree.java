@@ -565,9 +565,6 @@ class assign extends Expression {
         index = expr.code(s, index, sym);
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
         Integer f = (Integer) (sym.probe(aleph));
-         
-
-        // Integer m = (Integer) f;
         CgenSupport.emitStore(CgenSupport.ACC, f, CgenSupport.FP, s);
         return index;
     }
@@ -731,7 +728,6 @@ class dispatch extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-        /// ex.getClass().cast(expr);
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
             Expression nxt = (Expression) f.nextElement();
             nxt.getClass().cast(nxt);
@@ -893,7 +889,6 @@ class loop extends Expression {
         CgenSupport.emitBranch(saved_index, s);
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_index_2)+ CgenSupport.LABEL);
         index++;
-        
         return index;
     }
 
@@ -992,13 +987,7 @@ class block extends Expression {
             Expression f = (Expression) e.nextElement();
             int trail = 0;
             index = f.code(s, index, sym);
-            // if(f.getClass().equals(dispatch.class) || f.getClass().equals(block.class))
-            //     index++;
-            // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-            // CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
-            trail++;
         }
-        //CgenSupport.emitAddiu(Cgen)
         return index;
     }
 
@@ -1107,10 +1096,7 @@ class plus extends Expression {
       index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
-        //CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
-
-        index = e2.code(s, index, sym);
-       
+        index = e2.code(s, index, sym);       
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
@@ -1168,10 +1154,7 @@ class sub extends Expression {
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
-        //CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
-
         index = e2.code(s, index, sym);
-       
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
@@ -1229,9 +1212,7 @@ class mul extends Expression {
         index = e1.code(s, index, sym);
        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
-        //CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
         index = e2.code(s, index, sym);
-      
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
          CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
@@ -1239,12 +1220,6 @@ class mul extends Expression {
         CgenSupport.emitMul(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
-        
-        // System.out.println(f);
-         // System.out.println(sym.toString());
-         
-
-   
         return index;
     }
 
@@ -1295,10 +1270,7 @@ class divide extends Expression {
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
-        //CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
-
         index = e2.code(s, index, sym);
-       
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
@@ -1405,10 +1377,8 @@ class lt extends Expression {
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
-        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         CgenSupport.emitBlt(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
-        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
         index++;
         return index;
@@ -1530,10 +1500,8 @@ class leq extends Expression {
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
-        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         CgenSupport.emitBleq(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
-        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
         index++;
         
@@ -1622,8 +1590,6 @@ class int_const extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadInt(CgenSupport.ACC,
                                 (IntSymbol)AbstractTable.inttable.lookup(token.getString()), s);
-    // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-    // CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
     return index;
     }
 
@@ -1665,8 +1631,6 @@ class bool_const extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(val), s);
-    // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-    //         CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
     return index;
     }
 
@@ -1711,8 +1675,6 @@ class string_const extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadString(CgenSupport.ACC,
                                    (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
-    // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-    // CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
     return index;
     }
 
@@ -1877,11 +1839,6 @@ class object extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
          Integer f = (Integer) (sym.probe(aleph));
-        // System.out.println(f);
-         // System.out.println(sym.toString());
-         
-
-        // Integer m = (Integer) f;
         CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
         return index;
     }
