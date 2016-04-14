@@ -3,7 +3,7 @@ class Main inherits IO {
     out_int(
 		(if 3*4 = 8
 		then
-			if 5 = 6
+			if 5 <= 6
 			then
 				4
 			else 

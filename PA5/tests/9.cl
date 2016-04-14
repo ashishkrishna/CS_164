@@ -30,7 +30,7 @@ class Main inherits IO
   main() : Object
   {
     {
-    foo(2, 3)+6;
+    foo(2, 5)+6;
     }
   };
 };

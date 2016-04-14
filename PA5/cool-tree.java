@@ -630,7 +630,47 @@ class static_dispatch extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-        return index;
+        for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
+            Expression nxt = (Expression) f.nextElement();
+            nxt.getClass().cast(nxt);
+            index = nxt.code(s, index, sym);
+            CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+            CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+        }
+            expr.getClass().cast(expr);
+            if(!expr.get_type().toString().equals("SELF_TYPE")) {
+                expr.code(s, index, sym);
+                CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+                CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+             }
+            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
+            CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
+            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
+            CgenSupport.emitJal("_dispatch_abort", s);
+            StringSymbol string_ind = null;
+            s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+            CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
+            /* REPLACE WITH GENERAL CASE */ 
+            Vector<String> methods_for_this_class = CgenClassTable.virtual_disptbl.get("Main");
+            Enumeration m = methods_for_this_class.elements();
+            int ind = 0;
+            while(m.hasMoreElements()){
+                String next_elem = (String) m.nextElement();
+                if(next_elem.endsWith(name.toString()))
+                    break;
+                ind++;
+            }
+            //REPLACE REPLACE REPLACE
+            index++;
+            CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
+            CgenSupport.emitJalr(CgenSupport.T1, s);
+            return index;
+
+
+
+
+    
     }
 
 
@@ -1475,9 +1515,21 @@ class leq extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = e1.code(s, index, sym);
-        
-        CgenSupport.emitMove(CgenSupport.T3,  CgenSupport.ACC, s);
+        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
         index = e2.code(s, index, sym);
+        CgenSupport.emitMove(CgenSupport.T2, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T2, s);
+        CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
+        CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
+        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        CgenSupport.emitBleq(CgenSupport.T1, CgenSupport.T2, index, s);
+        CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
+        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index++;
         
         return index;
     }
