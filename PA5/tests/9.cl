@@ -17,6 +17,7 @@ class Main inherits IO
         while(bar < 10) loop {
         bar <- bar + 1;
         out_int(value+bar);
+        out_string("\n");
         } pool;
         value <- value + 1;
       } pool;

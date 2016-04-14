@@ -825,11 +825,15 @@ class cond extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = pred.code(s, index, sym);
-        CgenSupport.emitBeqz(CgenSupport.ACC, index, s);
+        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        int saved_index = index;
+        CgenSupport.emitBeqz(CgenSupport.ACC, saved_index, s);
+        index = index+2;
         index = then_exp.code(s, index, sym);
-        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
-        index++;
+        CgenSupport.emitBranch(saved_index+1, s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_index)+ CgenSupport.LABEL);
         index = else_exp.code(s, index, sym);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_index+1)+ CgenSupport.LABEL);
         return index;
     }
 
@@ -882,6 +886,7 @@ class loop extends Expression {
         index++;
         index = pred.code(s, index, sym);
         int saved_index_2 = index;
+        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         CgenSupport.emitBeqz(CgenSupport.ACC, saved_index_2, s);
         index++;
         index = body.code(s, index, sym);
@@ -1400,10 +1405,10 @@ class lt extends Expression {
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
-        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         CgenSupport.emitBlt(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
-        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
         index++;
         return index;
@@ -1463,8 +1468,9 @@ class eq extends Expression {
         CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
+        CgenSupport.emitBeq(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.A1, new BoolConst(false), s);
-        CgenSupport.emitBne(CgenSupport.T1, CgenSupport.ACC, index, s);
+          CgenSupport.emitJal("equality_test", s);
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
         index++;
         return index;
@@ -1524,10 +1530,10 @@ class leq extends Expression {
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
-        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         CgenSupport.emitBleq(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
-        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        //CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
         index++;
         
