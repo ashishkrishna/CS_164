@@ -1547,6 +1547,15 @@ class comp extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = e1.code(s, index, sym);
+        CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
+        CgenSupport.emitMove(CgenSupport.T1, CgenSupport.ACC, s);
+        CgenSupport.emitLoadImm(CgenSupport.T2, 0, s);
+        CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
+        CgenSupport.emitBeq(CgenSupport.T1, CgenSupport.T2, index, s);
+        CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index++;
         return index;
     }
 
