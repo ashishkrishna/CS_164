@@ -3,11 +3,16 @@ class Main inherits IO {
     out_int(
 		(if 5 = 5
 		then
-			if 5 <= 6
+			if 9 <= 6
 			then
-				4
+				if 8 < 7
+				then
+					101
+				else
+					100
+				fi
 			else 
-				2
+				201
 			fi
 		else
 			0
