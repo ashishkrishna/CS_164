@@ -17,9 +17,9 @@ class Main inherits IO
         out_int(value);
         if (value/2 = 1)
             then
-            value <- value + 2
+            value <- value + 3
             else
-            value <- value + 1
+            value <- value - 1
             fi;
       } pool;
       out_int(value);

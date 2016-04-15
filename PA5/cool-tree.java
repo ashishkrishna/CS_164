@@ -1157,8 +1157,8 @@ class sub extends Expression {
         index = e2.code(s, index, sym);
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
-        CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
-        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
+        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T3, s);
         CgenSupport.emitSub(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
@@ -1273,8 +1273,8 @@ class divide extends Expression {
         index = e2.code(s, index, sym);
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
-        CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
-        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T3, s);
+        CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
+        CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T3, s);
         CgenSupport.emitDiv(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
