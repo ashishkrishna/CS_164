@@ -189,7 +189,7 @@ abstract class AbstractTable {
 		return sym;
 	    }
 	}
-	Utilities.fatalError("String table lookup failed on string: " + s);
+	//Utilities.fatalError("String table lookup failed on string: " + s);
 	return null;
     }
 
