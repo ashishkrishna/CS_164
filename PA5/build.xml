@@ -13,7 +13,7 @@
   <property name="csrc" value="ASTConstants.java ASTLexer.java ASTParser.java AbstractSymbol.java AbstractTable.java Flags.java IdSymbol.java IdTable.java IntTable.java ListNode.java Cgen.java StringTable.java SymbolTable.java SymtabExample.java TokenConstants.java TreeNode.java ClassTable.java Utilities.java"/>
 
   <property name="cfil" value="*.java"/>
-  <property name="lsrc" value="build.xml tests/1.cl tests/2.cl tests/3.cl tests/4.cl tests/5.cl tests/6.cl tests/7.cl tests/8.cl tests/9.cl tests/10.cl tests/11.cl tests/12.cl tests/13.cl tests/14.cl tests/15.cl"/>
+  <property name="lsrc" value="build.xml tests/1.cl tests/2.cl tests/3.cl tests/4.cl tests/5.cl tests/6.cl tests/7.cl tests/8.cl tests/9.cl tests/10.cl tests/11.cl tests/12.cl tests/13.cl tests/14.cl tests/15.cl tests/16.cl"/>
   <property name="output" value="example.output"/>
 
   <path id="classpath">
@@ -48,6 +48,7 @@
     <exec executable="python"> <arg line="compare-cgen.py tests/13.cl"/> </exec>
     <exec executable="python"> <arg line="compare-cgen.py tests/14.cl"/> </exec>
     <exec executable="python"> <arg line="compare-cgen.py tests/15.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/16.cl"/> </exec>
    
     <echo>
 You can check 'tests/NAME.diff" to know more about a failed test case.
