@@ -13,12 +13,12 @@ class Main inherits IO
   {
     let foo : Int <- 5 in 
        let foo: Int <- ~1 in
-         let foo:Bool in
-           if not foo then
-             let foo : Int in 
-               print(foo+1) -- prints 1
-           else
-             5
-           fi
+                let bar : Int <- 6 in  
+                   let yota : Int <- 7 in
+                        let gimel : Int <- 8 in
+                          let bin : Int <- 15 in 
+                            
+                             print(foo+yota+gimel+bin) -- prints 1
+          
   };
 };
