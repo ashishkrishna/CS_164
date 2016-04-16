@@ -1054,7 +1054,6 @@ class let extends Expression {
         sym.enterScope();
         AbstractSymbol aleph = AbstractTable.stringtable.addString(identifier.str);
         sym.addId(aleph, CgenClassTable.frame_to_top_offset/4);
-        System.out.println(sym.toString());
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
         CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
@@ -1721,6 +1720,7 @@ class string_const extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadString(CgenSupport.ACC,
                                    (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
+
     return index;
     }
 
@@ -1848,7 +1848,11 @@ class no_expr extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-        CgenSupport.emitLoadImm(CgenSupport.ACC, 0, s);
+        CgenSupport.emitLoadInt(CgenSupport.ACC,
+                                (IntSymbol)AbstractTable.inttable.lookup("0"), s);
+        CgenSupport.emitJal("Object.copy", s);
+        CgenSupport.emitLoadImm(CgenSupport.T1, 0, s);
+        CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         return index;
     }
 
