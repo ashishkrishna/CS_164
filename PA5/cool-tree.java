@@ -12,6 +12,8 @@ import java.util.Enumeration;
 import java.io.PrintStream;
 import java.util.Vector;
 import java.util.Stack;
+import java.util.HashMap;
+import java.util.Map;
 
 
 
@@ -944,6 +946,33 @@ class typcase extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = expr.code(s, index, sym);
+        HashMap<branch, AbstractSymbol> class_decls = new HashMap<branch, AbstractSymbol>(0);
+        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
+        for(Enumeration g = cases.getElements(); g.hasMoreElements();) {
+            branch bet_1 = (branch) g.nextElement();
+            class_decls.put(bet_1, bet_1.type_decl);
+            
+        }
+        branch target_branch = null;
+        for(Map.Entry<branch, AbstractSymbol> iterator : class_decls.entrySet()) {
+                //Add case
+        }
+        if (target_branch == null) {
+            CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+            CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
+            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            CgenSupport.emitJal("_case_abort", s);
+            return index;
+        }
+        sym.enterScope();
+        sym.addId(target_branch.name, CgenClassTable.frame_to_top_offset/4);
+        index = target_branch.expr.code(s, index, sym);
+        sym.exitScope();
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         return index;
     }
 
@@ -1895,6 +1924,10 @@ class object extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        if(name.toString().equals("self")) {
+            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            return index;
+        }
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
          Integer f = (Integer) (sym.lookup(aleph));
         CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
