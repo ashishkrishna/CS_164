@@ -1,9 +1,9 @@
 class Main inherits IO {
   main():Object {
     out_int(
-		(if 2 < 8
+		(if 8 = 8
 		then
-			if 5 < 6
+			if 5 = 6
 			then 
 			  5
 			 else

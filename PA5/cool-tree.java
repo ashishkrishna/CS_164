@@ -11,6 +11,7 @@
 import java.util.Enumeration;
 import java.io.PrintStream;
 import java.util.Vector;
+import java.util.Stack;
 
 
 
@@ -564,7 +565,7 @@ class assign extends Expression {
         expr.getClass().cast(expr);
         index = expr.code(s, index, sym);
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
-        Integer f = (Integer) (sym.probe(aleph));
+        Integer f = (Integer) (sym.lookup(aleph));
         CgenSupport.emitStore(CgenSupport.ACC, f, CgenSupport.FP, s);
         return index;
     }
@@ -734,12 +735,16 @@ class dispatch extends Expression {
             index = nxt.code(s, index, sym);
             CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
             CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+            CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset  - 4;
+
         }
+
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
                 expr.code(s, index, sym);
                 CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
                 CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+                CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
              }
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
@@ -1045,6 +1050,17 @@ class let extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        index = init.code(s, index, sym);
+        sym.enterScope();
+        AbstractSymbol aleph = AbstractTable.stringtable.addString(identifier.str);
+        sym.addId(aleph, CgenClassTable.frame_to_top_offset/4);
+        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
+        index = body.code(s, index, sym);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
+        sym.exitScope();
         return index;
 
     }
@@ -1096,6 +1112,7 @@ class plus extends Expression {
       index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);       
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
@@ -1104,6 +1121,7 @@ class plus extends Expression {
         CgenSupport.emitAdd(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         return index;
     }
 
@@ -1154,6 +1172,7 @@ class sub extends Expression {
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
@@ -1162,6 +1181,7 @@ class sub extends Expression {
         CgenSupport.emitSub(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         return index;
     }
 
@@ -1212,6 +1232,7 @@ class mul extends Expression {
         index = e1.code(s, index, sym);
        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+       CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
@@ -1220,6 +1241,7 @@ class mul extends Expression {
         CgenSupport.emitMul(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         return index;
     }
 
@@ -1270,6 +1292,7 @@ class divide extends Expression {
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T3, 1, CgenSupport.SP, s);
@@ -1278,6 +1301,7 @@ class divide extends Expression {
         CgenSupport.emitDiv(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         return index;
     }
 
@@ -1376,12 +1400,14 @@ class lt extends Expression {
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);
         CgenSupport.emitMove(CgenSupport.T2, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T2, s);
         CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
         CgenSupport.emitBlt(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
@@ -1439,10 +1465,12 @@ class eq extends Expression {
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);
         CgenSupport.emitMove(CgenSupport.T2, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
         CgenSupport.emitBeq(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.A1, new BoolConst(false), s);
@@ -1499,12 +1527,14 @@ class leq extends Expression {
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);
         CgenSupport.emitMove(CgenSupport.T2, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.T2, s);
         CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.T1, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
         CgenSupport.emitBleq(CgenSupport.T1, CgenSupport.T2, index, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(false), s);
@@ -1690,6 +1720,7 @@ class string_const extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
 	CgenSupport.emitLoadString(CgenSupport.ACC,
                                    (StringSymbol)AbstractTable.stringtable.lookup(token.getString()), s);
+
     return index;
     }
 
@@ -1817,6 +1848,11 @@ class no_expr extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        CgenSupport.emitLoadInt(CgenSupport.ACC,
+                                (IntSymbol)AbstractTable.inttable.lookup("0"), s);
+        CgenSupport.emitJal("Object.copy", s);
+        CgenSupport.emitLoadImm(CgenSupport.T1, 0, s);
+        CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         return index;
     }
 
@@ -1860,7 +1896,7 @@ class object extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
-         Integer f = (Integer) (sym.probe(aleph));
+         Integer f = (Integer) (sym.lookup(aleph));
         CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
         return index;
     }

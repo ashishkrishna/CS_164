@@ -22,6 +22,7 @@ import java.io.PrintStream;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Stack;
 
 /** This class is used for representing the inheritance tree during code
     generation. You will need to fill in some of its methods and
@@ -40,6 +41,8 @@ class CgenClassTable extends SymbolTable {
     protected static  HashMap<String, Vector<String>> virtual_disptbl;
     protected static HashMap<String, Vector<method>> method_decls;	
     protected static int frame_offset;
+    protected static int frame_to_top_offset;
+    protected static Stack frame_offset_store;
 
     // The following methods emit code for constants and global
     // declarations.
@@ -398,6 +401,7 @@ class CgenClassTable extends SymbolTable {
     public void code() {
     CgenClassTable.virtual_disptbl = new HashMap<String, Vector<String>>(0);
     CgenClassTable.method_decls = new HashMap<String, Vector<method>>(0);
+    frame_offset_store = new Stack();
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
 	
@@ -453,6 +457,7 @@ class CgenClassTable extends SymbolTable {
 		 	count_2++;
 		 }
 		CgenClassTable.frame_offset = 12 +  4*formal_length;
+		CgenClassTable.frame_to_top_offset = -16;
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
 		index = shin.code(str, index, var_defs);
