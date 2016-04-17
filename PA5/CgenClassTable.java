@@ -435,7 +435,7 @@ class CgenClassTable extends SymbolTable {
 	if (Flags.cgen_debug) System.out.println("coding global text");
 	codeGlobalText();
 	initialize_all_classes(start);
-	Vector<method> mains = CgenClassTable.method_decls.get("Main");
+	Vector<method> mains = CgenClassTable.method_decls.get("Main"); //Need to find for all classes
 	int index = 0;
 	int param = -12;
 	int formal_length = 0;
@@ -460,6 +460,8 @@ class CgenClassTable extends SymbolTable {
 		CgenClassTable.frame_to_top_offset = -16;
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
+		CgenNode this_root = root();
+		shin.set_root(this_root);
 		index = shin.code(str, index, var_defs);
 		var_defs.exitScope();
 		CgenSupport.emitMethodEnd(CgenClassTable.frame_offset, str);
@@ -584,6 +586,8 @@ class CgenClassTable extends SymbolTable {
     public CgenNode root() {
 	return (CgenNode)probe(TreeConstants.Object_);
     }
+
+   
 }
 
 			  

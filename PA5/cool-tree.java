@@ -150,7 +150,8 @@ abstract class Expression extends TreeNode {
     protected Expression(int lineNumber) {
         super(lineNumber);
     }
-    private AbstractSymbol type = null;                                 
+    private AbstractSymbol type = null; 
+    public static CgenNode root = null;                                
     public AbstractSymbol get_type() { return type; }           
     public Expression set_type(AbstractSymbol s) { type = s; return this; } 
     public abstract void dump_with_types(PrintStream out, int n);
@@ -161,6 +162,8 @@ abstract class Expression extends TreeNode {
             { out.println(Utilities.pad(n) + ": _no_type"); }
     }
     public int code(PrintStream s, int index, SymbolTable sym) { return index; }
+    public void set_root(CgenNode this_root) { Expression.root = this_root; }
+    public CgenNode get_root() { return Expression.root; }
 
 }
 
@@ -957,13 +960,25 @@ class typcase extends Expression {
             
         }
         branch target_branch = null;
+        CgenNode start = super.get_root();
+        CgenNode target_nd = start.getNode(expr.get_type().toString());
+        while(target_nd != null) {
         for(Map.Entry<branch, AbstractSymbol> iterator : class_decls.entrySet()) {
-                //Add case
+                branch ke  = (branch) iterator.getKey();
+                AbstractSymbol val = (AbstractSymbol) iterator.getValue();
+               if(target_nd.getName().toString().equals(val.toString())) {
+                    target_branch = ke;
+                    break;
+               }
         }
+        if(target_branch != null)
+            break;
+        target_nd = target_nd.getParentNd();
+    }
         if (target_branch == null) {
             CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
             CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
-            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s); //This statement needs to be replaced with a generic case
             CgenSupport.emitJal("_case_abort", s);
             return index;
         }

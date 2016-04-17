@@ -86,6 +86,20 @@ class CgenNode extends class_c {
 	return parent; 
     }
 
+    CgenNode getNode(String node_name) {
+        if(this.getName().toString().equals(node_name)) {
+            return this;
+        }
+        for(Enumeration f = this.getChildren(); f.hasMoreElements();) {
+                CgenNode nxt = (CgenNode) f.nextElement();
+                CgenNode find_nd = nxt.getNode(node_name);
+                if(find_nd != null)
+                    return nxt;
+
+        }
+        return null;
+    }
+
     /** Returns true is this is a basic class.
      * @return true or false
      * */
