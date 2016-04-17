@@ -975,10 +975,11 @@ class typcase extends Expression {
             break;
         target_nd = target_nd.getParentNd();
     }
+       
         if (target_branch == null) {
+            CgenSupport.emitLoad(CgenSupport.ACC, 1, CgenSupport.SP, s);
             CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
             CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
-            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s); //This statement needs to be replaced with a generic case
             CgenSupport.emitJal("_case_abort", s);
             return index;
         }
@@ -1806,6 +1807,7 @@ class new_ extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        CgenSupport.emitLoadAddress(CgenSupport.ACC, type_name.getString()+CgenSupport.PROTOBJ_SUFFIX, s);
         return index;
     }
 

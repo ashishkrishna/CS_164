@@ -517,6 +517,7 @@ class CgenClassTable extends SymbolTable {
     		IntSymbol aleph = (IntSymbol) AbstractTable.inttable.lookup("0");
     		str.print(CgenSupport.WORD); aleph.codeRef(str); str.println("");
     	}
+    	// AbstractTable.stringtable.addString(classtab+CgenSupport.PROTOBJ_SUFFIX);
 
     }
 
