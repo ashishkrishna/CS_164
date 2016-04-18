@@ -49,7 +49,9 @@
     <exec executable="python"> <arg line="compare-cgen.py tests/14.cl"/> </exec>
     <exec executable="python"> <arg line="compare-cgen.py tests/15.cl"/> </exec>
     <exec executable="python"> <arg line="compare-cgen.py tests/16.cl"/> </exec>
-   
+    <exec executable="python"> <arg line="compare-cgen.py tests/17.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/18.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/19.cl"/> </exec>
     <echo>
 You can check 'tests/NAME.diff" to know more about a failed test case.
     </echo>

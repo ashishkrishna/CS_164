@@ -975,7 +975,14 @@ class typcase extends Expression {
             break;
         target_nd = target_nd.getParentNd();
     }
-       
+        int saved_index = index;
+        CgenSupport.emitBeqz(CgenSupport.ACC, saved_index, s);
+        index++;
+        CgenSupport.emitBranch(index, s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_index)+ CgenSupport.LABEL);
+        CgenSupport.emitJal("_case_abort2", s);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        index++;
         if (target_branch == null) {
             CgenSupport.emitLoad(CgenSupport.ACC, 1, CgenSupport.SP, s);
             CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
