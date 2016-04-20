@@ -775,14 +775,7 @@ class dispatch extends Expression {
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
             return index;
-
-
-
-
     }
-
-
-
 }
 
 

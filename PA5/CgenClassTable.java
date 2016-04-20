@@ -23,6 +23,8 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /** This class is used for representing the inheritance tree during code
     generation. You will need to fill in some of its methods and
@@ -381,6 +383,7 @@ class CgenClassTable extends SymbolTable {
 
 	this.str = str;
 
+
 	stringclasstag = 5 /* Change to your String class tag here */;
 	intclasstag =    3 /* Change to your Int class tag here */;
 	boolclasstag =   4 /* Change to your Bool class tag here */;
@@ -406,8 +409,6 @@ class CgenClassTable extends SymbolTable {
     frame_offset_store = new Stack();
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
-	
-
 	if (Flags.cgen_debug) System.out.println("choosing gc");
 	codeSelectGc();
 
@@ -421,15 +422,10 @@ class CgenClassTable extends SymbolTable {
 	virtual_disptbl = build_all_dispatch_trees(start, CgenClassTable.virtual_disptbl);
 	CgenNode tree_base = root();
 	build_all_proto_objs(tree_base, 0);
-	
-
-
-
 	//                 Add your code to emit
 	//                   - prototype objects
 	//                   - class_nameTab
 	//                   - dispatch tables
-
 	if (Flags.cgen_debug) System.out.println("coding global text");
 	codeGlobalText();
 	SymbolTable var_defs = new SymbolTable();
@@ -437,11 +433,8 @@ class CgenClassTable extends SymbolTable {
 	int index = 0;
 	index = initialize_all_classes(start, var_defs, index);
 	Vector<method> mains = CgenClassTable.method_decls.get("Main"); //Need to find for all classes
-
-	
 	int param = -12;
 	int formal_length = 0;
-	// SymbolTable var_defs = new SymbolTable();
 	for(Enumeration e = mains.elements(); e.hasMoreElements();) {
 		var_defs.enterScope();
 		param = -12;
@@ -577,10 +570,43 @@ class CgenClassTable extends SymbolTable {
     	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
     	Vector<String> disp_tbl = dispatch_table_builder(base);
     	Vector<String> reversal = new Vector<String>(0);
+    	int inherit_flag = 0;
     	while(disp_tbl.size() > 0) {
-    		str.print(disp_tbl.lastElement()); str.println("");
-    		reversal.addElement(disp_tbl.lastElement());
-    		disp_tbl.removeElementAt(disp_tbl.size()-1);
+    		inherit_flag = 0;
+    		String method_to_put = disp_tbl.lastElement();
+    		Vector<Integer> inherited_methods = new Vector<Integer>(0);
+    		String pattern = "(([aA-zZ]([aA-zZ]|[\\d])*))\\.(([aA-zZ]([aA-zZ]|[\\d])*))"; //Grab the pattern [Class].[method]
+			Pattern r = Pattern.compile(pattern);   
+			Matcher m = r.matcher(method_to_put);
+			if(m.find()) {  //Should always find a match 
+				disp_tbl.removeElementAt(disp_tbl.size()-1);   //Removes the last element from the disp_tbl
+				int cnt = 0;                  
+				for(Enumeration q = disp_tbl.elements(); q.hasMoreElements();) { //Goes throug the disp_tbl and checks the indices of all methods that have the same name
+					String nxt_str_method = (String) q.nextElement();
+					if(nxt_str_method.endsWith(m.group(4))) {
+						inherited_methods.addElement(cnt);
+						inherit_flag = 1;  //If even one, then the flag is raised, and index is added to the inherited_methods. 
+						break;
+					}
+					cnt++;
+				}
+				for(int i = 0; i < inherited_methods.size(); i++) { //Goes through and cleans out all of the methods EXCEPT from the one defined on the lowest node for this class
+																	//Remember: the lowest node definition is the only one we care about, and this one is the one that is first defined
+																	//when traversing the disp_tbl array since methods were added backwards ie. from most specific class to most generic
+																	//Thererfore cleaning out the other such elements ensures that only the lowest one is the one we select.
+																	
+					if(i==0)								
+						continue;
+					disp_tbl.removeElementAt(inherited_methods.elementAt(i)); 
+				}
+				if(inherit_flag == 0) {								//If the flag was never raised then we simply install the method into the disp_tbl and print out.
+					reversal.addElement(method_to_put);
+					str.print(method_to_put); str.println("");
+			}
+		}
+			else {
+				System.exit(1);
+			}
     	}
     	virtual_disptbl.put(base.getName().toString(), reversal);
     	if(!base.getChildren().hasMoreElements()) {
@@ -617,8 +643,7 @@ class CgenClassTable extends SymbolTable {
     	}
 
     	start = start.getParentNd();
-    }
-    	
+    }  	
     	return disp_tbl;
     }
 
@@ -626,8 +651,6 @@ class CgenClassTable extends SymbolTable {
     public CgenNode root() {
 	return (CgenNode)probe(TreeConstants.Object_);
     }
-
-   
 }
 
 			  
