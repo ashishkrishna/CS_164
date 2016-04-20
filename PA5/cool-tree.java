@@ -751,7 +751,8 @@ class dispatch extends Expression {
                 CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
                 CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
              }
-            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            if(expr.get_type().toString().equals("SELF_TYPE")) 
+                CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
             CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
             CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
@@ -948,6 +949,10 @@ class typcase extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
+    // public int code(PrintStream s, int index, SymbolTable sym) {
+
+    //     return index;
+    // }
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = expr.code(s, index, sym);
         HashMap<branch, AbstractSymbol> class_decls = new HashMap<branch, AbstractSymbol>(0);
@@ -1948,10 +1953,12 @@ class object extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+
         if(name.toString().equals("self")) {
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             return index;
         }
+        //System.out.println(sym.toString());
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
          Integer f = (Integer) (sym.lookup(aleph));
         CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);

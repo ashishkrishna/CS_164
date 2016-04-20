@@ -5,9 +5,9 @@ class Main inherits IO
 {
   main() : Object
   {
-    let thing : Bool <- (new Bool) in
+    let thing : Int <- (new Int) in
       case thing of
-	i : String => out_string( "string\n" );
+	i : Object => out_string( "obj\n" );
 	b : Int => out_string( "int\n" );
       esac
   };

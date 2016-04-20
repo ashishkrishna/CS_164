@@ -40,6 +40,7 @@ class CgenClassTable extends SymbolTable {
     private int boolclasstag;
     protected static  HashMap<String, Vector<String>> virtual_disptbl;
     protected static HashMap<String, Vector<method>> method_decls;	
+    protected static HashMap<String, Vector<attr>> attr_decls;
     protected static int frame_offset;
     protected static int frame_to_top_offset;
     protected static Stack frame_offset_store;
@@ -401,6 +402,7 @@ class CgenClassTable extends SymbolTable {
     public void code() {
     CgenClassTable.virtual_disptbl = new HashMap<String, Vector<String>>(0);
     CgenClassTable.method_decls = new HashMap<String, Vector<method>>(0);
+    CgenClassTable.attr_decls = new HashMap<String, Vector<attr>>(0);
     frame_offset_store = new Stack();
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
@@ -418,9 +420,9 @@ class CgenClassTable extends SymbolTable {
 	objclasstab_creation(start);
 	virtual_disptbl = build_all_dispatch_trees(start, CgenClassTable.virtual_disptbl);
 	build_proto("Object", 3, 0);
-	build_proto("String", 5, 5);
-	build_proto("Bool", 4, 4);
-	build_proto("Int", 4, 3);
+	build_proto("String", 3, 5);
+	build_proto("Bool", 3, 4);
+	build_proto("Int", 3, 3);
 	build_proto("IO", 3, 1);
 	build_proto("Main", 3, 2);
 
@@ -434,12 +436,16 @@ class CgenClassTable extends SymbolTable {
 
 	if (Flags.cgen_debug) System.out.println("coding global text");
 	codeGlobalText();
-	initialize_all_classes(start);
-	Vector<method> mains = CgenClassTable.method_decls.get("Main"); //Need to find for all classes
+	SymbolTable var_defs = new SymbolTable();
+	var_defs.enterScope();
 	int index = 0;
+	index = initialize_all_classes(start, var_defs, index);
+	Vector<method> mains = CgenClassTable.method_decls.get("Main"); //Need to find for all classes
+
+	
 	int param = -12;
 	int formal_length = 0;
-	SymbolTable var_defs = new SymbolTable();
+	// SymbolTable var_defs = new SymbolTable();
 	for(Enumeration e = mains.elements(); e.hasMoreElements();) {
 		var_defs.enterScope();
 		param = -12;
@@ -506,37 +512,54 @@ class CgenClassTable extends SymbolTable {
 
     public void build_proto(String classtab, int size, int classtag) {
     	str.println(CgenSupport.WORD + "-1");
+    	Vector<attr> attr_class = CgenClassTable.attr_decls.get(classtab);
+    	size = 3 + attr_class.size();
     	str.print(classtab + CgenSupport.PROTOBJ_SUFFIX + CgenSupport.LABEL); 
     	str.print(CgenSupport.WORD + String.valueOf(classtag)); str.println("");
     	str.print(CgenSupport.WORD + String.valueOf(size)); str.println("");
     	str.print(CgenSupport.WORD + classtab+CgenSupport.DISPTAB_SUFFIX); str.println("");
-    	if(classtab.equals("String") || classtab.equals("Bool") || classtab.equals("Int")) {
+    	for(Enumeration f = attr_class.elements(); f.hasMoreElements(); ) {
+    		attr nt_attr = (attr) f.nextElement();
     		str.print(CgenSupport.WORD + String.valueOf(0)); str.println("");
     	}
-    	if(classtab.equals("String")) {
-    		IntSymbol aleph = (IntSymbol) AbstractTable.inttable.lookup("0");
-    		str.print(CgenSupport.WORD); aleph.codeRef(str); str.println("");
-    	}
-    	// AbstractTable.stringtable.addString(classtab+CgenSupport.PROTOBJ_SUFFIX);
 
     }
 
-    public void initialize_all_classes(CgenNode base) {
+    public int initialize_all_classes(CgenNode base, SymbolTable aleph, int index) {
     		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
     		String parent = "";
     		parent = base.getParentNd().getName().toString()+CgenSupport.CLASSINIT_SUFFIX;
     		if(base.getName().toString().equals("Object"))
     			parent = "null";
+
     		CgenSupport.emitInitializerRef(parent, str);
+    		Vector<attr> attrs = CgenClassTable.attr_decls.get(base.getName().toString());
+    		int offset = attrs.size()-1;
+    		for(Enumeration f = attrs.elements(); f.hasMoreElements(); ){
+    			attr next_attr = (attr) f.nextElement();
+    			//System.out.println(next_attr.name.toString());
+    			AbstractSymbol aleph1 = AbstractTable.stringtable.addString(next_attr.name.toString());
+    			aleph.addId(aleph1, offset);
+    			offset--;
+
+    		}
+    		int offset_2 = attrs.size()-1;
+    		for(Enumeration g = attrs.elements(); g.hasMoreElements(); ){
+    		attr next_attr = (attr) g.nextElement();
+    		index = next_attr.init.code(str, index, aleph);
+    		CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
+    		offset_2--;
+    	}
+    		CgenSupport.emitEndRef(parent, str);
     		if(!base.getChildren().hasMoreElements()) {
-    		return;
+    		return index;
     		}
     		for(Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
     		CgenNode nxt = (CgenNode) children.nextElement();
-    		initialize_all_classes(nxt);
+    		index = initialize_all_classes(nxt, aleph, index);
     		}
-    		return;
+    		return index;
     }
 
 
@@ -554,7 +577,7 @@ class CgenClassTable extends SymbolTable {
     	if(!base.getChildren().hasMoreElements()) {
     		return virtual_disptbl;
     	}
-    	for( Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
+    	for(Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
     		CgenNode nxt = (CgenNode) children.nextElement();
     		virtual_disptbl = build_all_dispatch_trees(nxt, virtual_disptbl);
     	}
@@ -566,6 +589,7 @@ class CgenClassTable extends SymbolTable {
     	Vector<String> disp_tbl = new Vector<String>(0);
     	while(start != null) { 
     	Vector<method> this_class = new Vector<method>(0);
+    	Vector<attr> attr_class = new Vector<attr>(0);
     	for( Enumeration e = start.getFeatures().getElements(); e.hasMoreElements(); ) {
     			Feature next_feature = (Feature) e.nextElement();
     			if(next_feature.getClass().equals(method.class)) {
@@ -573,9 +597,15 @@ class CgenClassTable extends SymbolTable {
     				this_class.addElement(add_method);
     				disp_tbl.addElement(CgenSupport.WORD + start.getName().toString()+"."+add_method.name.toString()); 
     			}
+    			if(next_feature.getClass().equals(attr.class)) {
+    				attr add_attr = (attr) next_feature;
+    				attr_class.addElement(add_attr);
+    			}
     	}
-    	if(class_1.getName().toString() == start.getName().toString()) 
+    	if(class_1.getName().toString() == start.getName().toString())  {
     		CgenClassTable.method_decls.put(start.getName().toString(), this_class);
+    		CgenClassTable.attr_decls.put(start.getName().toString(), attr_class);
+    	}
 
     	start = start.getParentNd();
     }

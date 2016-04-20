@@ -598,6 +598,9 @@ class CgenSupport {
         CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
         if(!dest_reg.equals("null"))
             CgenSupport.emitJal(dest_reg, s);
+    }
+
+    static void emitEndRef(String dest_reg, PrintStream s) {
         CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
         CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);

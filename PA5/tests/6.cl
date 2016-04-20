@@ -24,6 +24,8 @@
  * interesting when we initialize them!
  *)
 
+
+
 class Main inherits IO {
 
   main() : Int {	-- main() is an atrophied method so we can parse. 
@@ -36,16 +38,20 @@ class Main inherits IO {
       2;
     };
 
-  testee : Int <- out;	-- testee is a number to be tested for primeness.   
+
+  
+
+  testee  : Int <- out;	-- testee is a number to be tested for primeness.   
 
   divisor : Int;	-- divisor is a number which may factor testee.
+  dividend : String;
 
   stop : Int <- 500;	-- stop is an arbitrary value limiting testee. 	
 
   m : Object <-		-- m supplants the main method.
     while true loop 
       {
-
+      
         testee <- testee + 1;
         divisor <- 2;
 
