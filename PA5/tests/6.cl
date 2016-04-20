@@ -30,6 +30,12 @@ class Foo {
   bar() : Int {
     testee
   };
+  bars() : Int {
+    3
+  };
+  badz() : Int {
+    4
+  };
 };
 
 class Baz inherits Foo {

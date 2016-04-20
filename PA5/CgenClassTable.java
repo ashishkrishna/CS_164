@@ -567,13 +567,13 @@ class CgenClassTable extends SymbolTable {
 
 
     public HashMap<String, Vector<String>> build_all_dispatch_trees(CgenNode base, HashMap<String, Vector<String>> virtual_disptbl) {
-    	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
+    	//str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
     	Vector<String> disp_tbl = dispatch_table_builder(base);
     	Vector<String> reversal = new Vector<String>(0);
-    	int inherit_flag = 0;
     	while(disp_tbl.size() > 0) {
-    		inherit_flag = 0;
+    		int inherit_flag = 0;
     		String method_to_put = disp_tbl.lastElement();
+    		disp_tbl.removeElementAt(disp_tbl.size()-1);
     		Vector<Integer> inherited_methods = new Vector<Integer>(0);
     		String pattern = "(([aA-zZ]([aA-zZ]|[\\d])*))\\.(([aA-zZ]([aA-zZ]|[\\d])*))"; //Grab the pattern [Class].[method]
 			Pattern r = Pattern.compile(pattern);   
@@ -581,35 +581,28 @@ class CgenClassTable extends SymbolTable {
 			if(m.find()) {  //Should always find a match   
 				int cnt = 0;                  
 				//Goes throug the disp_tbl and checks the indices of all methods that have the same name
-				for(Enumeration q = disp_tbl.elements(); q.hasMoreElements();) { 
+				for(Enumeration q = reversal.elements(); q.hasMoreElements();) { 
 					String nxt_str_method = (String) q.nextElement();
 					if(nxt_str_method.endsWith(m.group(4))) {
-						inherited_methods.addElement(cnt);
+						inherit_flag = 1;
+						reversal.set(cnt, method_to_put);
+						break;
 						
 					}
 					cnt++;
 				}
-				//Goes through and cleans out all of the methods EXCEPT from the one defined on the lowest node for this class
-			    //Remember: the lowest node definition is the only one we care about, and this one is the one that is first defined
-			    //when traversing the disp_tbl array since methods were added backwards ie. from most specific class to most generic
-				//Thererfore cleaning out the other such elements ensures that only the lowest one is the one we select.
-			
-					method_to_put = (String) disp_tbl.elementAt(inherited_methods.elementAt(0));	//Get the first element since this will be defined in the lowest subclass.							
-					for(int i = 0; i <disp_tbl.size(); i++) {
-						if(disp_tbl.elementAt(i).endsWith(m.group(4)))
-							disp_tbl.removeElementAt(i); 
-				}
-				if(inherit_flag == 0) {								
-				//If the flag was never raised then we simply install the method into the disp_tbl and print out.
+				if(inherit_flag == 0) {
 					reversal.addElement(method_to_put);
-					str.print(method_to_put); str.println("");
-			}
+				}
+				
+			
 		}
 			else {
 				System.exit(1); //Method ill defined. Abort the program.
 			}
     	}
     	virtual_disptbl.put(base.getName().toString(), reversal);
+    	print_dispatch_tbl(base, reversal);
     	if(!base.getChildren().hasMoreElements()) {
     		return virtual_disptbl;
     	}
@@ -618,6 +611,14 @@ class CgenClassTable extends SymbolTable {
     		virtual_disptbl = build_all_dispatch_trees(nxt, virtual_disptbl);
     	}
     	return virtual_disptbl;
+    }
+
+    public void print_dispatch_tbl(CgenNode base, Vector<String> reversal) {
+    	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
+    	for(Enumeration g = reversal.elements(); g.hasMoreElements();) {
+    		String next_str = (String) g.nextElement();
+    		str.print(next_str); str.println("");
+    	}
     }
     /** Building the dispatch table **/
     public Vector<String> dispatch_table_builder(CgenNode class_1) {
