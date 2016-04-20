@@ -419,13 +419,9 @@ class CgenClassTable extends SymbolTable {
 	str.print(CgenSupport.CLASSOBJTAB + CgenSupport.LABEL);
 	objclasstab_creation(start);
 	virtual_disptbl = build_all_dispatch_trees(start, CgenClassTable.virtual_disptbl);
-	build_proto("Object", 3, 0);
-	build_proto("String", 3, 5);
-	build_proto("Bool", 3, 4);
-	build_proto("Int", 3, 3);
-	build_proto("IO", 3, 1);
-	build_proto("Main", 3, 2);
-
+	CgenNode tree_base = root();
+	build_all_proto_objs(tree_base, 0);
+	
 
 
 
@@ -510,7 +506,18 @@ class CgenClassTable extends SymbolTable {
 
     }
 
-    public void build_proto(String classtab, int size, int classtag) {
+    public int build_all_proto_objs(CgenNode rbase, int classtag) {
+    	build_proto(rbase.getName().toString(), classtag);
+    	for(Enumeration f = rbase.getChildren(); f.hasMoreElements();) {
+    		classtag++;
+    		CgenNode nxt_node = (CgenNode) f.nextElement();
+    		classtag = build_all_proto_objs(nxt_node, classtag);
+    	}
+    	return classtag;
+    }
+
+    public void build_proto(String classtab,  int classtag) {
+    	int size = 0;
     	str.println(CgenSupport.WORD + "-1");
     	Vector<attr> attr_class = CgenClassTable.attr_decls.get(classtab);
     	size = 3 + attr_class.size();
@@ -522,6 +529,9 @@ class CgenClassTable extends SymbolTable {
     		attr nt_attr = (attr) f.nextElement();
     		str.print(CgenSupport.WORD + String.valueOf(0)); str.println("");
     	}
+
+    	return;
+
 
     }
 
@@ -538,7 +548,6 @@ class CgenClassTable extends SymbolTable {
     		int offset = attrs.size()-1;
     		for(Enumeration f = attrs.elements(); f.hasMoreElements(); ){
     			attr next_attr = (attr) f.nextElement();
-    			//System.out.println(next_attr.name.toString());
     			AbstractSymbol aleph1 = AbstractTable.stringtable.addString(next_attr.name.toString());
     			aleph.addId(aleph1, offset);
     			offset--;
