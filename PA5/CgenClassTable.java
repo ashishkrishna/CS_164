@@ -580,14 +580,13 @@ class CgenClassTable extends SymbolTable {
 			Matcher m = r.matcher(method_to_put);
 			if(m.find()) {  //Should always find a match 
 				//Removes the last element from the disp_tbl
-				disp_tbl.removeElementAt(disp_tbl.size()-1);   
+				//disp_tbl.removeElementAt(disp_tbl.size()-1);   
 				int cnt = 0;                  
 				//Goes throug the disp_tbl and checks the indices of all methods that have the same name
 				for(Enumeration q = disp_tbl.elements(); q.hasMoreElements();) { 
 					String nxt_str_method = (String) q.nextElement();
 					if(nxt_str_method.endsWith(m.group(4))) {
 						inherited_methods.addElement(cnt);
-						inherit_flag = 1;  //If even one, then the flag is raised, and index is added to the inherited_methods. 
 						break;
 					}
 					cnt++;
@@ -597,8 +596,9 @@ class CgenClassTable extends SymbolTable {
 			    //when traversing the disp_tbl array since methods were added backwards ie. from most specific class to most generic
 				//Thererfore cleaning out the other such elements ensures that only the lowest one is the one we select.
 				for(int i = 0; i < inherited_methods.size(); i++) { 											
-					if(i==0)								
-						continue;
+					if(i==0) {
+						method_to_put = (String) disp_tbl.elementAt(inherited_methods.elementAt(i));	//Get the first element since this will be defined in the lowest subclass.							
+					}
 					disp_tbl.removeElementAt(inherited_methods.elementAt(i)); 
 				}
 				if(inherit_flag == 0) {								

@@ -44,7 +44,7 @@ class Main inherits IO {
 
   
 
-  testee : Int <- 5; -- testee is a number to be tested for primeness.   
+  testee : Int <- let x : Int <- 5 in  let y : Int <- 6 in {out_int(x+y);  2; };  -- testee is a number to be tested for primeness.   
 
   divisor : Int;	-- divisor is a number which may factor testee.
   dividend : String;
