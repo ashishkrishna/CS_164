@@ -600,12 +600,12 @@ class CgenSupport {
             CgenSupport.emitJal(dest_reg, s);
     }
 
-    static void emitEndRef(String dest_reg, PrintStream s) {
+    static void emitEndRef(String dest_reg, int param, PrintStream s) {
         CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
         CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);
         CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, s);
-        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, s);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, param, s);
         CgenSupport.emitReturn(s);
         
     }

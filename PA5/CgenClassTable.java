@@ -495,7 +495,7 @@ class CgenClassTable extends SymbolTable {
     }
 
     public int build_all_proto_objs(CgenNode rbase, int classtag) {
-    	build_proto(rbase.getName().toString(), classtag);
+    	build_proto(rbase, rbase.getName().toString(), classtag);
     	for(Enumeration f = rbase.getChildren(); f.hasMoreElements();) {
     		classtag++;
     		CgenNode nxt_node = (CgenNode) f.nextElement();
@@ -504,8 +504,9 @@ class CgenClassTable extends SymbolTable {
     	return classtag;
     }
 
-    public void build_proto(String classtab,  int classtag) {
+    public void build_proto(CgenNode rbase, String classtab,  int classtag) {
     	int size = 0;
+    	rbase.class_tag = classtag;
     	str.println(CgenSupport.WORD + "-1");
     	Vector<attr> attr_class = CgenClassTable.attr_decls.get(classtab);
     	size = 3 + attr_class.size();
@@ -523,7 +524,7 @@ class CgenClassTable extends SymbolTable {
 
     }
 
-    public int initialize_all_classes(CgenNode base, SymbolTable aleph, int index) {
+   public int initialize_all_classes(CgenNode base, SymbolTable aleph, int index) {
     		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
     		String parent = "";
@@ -541,15 +542,18 @@ class CgenClassTable extends SymbolTable {
     			offset--;
 
     		}
+    		CgenClassTable.frame_offset = 12 + 4*attrs.size();
+			CgenClassTable.frame_to_top_offset = -12;
     		int offset_2 = attrs.size()-1;
     		for(Enumeration g = attrs.elements(); g.hasMoreElements(); ){
     		attr next_attr = (attr) g.nextElement();
     		next_attr.init.this_class = base.getName().toString();
     		index = next_attr.init.code(str, index, aleph);
     		CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
+    		CgenSupport.emitStore(CgenSupport.ACC, 3+offset_2, CgenSupport.SELF, str);
     		offset_2--;
     	}
-    		CgenSupport.emitEndRef(parent, str);
+    		CgenSupport.emitEndRef(parent, CgenClassTable.frame_offset, str);
     		if(!base.getChildren().hasMoreElements()) {
     		return index;
     		}

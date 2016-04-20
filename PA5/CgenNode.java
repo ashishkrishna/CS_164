@@ -41,6 +41,8 @@ class CgenNode extends class_c {
     /** Does this node correspond to a basic class? */
     public int basic_status;
 
+    public int class_tag = 0;
+
     /** Constructs a new CgenNode to represent class "c".
      * @param c the class
      * @param basic_status is this class basic or not

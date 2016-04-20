@@ -25,6 +25,9 @@
  *)
 
 
+class Foo {
+  testee : Int <- 5;
+};
 
 class Main inherits IO {
 
@@ -41,7 +44,7 @@ class Main inherits IO {
 
   
 
-  testee  : Int <- out;	-- testee is a number to be tested for primeness.   
+  testee : Int <- 5; -- testee is a number to be tested for primeness.   
 
   divisor : Int;	-- divisor is a number which may factor testee.
   dividend : String;
@@ -51,7 +54,7 @@ class Main inherits IO {
   m : Object <-		-- m supplants the main method.
     while true loop 
       {
-      
+
         testee <- testee + 1;
         divisor <- 2;
 
