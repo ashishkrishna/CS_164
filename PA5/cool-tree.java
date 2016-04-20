@@ -151,7 +151,8 @@ abstract class Expression extends TreeNode {
         super(lineNumber);
     }
     private AbstractSymbol type = null; 
-    public static CgenNode root = null;                                
+    public static CgenNode root = null;
+    public static String this_class = null;                                
     public AbstractSymbol get_type() { return type; }           
     public Expression set_type(AbstractSymbol s) { type = s; return this; } 
     public abstract void dump_with_types(PrintStream out, int n);
@@ -413,6 +414,7 @@ class attr extends Feature {
     protected AbstractSymbol name;
     protected AbstractSymbol type_decl;
     protected Expression init;
+    protected String this_class;
     /** Creates "attr" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -654,8 +656,11 @@ class static_dispatch extends Expression {
             StringSymbol string_ind = null;
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-            /* REPLACE WITH GENERAL CASE */ 
-            Vector<String> methods_for_this_class = CgenClassTable.virtual_disptbl.get("Main");
+            Vector<String> methods_for_this_class = null;
+            if(expr.get_type().toString().equals("SELF_TYPE")) 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(this.this_class);
+            else 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(expr.get_type().toString());
             Enumeration m = methods_for_this_class.elements();
             int ind = 0;
             while(m.hasMoreElements()){
@@ -664,7 +669,6 @@ class static_dispatch extends Expression {
                     break;
                 ind++;
             }
-            //REPLACE REPLACE REPLACE
             index++;
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
@@ -760,8 +764,11 @@ class dispatch extends Expression {
             StringSymbol string_ind = null;
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-            /* REPLACE WITH GENERAL CASE */ 
-            Vector<String> methods_for_this_class = CgenClassTable.virtual_disptbl.get("Main");
+            Vector<String> methods_for_this_class = null;
+            if(expr.get_type().toString().equals("SELF_TYPE")) 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(this.this_class);
+            else 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(expr.get_type().toString());
             Enumeration m = methods_for_this_class.elements();
             int ind = 0;
             while(m.hasMoreElements()){
@@ -770,7 +777,6 @@ class dispatch extends Expression {
                     break;
                 ind++;
             }
-            //REPLACE REPLACE REPLACE
             index++;
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
@@ -1813,6 +1819,8 @@ class new_ extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         CgenSupport.emitLoadAddress(CgenSupport.ACC, type_name.getString()+CgenSupport.PROTOBJ_SUFFIX, s);
+        CgenSupport.emitJal("Object.copy", s);
+        CgenSupport.emitJal(type_name.getString()+CgenSupport.CLASSINIT_SUFFIX, s);
         return index;
     }
 

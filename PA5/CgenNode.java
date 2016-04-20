@@ -39,7 +39,7 @@ class CgenNode extends class_c {
     final static int NotBasic = 1;
     
     /** Does this node correspond to a basic class? */
-    private int basic_status;
+    public int basic_status;
 
     /** Constructs a new CgenNode to represent class "c".
      * @param c the class
