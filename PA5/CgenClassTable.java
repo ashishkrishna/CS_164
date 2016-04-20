@@ -585,7 +585,7 @@ class CgenClassTable extends SymbolTable {
 					String nxt_str_method = (String) q.nextElement();
 					if(nxt_str_method.endsWith(m.group(4))) {
 						inherited_methods.addElement(cnt);
-						break;
+						
 					}
 					cnt++;
 				}
@@ -593,11 +593,11 @@ class CgenClassTable extends SymbolTable {
 			    //Remember: the lowest node definition is the only one we care about, and this one is the one that is first defined
 			    //when traversing the disp_tbl array since methods were added backwards ie. from most specific class to most generic
 				//Thererfore cleaning out the other such elements ensures that only the lowest one is the one we select.
-				for(int i = 0; i < inherited_methods.size(); i++) { 											
-					if(i==0) {
-						method_to_put = (String) disp_tbl.elementAt(inherited_methods.elementAt(i));	//Get the first element since this will be defined in the lowest subclass.							
-					}
-					disp_tbl.removeElementAt(inherited_methods.elementAt(i)); 
+			
+					method_to_put = (String) disp_tbl.elementAt(inherited_methods.elementAt(0));	//Get the first element since this will be defined in the lowest subclass.							
+					for(int i = 0; i <disp_tbl.size(); i++) {
+						if(disp_tbl.elementAt(i).endsWith(m.group(4)))
+							disp_tbl.removeElementAt(i); 
 				}
 				if(inherit_flag == 0) {								
 				//If the flag was never raised then we simply install the method into the disp_tbl and print out.

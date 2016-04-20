@@ -27,7 +27,20 @@
 
 class Foo {
   testee : Int <- 5;
+  bar() : Int {
+    testee
+  };
 };
+
+class Baz inherits Foo {
+  bar() : Int {
+    2
+  };
+  bars() : Int {
+    testee
+  };
+};
+
 
 class Main inherits IO {
 
