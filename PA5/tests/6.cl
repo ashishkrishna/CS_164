@@ -39,6 +39,7 @@ class Foo {
 };
 
 class Baz inherits Foo {
+  trye : Int <- 6;
   bar() : Int {
     2
   };
