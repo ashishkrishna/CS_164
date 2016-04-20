@@ -578,9 +578,7 @@ class CgenClassTable extends SymbolTable {
     		String pattern = "(([aA-zZ]([aA-zZ]|[\\d])*))\\.(([aA-zZ]([aA-zZ]|[\\d])*))"; //Grab the pattern [Class].[method]
 			Pattern r = Pattern.compile(pattern);   
 			Matcher m = r.matcher(method_to_put);
-			if(m.find()) {  //Should always find a match 
-				//Removes the last element from the disp_tbl
-				//disp_tbl.removeElementAt(disp_tbl.size()-1);   
+			if(m.find()) {  //Should always find a match   
 				int cnt = 0;                  
 				//Goes throug the disp_tbl and checks the indices of all methods that have the same name
 				for(Enumeration q = disp_tbl.elements(); q.hasMoreElements();) { 
