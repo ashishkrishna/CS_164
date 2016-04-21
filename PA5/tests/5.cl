@@ -5,10 +5,10 @@ class Main inherits IO
 {
   main() : Object
   {
-    let thing : Object <- self in
+    let thing : Object <- (new Int) in
       case thing of
-	i : Int => out_string( "int\n" );
-	b : Bool => out_string( "bool\n" );
+	i : Object => out_string( "obj\n" );
+	b : Int => out_string( "int\n" );
       esac
   };
 };

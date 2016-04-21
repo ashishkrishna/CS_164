@@ -23,6 +23,8 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /** This class is used for representing the inheritance tree during code
     generation. You will need to fill in some of its methods and
@@ -40,6 +42,7 @@ class CgenClassTable extends SymbolTable {
     private int boolclasstag;
     protected static  HashMap<String, Vector<String>> virtual_disptbl;
     protected static HashMap<String, Vector<method>> method_decls;	
+    protected static HashMap<String, Vector<attr>> attr_decls;
     protected static int frame_offset;
     protected static int frame_to_top_offset;
     protected static Stack frame_offset_store;
@@ -372,27 +375,24 @@ class CgenClassTable extends SymbolTable {
 	CgenNode parent = (CgenNode)probe(nd.getParent());
 	nd.setParentNd(parent);
 	parent.addChild(nd);
+	if(parent!=null) {
+		parent.num_children++;
+	}
     }
 
     /** Constructs a new class table and invokes the code generator */
     public CgenClassTable(Classes cls, PrintStream str) {
 	nds = new Vector();
-
 	this.str = str;
-
-	stringclasstag = 5 /* Change to your String class tag here */;
-	intclasstag =    3 /* Change to your Int class tag here */;
-	boolclasstag =   4 /* Change to your Bool class tag here */;
-
+	stringclasstag = 5;
+	intclasstag =    3;
+	boolclasstag =   4;
 	enterScope();
 	if (Flags.cgen_debug) System.out.println("Building CgenClassTable");
-	
 	installBasicClasses();
 	installClasses(cls);
 	buildInheritanceTree();
-
 	code();
-
 	exitScope();
     }
 
@@ -401,14 +401,13 @@ class CgenClassTable extends SymbolTable {
     public void code() {
     CgenClassTable.virtual_disptbl = new HashMap<String, Vector<String>>(0);
     CgenClassTable.method_decls = new HashMap<String, Vector<method>>(0);
+    CgenClassTable.attr_decls = new HashMap<String, Vector<attr>>(0);
+    CgenNode rt = root();
     frame_offset_store = new Stack();
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
-	
-
 	if (Flags.cgen_debug) System.out.println("choosing gc");
 	codeSelectGc();
-
 	if (Flags.cgen_debug) System.out.println("coding constants");
 	codeConstants();
 	str.print(CgenSupport.CLASSNAMETAB + CgenSupport.LABEL);
@@ -417,34 +416,27 @@ class CgenClassTable extends SymbolTable {
 	str.print(CgenSupport.CLASSOBJTAB + CgenSupport.LABEL);
 	objclasstab_creation(start);
 	virtual_disptbl = build_all_dispatch_trees(start, CgenClassTable.virtual_disptbl);
-	build_proto("Object", 3, 0);
-	build_proto("String", 5, 5);
-	build_proto("Bool", 4, 4);
-	build_proto("Int", 4, 3);
-	build_proto("IO", 3, 1);
-	build_proto("Main", 3, 2);
-
-
-
-
-	//                 Add your code to emit
-	//                   - prototype objects
-	//                   - class_nameTab
-	//                   - dispatch tables
-
+	CgenNode tree_base = root();
+	build_all_proto_objs(tree_base, 0);
 	if (Flags.cgen_debug) System.out.println("coding global text");
 	codeGlobalText();
-	initialize_all_classes(start);
-	Vector<method> mains = CgenClassTable.method_decls.get("Main");
 	int index = 0;
+	SymbolTable var_defs = new SymbolTable();
+	var_defs.enterScope();
+	index = initialize_all_classes(start, var_defs, index);
+	code_methods(start, 0, var_defs);
+	}
+
+	public void code_methods(CgenNode start, int index, SymbolTable var_defs) {
+	if(start.basic_status == CgenNode.NotBasic) {
+	Vector<method> mains = CgenClassTable.method_decls.get(start.getName().toString()); //Need to find for all classes
 	int param = -12;
 	int formal_length = 0;
-	SymbolTable var_defs = new SymbolTable();
 	for(Enumeration e = mains.elements(); e.hasMoreElements();) {
 		var_defs.enterScope();
 		param = -12;
 		method next_method = (method) e.nextElement();
-		str.print("Main."+next_method.name.toString()+CgenSupport.LABEL);
+		str.print(start.getName().toString()+"."+next_method.name.toString()+CgenSupport.LABEL);
 		CgenSupport.emitMethodInit(param, str);
 		formal_length = next_method.formals.getLength();
 		int count = formal_length-1;
@@ -460,16 +452,20 @@ class CgenClassTable extends SymbolTable {
 		CgenClassTable.frame_to_top_offset = -16;
 		Expression shin = (Expression) next_method.expr;
 		shin.getClass().cast(shin);
+		CgenNode this_root = root();
+		String this_class_string = start.getName().toString();
+		shin.this_class = this_class_string;
+		shin.set_root(this_root);
 		index = shin.code(str, index, var_defs);
 		var_defs.exitScope();
 		CgenSupport.emitMethodEnd(CgenClassTable.frame_offset, str);
-		
 	}
-
-	//                 Add your code to emit
-	//                   - object initializer
-	//                   - the class methods
-	//                   - etc...
+}
+	for(Enumeration m = start.getChildren(); m.hasMoreElements(); ) {
+		CgenNode child_node = (CgenNode) m.nextElement();
+		code_methods(child_node, index, var_defs);
+	}
+	return;
     }
 
 
@@ -502,60 +498,145 @@ class CgenClassTable extends SymbolTable {
 
     }
 
-    public void build_proto(String classtab, int size, int classtag) {
+    public int build_all_proto_objs(CgenNode rbase, int classtag) {
+    	build_proto(rbase, rbase.getName().toString(), classtag);
+    	for(Enumeration f = rbase.getChildren(); f.hasMoreElements();) {
+    		classtag++;
+    		CgenNode nxt_node = (CgenNode) f.nextElement();
+    		classtag = build_all_proto_objs(nxt_node, classtag);
+    	}
+    	return classtag;
+    }
+
+    public void build_proto(CgenNode rbase, String classtab,  int classtag) {
+    	int size = 3;
+    	rbase.class_tag = classtag;
     	str.println(CgenSupport.WORD + "-1");
-    	str.print(classtab + CgenSupport.PROTOBJ_SUFFIX + CgenSupport.LABEL); 
-    	str.print(CgenSupport.WORD + String.valueOf(classtag)); str.println("");
-    	str.print(CgenSupport.WORD + String.valueOf(size)); str.println("");
-    	str.print(CgenSupport.WORD + classtab+CgenSupport.DISPTAB_SUFFIX); str.println("");
-    	if(classtab.equals("String") || classtab.equals("Bool") || classtab.equals("Int")) {
-    		str.print(CgenSupport.WORD + String.valueOf(0)); str.println("");
-    	}
-    	if(classtab.equals("String")) {
-    		IntSymbol aleph = (IntSymbol) AbstractTable.inttable.lookup("0");
-    		str.print(CgenSupport.WORD); aleph.codeRef(str); str.println("");
-    	}
+    	str.print(rbase.getName().toString() + CgenSupport.PROTOBJ_SUFFIX + CgenSupport.LABEL); 
+	    str.print(CgenSupport.WORD + String.valueOf(classtag)); str.println("");
+    	CgenNode start_1 = rbase;
+    	while(start_1 != null) {
+	    	if(CgenClassTable.attr_decls.get(start_1.getName().toString()) != null) {
+		    	Vector<attr> attr_class = CgenClassTable.attr_decls.get(start_1.getName().toString());
+		    	size = size + attr_class.size();
+		    }
+	    	start_1 = start_1.getParentNd();
+	    }
+	    str.print(CgenSupport.WORD + String.valueOf(size)); str.println("");
+	    str.print(CgenSupport.WORD + classtab+CgenSupport.DISPTAB_SUFFIX); str.println("");
+	    CgenNode start_2 = rbase;
+	    while(start_2 != null) {
+		    if(CgenClassTable.attr_decls.get(start_2.getName().toString()) != null) {
+			    Vector<attr> attr_class = CgenClassTable.attr_decls.get(start_2.getName().toString());
+			    	for(Enumeration f = attr_class.elements(); f.hasMoreElements(); ) {
+			    		attr nt_attr = (attr) f.nextElement();
+			    		str.print(CgenSupport.WORD + String.valueOf(0)); str.println("");
+			    	}
+		    }
+	    start_2 = start_2.getParentNd();
+	   }
+    	return;
+
 
     }
 
-    public void initialize_all_classes(CgenNode base) {
+   public int initialize_all_classes(CgenNode base, SymbolTable aleph, int index) {
     		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
     		String parent = "";
     		parent = base.getParentNd().getName().toString()+CgenSupport.CLASSINIT_SUFFIX;
     		if(base.getName().toString().equals("Object"))
     			parent = "null";
+
     		CgenSupport.emitInitializerRef(parent, str);
+    		CgenNode trav_up = base;
+    		while(trav_up != null) {
+    			if(CgenClassTable.attr_decls.get(trav_up.getName().toString()) != null) {
+		    		Vector<attr> attrs = CgenClassTable.attr_decls.get(base.getName().toString());
+		    		int offset = attrs.size()-1;
+		    		for(Enumeration f = attrs.elements(); f.hasMoreElements(); ){
+		    			attr next_attr = (attr) f.nextElement();
+		    			AbstractSymbol aleph1 = AbstractTable.stringtable.addString(next_attr.name.toString());
+		    			aleph.addId(aleph1, offset);
+		    			offset--;
+		    		}
+		    		CgenClassTable.frame_offset = 12 + 4*attrs.size();
+					CgenClassTable.frame_to_top_offset = -12;
+		    		int offset_2 = attrs.size()-1;
+		    		for(Enumeration g = attrs.elements(); g.hasMoreElements(); ){
+		    		attr next_attr = (attr) g.nextElement();
+		    		next_attr.init.this_class = base.getName().toString();
+		    		if(base.basic_status == CgenNode.NotBasic) {
+		    		index = next_attr.init.code(str, index, aleph);
+		    		CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
+		    		CgenSupport.emitStore(CgenSupport.ACC, 3+offset_2, CgenSupport.SELF, str);
+		    	}
+		    		offset_2--;
+		    	}
+		    }
+    	  trav_up = trav_up.getParentNd();
+    	}
+    		CgenSupport.emitEndRef(parent, 12, str);
     		if(!base.getChildren().hasMoreElements()) {
-    		return;
+    		return index;
     		}
     		for(Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
     		CgenNode nxt = (CgenNode) children.nextElement();
-    		initialize_all_classes(nxt);
+    		index = initialize_all_classes(nxt, aleph, index);
     		}
-    		return;
+    		return index;
     }
 
 
 
     public HashMap<String, Vector<String>> build_all_dispatch_trees(CgenNode base, HashMap<String, Vector<String>> virtual_disptbl) {
-    	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
     	Vector<String> disp_tbl = dispatch_table_builder(base);
     	Vector<String> reversal = new Vector<String>(0);
     	while(disp_tbl.size() > 0) {
-    		str.print(disp_tbl.lastElement()); str.println("");
-    		reversal.addElement(disp_tbl.lastElement());
+    		int inherit_flag = 0;
+    		String method_to_put = disp_tbl.lastElement();
     		disp_tbl.removeElementAt(disp_tbl.size()-1);
+    		Vector<Integer> inherited_methods = new Vector<Integer>(0);
+    		String pattern = "(([aA-zZ]([aA-zZ]|[\\d])*))\\.(([aA-zZ]([aA-zZ]|[\\d])*))"; //Grab the pattern [Class].[method]
+			Pattern r = Pattern.compile(pattern);   
+			Matcher m = r.matcher(method_to_put);
+			if(m.find()) {  //Should always find a match   
+				int cnt = 0;                  
+				//Goes throug the disp_tbl and checks the indices of all methods that have the same name
+				for(Enumeration q = reversal.elements(); q.hasMoreElements();) { 
+					String nxt_str_method = (String) q.nextElement();
+					if(nxt_str_method.endsWith(m.group(4))) {
+						inherit_flag = 1;
+						reversal.set(cnt, method_to_put);
+						break;	
+					}
+					cnt++;
+				}
+				if(inherit_flag == 0) {
+					reversal.addElement(method_to_put);
+				}
+		}
+			else { System.exit(1); }
     	}
     	virtual_disptbl.put(base.getName().toString(), reversal);
+    	print_dispatch_tbl(base, reversal);
     	if(!base.getChildren().hasMoreElements()) {
     		return virtual_disptbl;
     	}
-    	for( Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
+    	for(Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
     		CgenNode nxt = (CgenNode) children.nextElement();
     		virtual_disptbl = build_all_dispatch_trees(nxt, virtual_disptbl);
     	}
     	return virtual_disptbl;
+    }
+
+
+    public void print_dispatch_tbl(CgenNode base, Vector<String> reversal) {
+    	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
+    	for(Enumeration g = reversal.elements(); g.hasMoreElements();) {
+    		String next_str = (String) g.nextElement();
+    		str.print(next_str); str.println("");
+    	}
     }
     /** Building the dispatch table **/
     public Vector<String> dispatch_table_builder(CgenNode class_1) {
@@ -563,6 +644,7 @@ class CgenClassTable extends SymbolTable {
     	Vector<String> disp_tbl = new Vector<String>(0);
     	while(start != null) { 
     	Vector<method> this_class = new Vector<method>(0);
+    	Vector<attr> attr_class = new Vector<attr>(0);
     	for( Enumeration e = start.getFeatures().getElements(); e.hasMoreElements(); ) {
     			Feature next_feature = (Feature) e.nextElement();
     			if(next_feature.getClass().equals(method.class)) {
@@ -570,15 +652,21 @@ class CgenClassTable extends SymbolTable {
     				this_class.addElement(add_method);
     				disp_tbl.addElement(CgenSupport.WORD + start.getName().toString()+"."+add_method.name.toString()); 
     			}
+    			if(next_feature.getClass().equals(attr.class)) {
+    				attr add_attr = (attr) next_feature;
+    				attr_class.addElement(add_attr);
+    			}
     	}
-    	if(class_1.getName().toString() == start.getName().toString()) 
+    	if(class_1.getName().toString() == start.getName().toString())  {
     		CgenClassTable.method_decls.put(start.getName().toString(), this_class);
+    		CgenClassTable.attr_decls.put(start.getName().toString(), attr_class);
+    	}
 
     	start = start.getParentNd();
-    }
-    	
+    }  	
     	return disp_tbl;
     }
+
 
     /** Gets the root of the inheritance tree */
     public CgenNode root() {

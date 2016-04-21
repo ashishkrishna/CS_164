@@ -24,6 +24,31 @@
  * interesting when we initialize them!
  *)
 
+
+class Foo {
+  testee : Int <- 5;
+  bar() : Int {
+    testee
+  };
+  bars() : Int {
+    3
+  };
+  badz() : Int {
+    4
+  };
+};
+
+class Baz inherits Foo {
+  trye : Int <- 6;
+  bar() : Int {
+    2
+  };
+  bars() : Int {
+    testee
+  };
+};
+
+
 class Main inherits IO {
 
   main() : Int {	-- main() is an atrophied method so we can parse. 
@@ -36,9 +61,13 @@ class Main inherits IO {
       2;
     };
 
-  testee : Int <- out;	-- testee is a number to be tested for primeness.   
+
+  
+
+  testee : Int <- let x : Int <- 5 in  let y : Int <- 6 in {out_int(x+y);  2; };  -- testee is a number to be tested for primeness.   
 
   divisor : Int;	-- divisor is a number which may factor testee.
+  dividend : String;
 
   stop : Int <- 500;	-- stop is an arbitrary value limiting testee. 	
 

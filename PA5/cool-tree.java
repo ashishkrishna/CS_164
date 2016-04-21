@@ -150,7 +150,9 @@ abstract class Expression extends TreeNode {
     protected Expression(int lineNumber) {
         super(lineNumber);
     }
-    private AbstractSymbol type = null;                                 
+    private AbstractSymbol type = null; 
+    public static CgenNode root = null;
+    public static String this_class = null;                                
     public AbstractSymbol get_type() { return type; }           
     public Expression set_type(AbstractSymbol s) { type = s; return this; } 
     public abstract void dump_with_types(PrintStream out, int n);
@@ -161,6 +163,8 @@ abstract class Expression extends TreeNode {
             { out.println(Utilities.pad(n) + ": _no_type"); }
     }
     public int code(PrintStream s, int index, SymbolTable sym) { return index; }
+    public void set_root(CgenNode this_root) { Expression.root = this_root; }
+    public CgenNode get_root() { return Expression.root; }
 
 }
 
@@ -410,6 +414,7 @@ class attr extends Feature {
     protected AbstractSymbol name;
     protected AbstractSymbol type_decl;
     protected Expression init;
+    protected String this_class;
     /** Creates "attr" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -651,8 +656,11 @@ class static_dispatch extends Expression {
             StringSymbol string_ind = null;
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-            /* REPLACE WITH GENERAL CASE */ 
-            Vector<String> methods_for_this_class = CgenClassTable.virtual_disptbl.get("Main");
+            Vector<String> methods_for_this_class = null;
+            if(expr.get_type().toString().equals("SELF_TYPE")) 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(this.this_class);
+            else 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(expr.get_type().toString());
             Enumeration m = methods_for_this_class.elements();
             int ind = 0;
             while(m.hasMoreElements()){
@@ -661,7 +669,6 @@ class static_dispatch extends Expression {
                     break;
                 ind++;
             }
-            //REPLACE REPLACE REPLACE
             index++;
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
@@ -748,7 +755,8 @@ class dispatch extends Expression {
                 CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
                 CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
              }
-            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            if(expr.get_type().toString().equals("SELF_TYPE")) 
+                CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
             CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
             CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
@@ -756,8 +764,11 @@ class dispatch extends Expression {
             StringSymbol string_ind = null;
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-            /* REPLACE WITH GENERAL CASE */ 
-            Vector<String> methods_for_this_class = CgenClassTable.virtual_disptbl.get("Main");
+            Vector<String> methods_for_this_class = null;
+            if(expr.get_type().toString().equals("SELF_TYPE")) 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(this.this_class);
+            else 
+                methods_for_this_class = CgenClassTable.virtual_disptbl.get(expr.get_type().toString());
             Enumeration m = methods_for_this_class.elements();
             int ind = 0;
             while(m.hasMoreElements()){
@@ -766,19 +777,11 @@ class dispatch extends Expression {
                     break;
                 ind++;
             }
-            //REPLACE REPLACE REPLACE
             index++;
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
             return index;
-
-
-
-
     }
-
-
-
 }
 
 
@@ -945,39 +948,93 @@ class typcase extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index, SymbolTable sym) {
-        index = expr.code(s, index, sym);
-        HashMap<branch, AbstractSymbol> class_decls = new HashMap<branch, AbstractSymbol>(0);
-        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
-        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
-        for(Enumeration g = cases.getElements(); g.hasMoreElements();) {
-            branch bet_1 = (branch) g.nextElement();
-            class_decls.put(bet_1, bet_1.type_decl);
-            
+    // public int code(PrintStream s, int index, SymbolTable sym) {
+
+    //     return index;
+    // }
+
+    public branch[] branch_sort(branch[] sort) {
+         CgenNode start = super.get_root();
+        branch[] return_brn = new branch[sort.length];
+        int outer_cnt = 0;
+        while(outer_cnt < sort.length) {
+            branch smallest_num_children = sort[0];
+            int saved_ind = 0;
+            for(int i = 0; i < sort.length; i++) {
+                if(sort[i]!= null) {
+                    if(start.getNode(sort[i].type_decl.toString()).num_children < start.getNode(smallest_num_children.type_decl.toString()).num_children) {
+                        smallest_num_children = sort[i];
+                        saved_ind = i;
+                }
+            }
         }
-        branch target_branch = null;
-        for(Map.Entry<branch, AbstractSymbol> iterator : class_decls.entrySet()) {
-                //Add case
-        }
-        if (target_branch == null) {
-            CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
-            CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
-            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
-            CgenSupport.emitJal("_case_abort", s);
-            return index;
-        }
-        sym.enterScope();
-        sym.addId(target_branch.name, CgenClassTable.frame_to_top_offset/4);
-        index = target_branch.expr.code(s, index, sym);
-        sym.exitScope();
-        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
-        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
-        return index;
+        sort[saved_ind]= null;
+        return_brn[outer_cnt] = smallest_num_children;
+        outer_cnt++;
     }
-
-
+    return return_brn;
 }
+
+    public int code(PrintStream s, int index, SymbolTable sym) {
+            index = expr.code(s, index, sym);
+            CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+            CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
+            CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
+            CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index+1, s);
+            CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
+            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
+            CgenSupport.emitJal("_case_abort2", s);
+            CgenNode start = super.get_root();
+            int max_node = start.last_descendant_node(start).class_tag+1;
+            branch[] branches_to_sort = new branch[max_node];
+            branch [] sorted_branches = new branch[max_node];
+            CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
+             for(Enumeration g = cases.getElements(); g.hasMoreElements();) {
+                branch bet_1 = (branch) g.nextElement();
+                CgenNode branch_type = start.getNode(bet_1.type_decl.toString());
+                if(branches_to_sort[branch_type.class_tag] == null) { //first come
+                    branches_to_sort[branch_type.class_tag] = bet_1;
+                    }
+                    //branches added based on the class tags of their types 
+                }
+                    int outer_ind = index;
+                    index++;
+                    int saved_ind = index;
+                    sorted_branches = branch_sort(branches_to_sort);
+                    for(int  k = 0; k < sorted_branches.length; k++) {
+                        if(sorted_branches[k] == null)
+                            continue;
+                        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_ind)+ CgenSupport.LABEL);
+                        CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
+                        saved_ind = index+1;
+                        index = index+2;
+                        int enter_ind = 0;
+                        int bound = sorted_branches.length-1;
+                        if(k == bound) 
+                            enter_ind = outer_ind;
+                        else
+                            enter_ind = saved_ind;
+                        CgenSupport.emitBlti(CgenSupport.T2, start.getNode(sorted_branches[k].type_decl.toString()).class_tag, enter_ind, s);
+                        CgenNode interm = start.getNode(sorted_branches[k].type_decl.toString());
+                        CgenSupport.emitBgti(CgenSupport.T2, start.last_descendant_node(interm).class_tag, enter_ind, s);
+                        sym.enterScope();
+                        sym.addId(sorted_branches[k].name, CgenClassTable.frame_to_top_offset/4);
+                        index = sorted_branches[k].expr.code(s, index, sym);
+                        sym.exitScope();
+                        CgenSupport.emitBranch(outer_ind, s);
+                    }
+                    s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_ind)+ CgenSupport.LABEL); //For consistency
+                    CgenSupport.emitJal("_case_abort", s);
+                    s.print(CgenSupport.LABEL_PREFIX+String.valueOf(outer_ind)+ CgenSupport.LABEL); // Exiting let
+                    CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+                    CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
+                    return index;
+                }
+                }
+
+   
+
+
 
 
 /** Defines AST constructor 'block'.
@@ -1791,6 +1848,9 @@ class new_ extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        CgenSupport.emitLoadAddress(CgenSupport.ACC, type_name.getString()+CgenSupport.PROTOBJ_SUFFIX, s);
+        CgenSupport.emitJal("Object.copy", s);
+        CgenSupport.emitJal(type_name.getString()+CgenSupport.CLASSINIT_SUFFIX, s);
         return index;
     }
 
@@ -1924,10 +1984,12 @@ class object extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+
         if(name.toString().equals("self")) {
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             return index;
         }
+        //System.out.println(sym.toString());
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
          Integer f = (Integer) (sym.lookup(aleph));
         CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
@@ -1936,5 +1998,6 @@ class object extends Expression {
 
 
 }
+
 
 
