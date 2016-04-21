@@ -375,6 +375,9 @@ class CgenClassTable extends SymbolTable {
 	CgenNode parent = (CgenNode)probe(nd.getParent());
 	nd.setParentNd(parent);
 	parent.addChild(nd);
+	if(parent!=null) {
+		parent.num_children++;
+	}
     }
 
     /** Constructs a new class table and invokes the code generator */
@@ -399,6 +402,7 @@ class CgenClassTable extends SymbolTable {
     CgenClassTable.virtual_disptbl = new HashMap<String, Vector<String>>(0);
     CgenClassTable.method_decls = new HashMap<String, Vector<method>>(0);
     CgenClassTable.attr_decls = new HashMap<String, Vector<attr>>(0);
+    CgenNode rt = root();
     frame_offset_store = new Stack();
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();

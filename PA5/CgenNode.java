@@ -42,6 +42,7 @@ class CgenNode extends class_c {
     public int basic_status;
 
     public int class_tag = 0;
+    public int num_children = 0;
 
     /** Constructs a new CgenNode to represent class "c".
      * @param c the class
@@ -53,6 +54,7 @@ class CgenNode extends class_c {
 	this.parent = null;
 	this.children = new Vector();
 	this.basic_status = basic_status;
+    num_children = 0;
 	AbstractTable.stringtable.addString(name.getString());
     }
 
@@ -100,6 +102,19 @@ class CgenNode extends class_c {
 
         }
         return null;
+    }
+
+    CgenNode last_descendant_node(CgenNode name) {
+        if(!name.getChildren().hasMoreElements())
+            return name;
+         CgenNode nxt = null;
+         CgenNode nxt_2 = null;
+        for(Enumeration r = name.getChildren(); r.hasMoreElements();) {
+            nxt = (CgenNode) r.nextElement();
+            nxt_2 = last_descendant_node(nxt);
+            
+        }
+        return nxt_2;
     }
 
     /** Returns true is this is a basic class.

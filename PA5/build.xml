@@ -33,6 +33,7 @@
 
 <!-- target: test-all -->
   <target name="test-all" depends="cgen">
+    <exec executable="python"> <arg line="compare-cgen.py tests/5.cl"/> </exec> 
     <exec executable="python"> <arg line="compare-cgen.py tests/1.cl"/> </exec>
     <exec executable="python"> <arg line="compare-cgen.py tests/2.cl"/> </exec>
     <exec executable="python"> <arg line="compare-cgen.py tests/3.cl"/> </exec>
