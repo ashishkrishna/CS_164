@@ -559,7 +559,6 @@ class CgenClassTable extends SymbolTable {
 		    			AbstractSymbol aleph1 = AbstractTable.stringtable.addString(next_attr.name.toString());
 		    			aleph.addId(aleph1, offset);
 		    			offset--;
-
 		    		}
 		    		CgenClassTable.frame_offset = 12 + 4*attrs.size();
 					CgenClassTable.frame_to_top_offset = -12;

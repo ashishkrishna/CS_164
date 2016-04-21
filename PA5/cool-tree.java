@@ -974,46 +974,57 @@ class typcase extends Expression {
     }
     return return_brn;
 }
+
     public int code(PrintStream s, int index, SymbolTable sym) {
             index = expr.code(s, index, sym);
             CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
             CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
             CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
             CgenNode start = super.get_root();
-            System.out.println(start.last_descendant_node(start).class_tag);
             int max_node = start.last_descendant_node(start).class_tag+1;
-            CgenNode[] class_decls = new CgenNode[max_node];
             branch[] branches_to_sort = new branch[max_node];
             branch [] sorted_branches = new branch[max_node];
-    
+            CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
              for(Enumeration g = cases.getElements(); g.hasMoreElements();) {
                 branch bet_1 = (branch) g.nextElement();
                 CgenNode branch_type = start.getNode(bet_1.type_decl.toString());
-                class_decls[branch_type.class_tag] =  branch_type; //cgen nodes corresponding to each branch type
                 if(branches_to_sort[branch_type.class_tag] == null) { //first come
                     branches_to_sort[branch_type.class_tag] = bet_1;
                     }
                     //branches added based on the class tags of their types 
-        }
-        sorted_branches = branch_sort(branches_to_sort);
-        for(int  k = 0; k < sorted_branches.length; k++) {
-            if(sorted_branches[k] == null)
-                continue;
-            s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
-            index++;
-            CgenSupport.emitBlti(CgenSupport.T2, start.getNode(sorted_branches[k].type_decl.toString()).class_tag, index, s);
-            CgenNode interm = start.getNode(sorted_branches[k].type_decl.toString());
-            CgenSupport.emitBgti(CgenSupport.T2, start.last_descendant_node(interm).class_tag, index, s);
-            sym.enterScope();
-            sym.addId(sorted_branches[k].name, CgenClassTable.frame_to_top_offset/4);
-            index = sorted_branches[k].expr.code(s, index, sym);
-            sym.exitScope();
-            CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
-            CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
-        }
-        return index;
-    }
-}
+                }
+                    int outer_ind = index;
+                    index++;
+                    int saved_ind = index;
+                    sorted_branches = branch_sort(branches_to_sort);
+                    for(int  k = 0; k < sorted_branches.length; k++) {
+                        if(sorted_branches[k] == null)
+                            continue;
+                        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_ind)+ CgenSupport.LABEL);
+                        saved_ind = index+1;
+                        index = index+2;
+                        int enter_ind = 0;
+                        int bound = sorted_branches.length-1;
+                        if(k == bound) 
+                            enter_ind = outer_ind;
+                        else
+                            enter_ind = saved_ind;
+                        CgenSupport.emitBlti(CgenSupport.T2, start.getNode(sorted_branches[k].type_decl.toString()).class_tag, enter_ind, s);
+                        CgenNode interm = start.getNode(sorted_branches[k].type_decl.toString());
+                        CgenSupport.emitBgti(CgenSupport.T2, start.last_descendant_node(interm).class_tag, enter_ind, s);
+                        sym.enterScope();
+                        sym.addId(sorted_branches[k].name, CgenClassTable.frame_to_top_offset/4);
+                        index = sorted_branches[k].expr.code(s, index, sym);
+                        sym.exitScope();
+                        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+                        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
+                        CgenSupport.emitBranch(outer_ind, s);
+                    }
+                    s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_ind)+ CgenSupport.LABEL); //For consistency
+                    s.print(CgenSupport.LABEL_PREFIX+String.valueOf(outer_ind)+ CgenSupport.LABEL); // Exiting let
+                    return index;
+                }
+                }
 
    
 
