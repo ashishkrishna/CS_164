@@ -980,6 +980,10 @@ class typcase extends Expression {
             CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
             CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
             CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
+            CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index+1, s);
+            CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
+            CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
+            CgenSupport.emitJal("_case_abort2", s);
             CgenNode start = super.get_root();
             int max_node = start.last_descendant_node(start).class_tag+1;
             branch[] branches_to_sort = new branch[max_node];
@@ -1001,6 +1005,7 @@ class typcase extends Expression {
                         if(sorted_branches[k] == null)
                             continue;
                         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_ind)+ CgenSupport.LABEL);
+                        CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
                         saved_ind = index+1;
                         index = index+2;
                         int enter_ind = 0;
@@ -1016,12 +1021,13 @@ class typcase extends Expression {
                         sym.addId(sorted_branches[k].name, CgenClassTable.frame_to_top_offset/4);
                         index = sorted_branches[k].expr.code(s, index, sym);
                         sym.exitScope();
-                        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
-                        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
                         CgenSupport.emitBranch(outer_ind, s);
                     }
                     s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_ind)+ CgenSupport.LABEL); //For consistency
+                    CgenSupport.emitJal("_case_abort", s);
                     s.print(CgenSupport.LABEL_PREFIX+String.valueOf(outer_ind)+ CgenSupport.LABEL); // Exiting let
+                    CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
+                    CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
                     return index;
                 }
                 }
