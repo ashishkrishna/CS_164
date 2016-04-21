@@ -563,15 +563,17 @@ class CgenClassTable extends SymbolTable {
 		    		for(Enumeration g = attrs.elements(); g.hasMoreElements(); ){
 		    		attr next_attr = (attr) g.nextElement();
 		    		next_attr.init.this_class = base.getName().toString();
+		    		if(base.basic_status == CgenNode.NotBasic) {
 		    		index = next_attr.init.code(str, index, aleph);
 		    		CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
 		    		CgenSupport.emitStore(CgenSupport.ACC, 3+offset_2, CgenSupport.SELF, str);
+		    	}
 		    		offset_2--;
 		    	}
 		    }
     	  trav_up = trav_up.getParentNd();
     	}
-    		CgenSupport.emitEndRef(parent, CgenClassTable.frame_offset, str);
+    		CgenSupport.emitEndRef(parent, 12, str);
     		if(!base.getChildren().hasMoreElements()) {
     		return index;
     		}
