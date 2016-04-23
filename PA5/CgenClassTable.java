@@ -384,7 +384,7 @@ class CgenClassTable extends SymbolTable {
     	}
     	for(Enumeration m = nd.getChildren(); m.hasMoreElements();) {
     		CgenNode nxt_cgn = (CgenNode) m.nextElement();
-    		total = total + setNumChildren(nxt_cgn, total+1);
+    		total = total + setNumChildren(nxt_cgn, 0) + 1;
     	}
     	nd.num_children = total;
     	return total;
