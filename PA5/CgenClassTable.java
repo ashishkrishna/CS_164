@@ -375,9 +375,19 @@ class CgenClassTable extends SymbolTable {
 	CgenNode parent = (CgenNode)probe(nd.getParent());
 	nd.setParentNd(parent);
 	parent.addChild(nd);
-	if(parent!=null) {
-		parent.num_children++;
-	}
+    }
+
+    private int setNumChildren(CgenNode nd, int total) {
+    	if(!nd.getChildren().hasMoreElements()) {
+    		nd.num_children = 0;
+    		return 0;
+    	}
+    	for(Enumeration m = nd.getChildren(); m.hasMoreElements();) {
+    		CgenNode nxt_cgn = (CgenNode) m.nextElement();
+    		total = total + setNumChildren(nxt_cgn, total+1);
+    	}
+    	nd.num_children = total;
+    	return total;
     }
 
     /** Constructs a new class table and invokes the code generator */
@@ -392,6 +402,8 @@ class CgenClassTable extends SymbolTable {
 	installBasicClasses();
 	installClasses(cls);
 	buildInheritanceTree();
+	CgenNode rt_1 = root();
+	setNumChildren(rt_1, 0);
 	code();
 	exitScope();
     }
