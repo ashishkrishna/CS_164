@@ -306,6 +306,12 @@ class programc extends Program {
         semantError();
         errorStream.append("Main method not defined in Main class.\n");
     }
+    if(!checkCopy(methods_per_class)) {
+        semanticerr++;
+        semantError();
+        errorStream.append("Cannot redefine copy in non-basic class.\n");
+
+    }
     checkClasses(root_1, attr_checker, method_checker, classTable);
     if(semanticerr > 0) {  //There shouldn't be any semantic errors
         System.err.println("Compilation halted due to static semantic errors.");
@@ -403,12 +409,27 @@ class programc extends Program {
         for(Enumeration<method> enums = methods.elements(); enums.hasMoreElements(); ) {
             method aleph = enums.nextElement();
             if(aleph.name.toString().equals("main")) {
-                return true;
+                if(aleph.formals.getLength() == 0)
+                    return true;
+                else
+                    return false;
             }
                
 
             }
             return false;
+         }
+
+    public boolean checkCopy(HashMap<String, Vector<method>> bet) {
+        for(String enums : bet.keySet() ) {
+            Vector<method> methods = bet.get(enums);
+            for(Enumeration f = methods.elements(); f.hasMoreElements(); ) {
+                method aleph = (method) f.nextElement();
+                if(enums != "Object" && aleph.toString().equals("copy"))
+                    return false;
+            }
+           }
+            return true;
          }
 
 
