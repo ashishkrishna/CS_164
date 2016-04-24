@@ -1,27 +1,9 @@
-class A {
-   aleph : A <- self;
-   foo(a:A):Bool { {6 < 7; 6 <= 7; not true;} };
+class SELF_TYPE {
+   foo(a:Bool):Bool { {6 < 7; 6 <= 7; not true;} };
 
 };
 class Main { main () : Int { 6 }; };
-class B {
-   aleph : A <- self;
-   foo(a:A):Bool { {6 < 7; 6 <= 7; not true;} };
 
-};
-
-
-
-class D inherits C {
-   aleph : A <- self;
-   foo(a:A):Bool { {6 < 7; 6 <= 7; not true;} };
-
-};
-
-class C inherits D {
-   aleph : A <- self;
-   foo(a:A):Bool { {6 < 7; 6 <= 7; not true;} };
-};
 
 
 

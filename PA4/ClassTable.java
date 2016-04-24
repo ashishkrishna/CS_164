@@ -260,6 +260,11 @@ class ClassTable {
 	/* Collect all of the classes into a vector */
 	for(int i=0; i< cls.getLength(); i++) {
 		class_c curr_elem = (class_c) cls.getNth(i);
+		if(curr_elem.getName().toString().equals("SELF_TYPE")) {
+			semantErrors++;
+			errorStream.print("0: ");
+			errorStream.append("SELF_TYPE cannot be a class name!\n");
+		}
 		if(!named.contains(curr_elem.getName().toString())) {
 		named.addElement(curr_elem.getName().toString());
 		ll_cls.addElement(curr_elem);
