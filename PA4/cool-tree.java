@@ -592,6 +592,11 @@ class method extends Feature {
             errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
             return false;
        }
+       if((this.expr.get_type().equals("SELF_TYPE") && !return_type.equals("SELF_TYPE")) || (!this.expr.get_type().equals("SELF_TYPE") && return_type.equals("SELF_TYPE"))) {
+            semantError(to_check.getFilename(), (TreeNode) this);
+            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+            return false;
+       }
 
        }
       
@@ -1194,21 +1199,19 @@ class cond extends Expression {
                 classes.addElement(then_exp.get_type().toString());
         }
         if(else_exp.get_type() != null) {
-         if(else_exp.get_type().toString().equals("SELF_TYPE")) {
-            if(!else_exp.getClass().equals(object.class)) {
-             AbstractSymbol delta = AbstractTable.stringtable.addString("SELF_TYPE");
-             super.set_type(delta);
-             return true;
-         }
-            else
-                classes.addElement(checker.getName().toString());
-        
-    }
+         if(else_exp.get_type().toString().equals("SELF_TYPE"))
+            classes.addElement(checker.getName().toString());
         else
             classes.addElement(else_exp.get_type().toString());
         }
         if(then_exp.get_type() == null && else_exp.get_type() == null) //Exit if the type of both then_exp and else_exp cannot be set.
             return false;
+        if(then_exp.get_type().toString().equals("SELF_TYPE") && else_exp.get_type().toString().equals("SELF_TYPE")) {
+            AbstractSymbol gimele = AbstractTable.stringtable.addString("SELF_TYPE");
+            super.set_type(gimele);
+            return true;
+        }
+
         HierarchyNode root_of_good_tree = classTable.goodClasses();
         Vector<HierarchyNode> node_list = new Vector<HierarchyNode>(0);
         node_list = classTable.find_join_outer(root_of_good_tree, classes, node_list);
