@@ -679,7 +679,13 @@ class attr extends Feature {
         if(!(init.get_type()==null)) {
                 HierarchyNode root_of_good_tree = classTable.goodClasses();
                 HierarchyNode super_class = classTable.getClassbyName(type_decl.toString(), root_of_good_tree);
-                if(!classTable.isChildClass(init.get_type().toString(), super_class)) {  
+                String plchldr = null;
+                if(init.get_type().toString().equals("SELF_TYPE")) {
+                    plchldr = to_check.getName().toString();
+                }
+                else 
+                    plchldr = init.get_type().toString();
+                if(!classTable.isChildClass(plchldr, super_class)) {  
                 /*Check for initialization conformity */      
                 semantError(to_check.getFilename(), (TreeNode) this);
                 errorStream.append("Inferred type " + this.init.get_type() + " of initialization of attribute " + this.name + " does not conform to declared type " + this.type_decl + ".\n");
@@ -1331,7 +1337,12 @@ class typcase extends Expression {
             Case case_2 = chck_1.nextElement();
             if(case_2.getClass().equals(branch.class)) {
                 branch b_2 = (branch) case_2;
-                if(reps.get(b_2.type_decl.toString()) != null) {
+                String plchldr = null;
+                if(b_2.type_decl.toString().equals("SELF_TYPE"))
+                    plchldr = checker.getName().toString();
+                else
+                    plchldr = b_2.type_decl.toString();
+                if(reps.get(plchldr) != null) {
                      semantError(checker.getFilename(), this);
                      errorStream.append("Repitition of branch classes.\n"); //Wrong number of arguments. Error out here.
                      return false;

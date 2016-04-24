@@ -45,7 +45,7 @@
 
 <!-- target: test-all -->
   <target name="test-all" depends="semant">
-     <exec executable="python"> <arg line="compare-semant.py tests/bad19.test"/> </exec>
+     <exec executable="python"> <arg line="compare-semant.py tests/bad20.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good1.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good2.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good3.test"/> </exec>

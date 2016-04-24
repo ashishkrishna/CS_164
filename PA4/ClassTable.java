@@ -320,6 +320,10 @@ class ClassTable {
    /* Now we proceed with building graphs for bad nodes. First, we remove all bad nodes who do not have defined parents. Then 
    we have nodes remaining in the bad nodes that are part of cycles (these cycles can be distinct, and errors need to be returned
    	for each distinct cycle) */
+	int length_before = 0;
+	int length_after = 1;
+	while(length_before != length_after) {
+		length_before = bad_nodes.size();
     for(Enumeration<class_c> bad_iters = bad_nodes.elements(); bad_iters.hasMoreElements();) {
     			class_c undefined_inherit_check = bad_iters.nextElement();
     		if(!bad_node_names.contains(undefined_inherit_check.getParent().toString())) {
@@ -334,6 +338,8 @@ class ClassTable {
 
     		}
     	}
+    	length_after = bad_nodes.size();
+    }
     /* Detect cycles and remove the bad nodes until there are no more nodes left in bad nodes */
     while (bad_nodes.size() != 0) {
     		bad_root = new HierarchyNode(bad_nodes.elementAt(0));
