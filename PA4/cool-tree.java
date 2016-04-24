@@ -1326,6 +1326,23 @@ class typcase extends Expression {
 
     /*Type check for case expressions. Evaluate each branch (each case). Store all of the types of these cases. Then, find the join of them all. If there are any errors, exit*/
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        HashMap<String, branch> reps = new HashMap<String, branch>(0);
+        for(Enumeration<Case> chck_1 = cases.getElements(); chck_1.hasMoreElements();) {
+            Case case_2 = chck_1.nextElement();
+            if(case_2.getClass().equals(branch.class)) {
+                branch b_2 = (branch) case_2;
+                if(reps.get(b_2.type_decl.toString()) != null) {
+                     semantError(checker.getFilename(), this);
+                     errorStream.append("Repitition of branch classes.\n"); //Wrong number of arguments. Error out here.
+                     return false;
+                }
+                reps.put(b_2.type_decl.toString(), b_2);
+
+            }
+            else {
+                return false;
+            }
+        }
         expr.getClass().cast(expr);
         Vector<String> case_classes = new Vector<String>(0);
         expr.type_chk(checker, sym_1, bet, root, classTable);
