@@ -1534,7 +1534,7 @@ class let extends Expression {
         sym_1.enterScope();
         AbstractSymbol T_zero = type_decl;
         if(type_decl.toString().equals("SELF_TYPE"))
-            T_zero = AbstractTable.stringtable.addString(checker.getName().toString());
+            T_zero = AbstractTable.stringtable.addString("SELF_TYPE");
         init.getClass().cast(init);
         if(!init.type_chk(checker, sym_1, bet, root, classTable)) {
             sym_1.exitScope();
@@ -1542,10 +1542,20 @@ class let extends Expression {
         }
         if(init.get_type() != null) {
             HierarchyNode root_of_good_tree = classTable.goodClasses();
-            HierarchyNode root_of_small = classTable.getClassbyName(T_zero.toString(), root_of_good_tree);
-            if(!classTable.isChildClass(init.get_type().toString(), root_of_small)) {
+            String plchldr_2 = null;
+            if(T_zero.toString().equals("SELF_TYPE"))
+                plchldr_2 = checker.getName().toString();
+            else
+                plchldr_2 = type_decl.toString();
+            HierarchyNode root_of_small = classTable.getClassbyName(plchldr_2,  root_of_good_tree);
+            String plchldr = null;
+            if(init.get_type().toString().equals("SELF_TYPE"))
+                plchldr = checker.getName().toString();
+            else
+                plchldr = init.get_type().toString();
+            if(!classTable.isChildClass(plchldr, root_of_small)) {
                 semantError(checker.getFilename(), this);
-                errorStream.append("Inferred type " + this.init.get_type().toString() + " of initialization of " + identifier.toString() + " does not conform to identifier's declared type " + this.type_decl.toString() + ".\n"); //Wrong number of arguments. Error out here.
+                errorStream.append("Inferred type " + plchldr + " of initialization of " + identifier.toString() + " does not conform to identifier's declared type " + this.type_decl.toString() + ".\n"); //Wrong number of arguments. Error out here.
                 sym_1.exitScope();
                 return false;
             }
@@ -2523,6 +2533,7 @@ class object extends Expression {
         }
 
         if(gimel.lookup(name)!= null) {
+            
             if(gimel.lookup(name).getClass().equals(attr.class)) {
                 attr obj_chk = (attr) gimel.lookup(name);
                 Expression obj_chk_1 = (Expression) obj_chk.init;
@@ -2532,6 +2543,11 @@ class object extends Expression {
             }
 
             //Let expression variables or local variables
+            if(gimel.lookup(name).getClass().equals(StringSymbol.class)) {
+                StringSymbol aleph = (StringSymbol) gimel.lookup(name);
+                super.set_type(aleph);
+                return true;
+            }
             if(gimel.lookup(name).getClass().equals(IdSymbol.class)) {
                 IdSymbol aleph = (IdSymbol) gimel.lookup(name);
                 super.set_type(aleph);
@@ -2544,6 +2560,7 @@ class object extends Expression {
             }
 
         }
+       
         return false;
 
     }

@@ -45,7 +45,6 @@
 
 <!-- target: test-all -->
   <target name="test-all" depends="semant">
-     <exec executable="python"> <arg line="compare-semant.py tests/bad20.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good1.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good2.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good3.test"/> </exec>
@@ -68,6 +67,7 @@
     <exec executable="python"> <arg line="compare-semant.py tests/good20.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good21.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/good22.test"/> </exec>
+     <exec executable="python"> <arg line="compare-semant.py tests/good23.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad1.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad2.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad3.test"/> </exec>
@@ -79,7 +79,8 @@
     <exec executable="python"> <arg line="compare-semant.py tests/bad9.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad10.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad11.test"/> </exec>
-     <exec executable="python"> <arg line="compare-semant.py tests/bad19.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad19.test"/> </exec>
+    <exec executable="python"> <arg line="compare-semant.py tests/bad20.test"/> </exec>
 <!--    <exec executable="python"> <arg line="compare-semant.py tests/bad10.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad11.test"/> </exec>
     <exec executable="python"> <arg line="compare-semant.py tests/bad12.test"/> </exec>
