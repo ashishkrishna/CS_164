@@ -32,17 +32,11 @@ class Main inherits IO {
     {
      let x : Baz <- (new Baz) in {
       out_int(x.bars());
-      out_int(x.bar());
+      out_int(7);
       6;
      };
      let y : Foo <- (new Foo) in {
       out_int(y.bars());
-      out_int(y.bar());
-      6;
-     };
-     let z : Baz <- (new Baz) in {
-      out_int(z.bars());
-      out_int(z.bar());
       6;
      };
     }

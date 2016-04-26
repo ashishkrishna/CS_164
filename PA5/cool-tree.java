@@ -1144,6 +1144,7 @@ class let extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = init.code(s, index, sym);
+        int old_offset = CgenClassTable.frame_to_top_offset;
         sym.enterScope();
         AbstractSymbol aleph = AbstractTable.stringtable.addString(identifier.str);
         sym.addId(aleph, CgenClassTable.frame_to_top_offset/4);
@@ -1151,8 +1152,9 @@ class let extends Expression {
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
         CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = body.code(s, index, sym);
-        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
-        CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
+        CgenClassTable.frame_to_top_offset = old_offset;
+        int diff = Math.abs(CgenClassTable.frame_to_top_offset - old_offset);
+        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4*diff+4, s);
         sym.exitScope();
         return index;
 
