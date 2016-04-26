@@ -571,9 +571,16 @@ class assign extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
         expr.getClass().cast(expr);
         index = expr.code(s, index, sym);
+        try {
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
         Integer f = (Integer) (sym.lookup(aleph));
         CgenSupport.emitStore(CgenSupport.ACC, f, CgenSupport.FP, s);
+    }
+        catch(java.lang.NullPointerException r) {
+            StringSymbol aleph_1 = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
+            Integer h = (Integer) CgenClassTable.attr_defs.lookup(aleph_1);
+            CgenSupport.emitStore(CgenSupport.ACC, h, CgenSupport.SELF, s);
+        }
         return index;
     }
 
@@ -751,9 +758,9 @@ class dispatch extends Expression {
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
                 expr.code(s, index, sym);
-                CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-                CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
-                CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
+                // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
+                // CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
+                // CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
              }
             if(expr.get_type().toString().equals("SELF_TYPE")) 
                 CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
@@ -1991,8 +1998,15 @@ class object extends Expression {
         }
         //System.out.println(sym.toString());
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
+        try {
          Integer f = (Integer) (sym.lookup(aleph));
-        CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
+         CgenSupport.emitLoad(CgenSupport.ACC, f, CgenSupport.FP, s);
+     }
+     catch (java.lang.NullPointerException r) {
+        Integer g = (Integer) (CgenClassTable.attr_defs.lookup(aleph));
+        CgenSupport.emitLoad(CgenSupport.ACC, g, CgenSupport.SELF, s);
+     }
+        
         return index;
     }
 

@@ -306,6 +306,12 @@ class programc extends Program {
         semantError();
         errorStream.append("Main method not defined in Main class.\n");
     }
+    if(!checkCopy(methods_per_class)) {
+        semanticerr++;
+        semantError();
+        errorStream.append("Cannot redefine copy in non-basic class.\n");
+
+    }
     checkClasses(root_1, attr_checker, method_checker, classTable);
     if(semanticerr > 0) {  //There shouldn't be any semantic errors
         System.err.println("Compilation halted due to static semantic errors.");
@@ -403,12 +409,27 @@ class programc extends Program {
         for(Enumeration<method> enums = methods.elements(); enums.hasMoreElements(); ) {
             method aleph = enums.nextElement();
             if(aleph.name.toString().equals("main")) {
-                return true;
+                if(aleph.formals.getLength() == 0)
+                    return true;
+                else
+                    return false;
             }
                
 
             }
             return false;
+         }
+
+    public boolean checkCopy(HashMap<String, Vector<method>> bet) {
+        for(String enums : bet.keySet() ) {
+            Vector<method> methods = bet.get(enums);
+            for(Enumeration f = methods.elements(); f.hasMoreElements(); ) {
+                method aleph = (method) f.nextElement();
+                if(enums != "Object" && aleph.toString().equals("copy"))
+                    return false;
+            }
+           }
+            return true;
          }
 
 
@@ -571,6 +592,11 @@ class method extends Feature {
             errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
             return false;
        }
+       if((this.expr.get_type().equals("SELF_TYPE") && !return_type.equals("SELF_TYPE")) || (!this.expr.get_type().equals("SELF_TYPE") && return_type.equals("SELF_TYPE"))) {
+            semantError(to_check.getFilename(), (TreeNode) this);
+            errorStream.append("Inferred return type " + this.expr.get_type() + " of method " + this.name + " does not conform to declared return type " + this.return_type + ".\n");
+            return false;
+       }
 
        }
       
@@ -658,7 +684,13 @@ class attr extends Feature {
         if(!(init.get_type()==null)) {
                 HierarchyNode root_of_good_tree = classTable.goodClasses();
                 HierarchyNode super_class = classTable.getClassbyName(type_decl.toString(), root_of_good_tree);
-                if(!classTable.isChildClass(init.get_type().toString(), super_class)) {  
+                String plchldr = null;
+                if(init.get_type().toString().equals("SELF_TYPE")) {
+                    plchldr = to_check.getName().toString();
+                }
+                else 
+                    plchldr = init.get_type().toString();
+                if(!classTable.isChildClass(plchldr, super_class)) {  
                 /*Check for initialization conformity */      
                 semantError(to_check.getFilename(), (TreeNode) this);
                 errorStream.append("Inferred type " + this.init.get_type() + " of initialization of attribute " + this.name + " does not conform to declared type " + this.type_decl + ".\n");
@@ -1167,21 +1199,19 @@ class cond extends Expression {
                 classes.addElement(then_exp.get_type().toString());
         }
         if(else_exp.get_type() != null) {
-         if(else_exp.get_type().toString().equals("SELF_TYPE")) {
-            if(!else_exp.getClass().equals(object.class)) {
-             AbstractSymbol delta = AbstractTable.stringtable.addString("SELF_TYPE");
-             super.set_type(delta);
-             return true;
-         }
-            else
-                classes.addElement(checker.getName().toString());
-        
-    }
+         if(else_exp.get_type().toString().equals("SELF_TYPE"))
+            classes.addElement(checker.getName().toString());
         else
             classes.addElement(else_exp.get_type().toString());
         }
         if(then_exp.get_type() == null && else_exp.get_type() == null) //Exit if the type of both then_exp and else_exp cannot be set.
             return false;
+        if(then_exp.get_type().toString().equals("SELF_TYPE") && else_exp.get_type().toString().equals("SELF_TYPE")) {
+            AbstractSymbol gimele = AbstractTable.stringtable.addString("SELF_TYPE");
+            super.set_type(gimele);
+            return true;
+        }
+
         HierarchyNode root_of_good_tree = classTable.goodClasses();
         Vector<HierarchyNode> node_list = new Vector<HierarchyNode>(0);
         node_list = classTable.find_join_outer(root_of_good_tree, classes, node_list);
@@ -1305,6 +1335,28 @@ class typcase extends Expression {
 
     /*Type check for case expressions. Evaluate each branch (each case). Store all of the types of these cases. Then, find the join of them all. If there are any errors, exit*/
     public boolean type_chk(class_c checker, SymbolTable sym_1, HashMap<String, Vector<method>> bet, HierarchyNode root, ClassTable classTable) {
+        HashMap<String, branch> reps = new HashMap<String, branch>(0);
+        for(Enumeration<Case> chck_1 = cases.getElements(); chck_1.hasMoreElements();) {
+            Case case_2 = chck_1.nextElement();
+            if(case_2.getClass().equals(branch.class)) {
+                branch b_2 = (branch) case_2;
+                String plchldr = null;
+                if(b_2.type_decl.toString().equals("SELF_TYPE"))
+                    plchldr = checker.getName().toString();
+                else
+                    plchldr = b_2.type_decl.toString();
+                if(reps.get(plchldr) != null) {
+                     semantError(checker.getFilename(), this);
+                     errorStream.append("Repitition of branch classes.\n"); //Wrong number of arguments. Error out here.
+                     return false;
+                }
+                reps.put(b_2.type_decl.toString(), b_2);
+
+            }
+            else {
+                return false;
+            }
+        }
         expr.getClass().cast(expr);
         Vector<String> case_classes = new Vector<String>(0);
         expr.type_chk(checker, sym_1, bet, root, classTable);
@@ -1485,7 +1537,7 @@ class let extends Expression {
         sym_1.enterScope();
         AbstractSymbol T_zero = type_decl;
         if(type_decl.toString().equals("SELF_TYPE"))
-            T_zero = AbstractTable.stringtable.addString(checker.getName().toString());
+            T_zero = AbstractTable.stringtable.addString("SELF_TYPE");
         init.getClass().cast(init);
         if(!init.type_chk(checker, sym_1, bet, root, classTable)) {
             sym_1.exitScope();
@@ -1493,10 +1545,20 @@ class let extends Expression {
         }
         if(init.get_type() != null) {
             HierarchyNode root_of_good_tree = classTable.goodClasses();
-            HierarchyNode root_of_small = classTable.getClassbyName(T_zero.toString(), root_of_good_tree);
-            if(!classTable.isChildClass(init.get_type().toString(), root_of_small)) {
+            String plchldr_2 = null;
+            if(T_zero.toString().equals("SELF_TYPE"))
+                plchldr_2 = checker.getName().toString();
+            else
+                plchldr_2 = type_decl.toString();
+            HierarchyNode root_of_small = classTable.getClassbyName(plchldr_2,  root_of_good_tree);
+            String plchldr = null;
+            if(init.get_type().toString().equals("SELF_TYPE"))
+                plchldr = checker.getName().toString();
+            else
+                plchldr = init.get_type().toString();
+            if(!classTable.isChildClass(plchldr, root_of_small)) {
                 semantError(checker.getFilename(), this);
-                errorStream.append("Inferred type " + this.init.get_type().toString() + " of initialization of " + identifier.toString() + " does not conform to identifier's declared type " + this.type_decl.toString() + ".\n"); //Wrong number of arguments. Error out here.
+                errorStream.append("Inferred type " + plchldr + " of initialization of " + identifier.toString() + " does not conform to identifier's declared type " + this.type_decl.toString() + ".\n"); //Wrong number of arguments. Error out here.
                 sym_1.exitScope();
                 return false;
             }
@@ -2474,6 +2536,7 @@ class object extends Expression {
         }
 
         if(gimel.lookup(name)!= null) {
+            
             if(gimel.lookup(name).getClass().equals(attr.class)) {
                 attr obj_chk = (attr) gimel.lookup(name);
                 Expression obj_chk_1 = (Expression) obj_chk.init;
@@ -2483,6 +2546,11 @@ class object extends Expression {
             }
 
             //Let expression variables or local variables
+            if(gimel.lookup(name).getClass().equals(StringSymbol.class)) {
+                StringSymbol aleph = (StringSymbol) gimel.lookup(name);
+                super.set_type(aleph);
+                return true;
+            }
             if(gimel.lookup(name).getClass().equals(IdSymbol.class)) {
                 IdSymbol aleph = (IdSymbol) gimel.lookup(name);
                 super.set_type(aleph);
@@ -2495,6 +2563,7 @@ class object extends Expression {
             }
 
         }
+       
         return false;
 
     }

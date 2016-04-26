@@ -46,6 +46,7 @@ class CgenClassTable extends SymbolTable {
     protected static int frame_offset;
     protected static int frame_to_top_offset;
     protected static Stack frame_offset_store;
+    protected static SymbolTable attr_defs;
 
     // The following methods emit code for constants and global
     // declarations.
@@ -404,6 +405,7 @@ class CgenClassTable extends SymbolTable {
 	buildInheritanceTree();
 	CgenNode rt_1 = root();
 	setNumChildren(rt_1, 0);
+	CgenClassTable.attr_defs = new SymbolTable();
 	code();
 	exitScope();
     }
@@ -433,13 +435,13 @@ class CgenClassTable extends SymbolTable {
 	if (Flags.cgen_debug) System.out.println("coding global text");
 	codeGlobalText();
 	int index = 0;
-	SymbolTable var_defs = new SymbolTable();
-	var_defs.enterScope();
-	index = initialize_all_classes(start, var_defs, index);
-	code_methods(start, 0, var_defs);
+	// SymbolTable var_defs = new SymbolTable();
+	// var_defs.enterScope();
+	index = initialize_all_classes(start, index);
+	//code_methods(start, 0, var_defs);
 	}
 
-	public void code_methods(CgenNode start, int index, SymbolTable var_defs) {
+	public int code_methods(CgenNode start, int index, SymbolTable var_defs) {
 	if(start.basic_status == CgenNode.NotBasic) {
 	Vector<method> mains = CgenClassTable.method_decls.get(start.getName().toString()); //Need to find for all classes
 	int param = -12;
@@ -473,11 +475,11 @@ class CgenClassTable extends SymbolTable {
 		CgenSupport.emitMethodEnd(CgenClassTable.frame_offset, str);
 	}
 }
-	for(Enumeration m = start.getChildren(); m.hasMoreElements(); ) {
-		CgenNode child_node = (CgenNode) m.nextElement();
-		code_methods(child_node, index, var_defs);
-	}
-	return;
+	// for(Enumeration m = start.getChildren(); m.hasMoreElements(); ) {
+	// 	CgenNode child_node = (CgenNode) m.nextElement();
+	// 	code_methods(child_node, index, var_defs);
+	// }
+	return index;
     }
 
 
@@ -552,7 +554,7 @@ class CgenClassTable extends SymbolTable {
 
     }
 
-   public int initialize_all_classes(CgenNode base, SymbolTable aleph, int index) {
+   public int initialize_all_classes(CgenNode base, int index) {
     		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
     		String parent = "";
@@ -561,40 +563,49 @@ class CgenClassTable extends SymbolTable {
     			parent = "null";
 
     		CgenSupport.emitInitializerRef(parent, str);
+    		int offset =  0; //CgenClassTable.attr_decls.get(base.getName().toString()).size()-1;
+    		int offset_2 = 0;
     		CgenNode trav_up = base;
+    		CgenClassTable.attr_defs.enterScope();
     		while(trav_up != null) {
     			if(CgenClassTable.attr_decls.get(trav_up.getName().toString()) != null) {
-		    		Vector<attr> attrs = CgenClassTable.attr_decls.get(base.getName().toString());
-		    		int offset = attrs.size()-1;
+		    		Vector<attr> attrs = CgenClassTable.attr_decls.get(trav_up.getName().toString());
 		    		for(Enumeration f = attrs.elements(); f.hasMoreElements(); ){
 		    			attr next_attr = (attr) f.nextElement();
 		    			AbstractSymbol aleph1 = AbstractTable.stringtable.addString(next_attr.name.toString());
-		    			aleph.addId(aleph1, offset);
-		    			offset--;
+		    			int shifter = 3+offset;
+		    			CgenClassTable.attr_defs.addId(aleph1, shifter);
+		    			offset++;
 		    		}
 		    		CgenClassTable.frame_offset = 12 + 4*attrs.size();
 					CgenClassTable.frame_to_top_offset = -12;
-		    		int offset_2 = attrs.size()-1;
+	
 		    		for(Enumeration g = attrs.elements(); g.hasMoreElements(); ){
 		    		attr next_attr = (attr) g.nextElement();
-		    		next_attr.init.this_class = base.getName().toString();
+		    		next_attr.init.this_class = trav_up.getName().toString();
 		    		if(base.basic_status == CgenNode.NotBasic) {
-		    		index = next_attr.init.code(str, index, aleph);
-		    		CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
+		    		SymbolTable alepha = new SymbolTable();
+		    		alepha.enterScope();
+		    		index = next_attr.init.code(str, index, alepha);
+		    		alepha.exitScope();
+		    		//CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
 		    		CgenSupport.emitStore(CgenSupport.ACC, 3+offset_2, CgenSupport.SELF, str);
 		    	}
-		    		offset_2--;
+		    		offset_2++;
 		    	}
 		    }
     	  trav_up = trav_up.getParentNd();
     	}
     		CgenSupport.emitEndRef(parent, 12, str);
+    		SymbolTable var_defs = new SymbolTable();
+    		index = code_methods(base, 0, var_defs);
+    		CgenClassTable.attr_defs.exitScope();
     		if(!base.getChildren().hasMoreElements()) {
     		return index;
     		}
     		for(Enumeration children = base.getChildren(); children.hasMoreElements(); ) {
     		CgenNode nxt = (CgenNode) children.nextElement();
-    		index = initialize_all_classes(nxt, aleph, index);
+    		index = initialize_all_classes(nxt, index);
     		}
     		return index;
     }

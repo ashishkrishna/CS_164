@@ -30,21 +30,25 @@ class Foo {
   bar() : Int {
     testee
   };
-  bars() : Int {
-    3
-  };
+ 
   badz() : Int {
     4
+  };
+
+   bars() : Int {
+    3
   };
 };
 
 class Baz inherits Foo {
   trye : Int <- 6;
-  bar() : Int {
-    2
-  };
+ 
   bars() : Int {
     testee
+  };
+
+   bar() : Int {
+    2
   };
 };
 
@@ -60,7 +64,6 @@ class Main inherits IO {
       out_string("2 is trivially prime.\n");
       2;
     };
-
 
   
 

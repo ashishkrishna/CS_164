@@ -1,0 +1,14 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,2 ****
+
+! tests/bad10.test:6: Dispatch to undefined method id_b.
+  Compilation halted due to static semantic errors.
+--- 1,2 ----
+
+! tests/bad10.test:6: Method id_b cannot be called by Main.
+  Compilation halted due to static semantic errors.

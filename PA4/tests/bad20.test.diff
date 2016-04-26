@@ -1,0 +1,14 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,2 ****
+
+! tests/bad20.test:11: Duplicate case branch Int in case statement.
+  Compilation halted due to static semantic errors.
+--- 1,2 ----
+
+! tests/bad20.test:13: Repitition of branch classes.
+  Compilation halted due to static semantic errors.
