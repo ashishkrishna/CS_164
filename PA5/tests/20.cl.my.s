@@ -561,7 +561,7 @@ Baz_init:
 	la	$a0 int_const3
 	sw	$a0 12($s0)
 	la	$a0 int_const0
-	sw	$a0 8($s0)
+	sw	$a0 16($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -575,7 +575,7 @@ Baz.bars:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 16
 	move	$s0 $a0
-	lw	$a0 8($s0)
+	lw	$a0 16($s0)
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)

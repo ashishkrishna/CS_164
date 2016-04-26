@@ -563,8 +563,8 @@ class CgenClassTable extends SymbolTable {
     			parent = "null";
 
     		CgenSupport.emitInitializerRef(parent, str);
-    		int offset = CgenClassTable.attr_decls.get(base.getName().toString()).size()-1;
-    		int offset_2 = offset;
+    		int offset =  0; //CgenClassTable.attr_decls.get(base.getName().toString()).size()-1;
+    		int offset_2 = 0;
     		CgenNode trav_up = base;
     		CgenClassTable.attr_defs.enterScope();
     		while(trav_up != null) {
@@ -575,7 +575,7 @@ class CgenClassTable extends SymbolTable {
 		    			AbstractSymbol aleph1 = AbstractTable.stringtable.addString(next_attr.name.toString());
 		    			int shifter = 3+offset;
 		    			CgenClassTable.attr_defs.addId(aleph1, shifter);
-		    			offset--;
+		    			offset++;
 		    		}
 		    		CgenClassTable.frame_offset = 12 + 4*attrs.size();
 					CgenClassTable.frame_to_top_offset = -12;
@@ -591,7 +591,7 @@ class CgenClassTable extends SymbolTable {
 		    		//CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
 		    		CgenSupport.emitStore(CgenSupport.ACC, 3+offset_2, CgenSupport.SELF, str);
 		    	}
-		    		offset_2--;
+		    		offset_2++;
 		    	}
 		    }
     	  trav_up = trav_up.getParentNd();

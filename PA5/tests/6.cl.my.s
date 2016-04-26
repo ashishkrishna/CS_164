@@ -467,7 +467,7 @@ label0:
 	lw	$t1 24($t1)
 	jalr	$t1
 	la	$a0 int_const4
-	sw	$a0 32($s0)
+	sw	$a0 12($s0)
 	la	$a0 int_const0
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
@@ -499,24 +499,24 @@ label1:
 	la	$a0 int_const4
 	addiu	$sp $sp 4
 	addiu	$sp $sp 4
-	sw	$a0 28($s0)
-	la	$a0 int_const5
-	jal	Object.copy
-	li	$t1 0
-	sw	$t1 12($a0)
-	sw	$a0 24($s0)
+	sw	$a0 16($s0)
 	la	$a0 int_const5
 	jal	Object.copy
 	li	$t1 0
 	sw	$t1 12($a0)
 	sw	$a0 20($s0)
+	la	$a0 int_const5
+	jal	Object.copy
+	li	$t1 0
+	sw	$t1 12($a0)
+	sw	$a0 24($s0)
 	la	$a0 int_const6
-	sw	$a0 16($s0)
+	sw	$a0 28($s0)
 label2:
 	la	$a0 bool_const1
 	lw	$a0 12($a0)
 	beqz	$a0 label3
-	lw	$a0 28($s0)
+	lw	$a0 16($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
 	la	$a0 int_const7
@@ -527,17 +527,17 @@ label2:
 	add	$t1 $t1 $t2
 	sw	$t1 12($a0)
 	addiu	$sp $sp 4
-	sw	$a0 28($s0)
+	sw	$a0 16($s0)
 	la	$a0 int_const4
-	sw	$a0 24($s0)
+	sw	$a0 20($s0)
 label4:
-	lw	$a0 28($s0)
+	lw	$a0 16($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 24($s0)
+	lw	$a0 20($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 24($s0)
+	lw	$a0 20($s0)
 	jal	Object.copy
 	lw	$t3 4($sp)
 	lw	$t2 12($a0)
@@ -559,16 +559,16 @@ label5:
 	la	$a0 bool_const0
 	b	label7
 label6:
-	lw	$a0 28($s0)
+	lw	$a0 16($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 24($s0)
+	lw	$a0 20($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 28($s0)
+	lw	$a0 16($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 24($s0)
+	lw	$a0 20($s0)
 	jal	Object.copy
 	lw	$t3 4($sp)
 	lw	$t2 12($a0)
@@ -611,7 +611,7 @@ label10:
 label7:
 	lw	$a0 12($a0)
 	beqz	$a0 label11
-	lw	$a0 24($s0)
+	lw	$a0 20($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
 	la	$a0 int_const7
@@ -622,16 +622,16 @@ label7:
 	add	$t1 $t1 $t2
 	sw	$t1 12($a0)
 	addiu	$sp $sp 4
-	sw	$a0 24($s0)
+	sw	$a0 20($s0)
 	b	label4
 label11:
-	lw	$a0 28($s0)
+	lw	$a0 16($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 24($s0)
+	lw	$a0 20($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 24($s0)
+	lw	$a0 20($s0)
 	jal	Object.copy
 	lw	$t3 4($sp)
 	lw	$t2 12($a0)
@@ -650,9 +650,9 @@ label11:
 label13:
 	lw	$a0 12($a0)
 	beqz	$a0 label14
-	lw	$a0 28($s0)
-	sw	$a0 32($s0)
-	lw	$a0 32($s0)
+	lw	$a0 16($s0)
+	sw	$a0 12($s0)
+	lw	$a0 12($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
 	move	$a0 $s0
@@ -680,10 +680,10 @@ label17:
 label14:
 	la	$a0 int_const5
 label15:
-	lw	$a0 16($s0)
+	lw	$a0 28($s0)
 	sw	$a0 0($sp)
 	addiu	$sp $sp -4
-	lw	$a0 28($s0)
+	lw	$a0 16($s0)
 	move	$t2 $a0
 	lw	$t2 12($t2)
 	lw	$t1 4($sp)
@@ -710,7 +710,7 @@ label19:
 label20:
 	b	label2
 label3:
-	sw	$a0 12($s0)
+	sw	$a0 32($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -838,7 +838,7 @@ Baz_init:
 	la	$a0 int_const3
 	sw	$a0 12($s0)
 	la	$a0 int_const0
-	sw	$a0 8($s0)
+	sw	$a0 16($s0)
 	move	$a0 $s0
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
@@ -852,7 +852,7 @@ Baz.bars:
 	sw	$ra 4($sp)
 	addiu	$fp $sp 16
 	move	$s0 $a0
-	lw	$a0 8($s0)
+	lw	$a0 16($s0)
 	lw	$fp 12($sp)
 	lw	$s0 8($sp)
 	lw	$ra 4($sp)
