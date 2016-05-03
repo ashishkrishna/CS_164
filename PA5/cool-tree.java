@@ -747,7 +747,6 @@ class dispatch extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-        //System.out.println(String.valueOf(CgenClassTable.frame_to_top_offset));
         int old_offset = CgenClassTable.frame_to_top_offset;
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
             Expression nxt = (Expression) f.nextElement();
@@ -787,7 +786,6 @@ class dispatch extends Expression {
             index++;
             CgenSupport.emitLoad(CgenSupport.T1, ind, CgenSupport.T1, s);
             CgenSupport.emitJalr(CgenSupport.T1, s);
-            //System.out.println(String.valueOf(CgenClassTable.frame_to_top_offset));
             CgenClassTable.frame_to_top_offset = old_offset;
             return index;
     }
@@ -1147,9 +1145,7 @@ class let extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
         index = init.code(s, index, sym);
         int old_offset = CgenClassTable.frame_to_top_offset;
-
         sym.enterScope();
-       // System.out.println(String.valueOf(CgenClassTable.frame_to_top_offset));
         AbstractSymbol aleph = AbstractTable.stringtable.addString(identifier.str);
         sym.addId(aleph, CgenClassTable.frame_to_top_offset/4);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
@@ -1159,7 +1155,6 @@ class let extends Expression {
         CgenClassTable.frame_to_top_offset = old_offset;
         int diff = Math.abs(CgenClassTable.frame_to_top_offset - old_offset);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4*diff+4, s);
-        //System.out.println(sym.toString());
         sym.exitScope();
         return index;
 
@@ -2004,7 +1999,6 @@ class object extends Expression {
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             return index;
         }
-        //System.out.println(sym.toString());
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
         try {
          Integer f = (Integer) (sym.lookup(aleph));
