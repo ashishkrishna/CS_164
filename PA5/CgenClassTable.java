@@ -395,9 +395,7 @@ class CgenClassTable extends SymbolTable {
     public CgenClassTable(Classes cls, PrintStream str) {
 	nds = new Vector();
 	this.str = str;
-	stringclasstag = 5;
-	intclasstag =    3;
-	boolclasstag =   4;
+	
 	enterScope();
 	if (Flags.cgen_debug) System.out.println("Building CgenClassTable");
 	installBasicClasses();
@@ -406,6 +404,11 @@ class CgenClassTable extends SymbolTable {
 	CgenNode rt_1 = root();
 	setNumChildren(rt_1, 0);
 	CgenClassTable.attr_defs = new SymbolTable();
+	CgenNode rt = root();
+    build_all_class_lbls(rt, 0);
+    stringclasstag = rt.getNode("String").class_tag;
+	intclasstag =    rt.getNode("Int").class_tag;
+	boolclasstag =   rt.getNode("Bool").class_tag;
 	code();
 	exitScope();
     }
@@ -416,8 +419,6 @@ class CgenClassTable extends SymbolTable {
     CgenClassTable.virtual_disptbl = new HashMap<String, Vector<String>>(0);
     CgenClassTable.method_decls = new HashMap<String, Vector<method>>(0);
     CgenClassTable.attr_decls = new HashMap<String, Vector<attr>>(0);
-    CgenNode rt = root();
-    frame_offset_store = new Stack();
 	if (Flags.cgen_debug) System.out.println("coding global data");
 	codeGlobalData();
 	if (Flags.cgen_debug) System.out.println("choosing gc");
@@ -440,6 +441,24 @@ class CgenClassTable extends SymbolTable {
 	index = initialize_all_classes(start, index);
 	//code_methods(start, 0, var_defs);
 	}
+	public int build_all_class_lbls(CgenNode rbase, int classtag) {
+    	build_lbl(rbase, rbase.getName().toString(), classtag);
+    	for(Enumeration f = rbase.getChildren(); f.hasMoreElements();) {
+    		classtag++;
+    		CgenNode nxt_node = (CgenNode) f.nextElement();
+    		classtag = build_all_class_lbls(nxt_node, classtag);
+    	}
+    	return classtag;
+    }
+
+    public void build_lbl(CgenNode rbase, String classtab,  int classtag) {
+    	int size = 3;
+    	rbase.class_tag = classtag;
+    	return;
+
+
+    }
+
 
 	public int code_methods(CgenNode start, int index, SymbolTable var_defs) {
 	if(start.basic_status == CgenNode.NotBasic) {
@@ -524,10 +543,10 @@ class CgenClassTable extends SymbolTable {
 
     public void build_proto(CgenNode rbase, String classtab,  int classtag) {
     	int size = 3;
-    	rbase.class_tag = classtag;
+    	//rbase.class_tag = classtag;
     	str.println(CgenSupport.WORD + "-1");
     	str.print(rbase.getName().toString() + CgenSupport.PROTOBJ_SUFFIX + CgenSupport.LABEL); 
-	    str.print(CgenSupport.WORD + String.valueOf(classtag)); str.println("");
+	    str.print(CgenSupport.WORD + String.valueOf(rbase.class_tag)); str.println("");
     	CgenNode start_1 = rbase;
     	while(start_1 != null) {
 	    	if(CgenClassTable.attr_decls.get(start_1.getName().toString()) != null) {
@@ -598,7 +617,7 @@ class CgenClassTable extends SymbolTable {
     	}
     		CgenSupport.emitEndRef(parent, 12, str);
     		SymbolTable var_defs = new SymbolTable();
-    		index = code_methods(base, 0, var_defs);
+    		index = code_methods(base, index, var_defs);
     		CgenClassTable.attr_defs.exitScope();
     		if(!base.getChildren().hasMoreElements()) {
     		return index;

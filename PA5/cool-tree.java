@@ -757,7 +757,7 @@ class dispatch extends Expression {
 
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
-                expr.code(s, index, sym);
+                index = expr.code(s, index, sym);
                 // CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
                 // CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
                 // CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
@@ -895,7 +895,7 @@ class loop extends Expression {
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
         int saved_index = index;
-        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+        s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_index)+ CgenSupport.LABEL);
         index++;
         index = pred.code(s, index, sym);
         int saved_index_2 = index;
@@ -1562,6 +1562,7 @@ class eq extends Expression {
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
         CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
         index = e2.code(s, index, sym);
+        index++;
         CgenSupport.emitMove(CgenSupport.T2, CgenSupport.ACC, s);
         CgenSupport.emitLoad(CgenSupport.T1, 1, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
