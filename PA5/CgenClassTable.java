@@ -597,7 +597,7 @@ class CgenClassTable extends SymbolTable {
 		    			offset++;
 		    		}
 		    		CgenClassTable.frame_offset = 12 + 4*attrs.size();
-					CgenClassTable.frame_to_top_offset = -12;
+					CgenClassTable.frame_to_top_offset = -16;
 	
 		    		for(Enumeration g = attrs.elements(); g.hasMoreElements(); ){
 		    		attr next_attr = (attr) g.nextElement();
