@@ -649,28 +649,25 @@ class static_dispatch extends Expression {
             index = nxt.code(s, index, sym);
             CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
             CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
-            CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
+            CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset  - 4;
         }
+
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
-                expr.code(s, index, sym);
-                CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
-                CgenSupport.emitAddiu (CgenSupport.SP, CgenSupport.SP, -4, s);
-                CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset - 4;
+                index = expr.code(s, index, sym);
              }
-            CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+            if(expr.get_type().toString().equals("SELF_TYPE")) 
+                CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
             CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
             CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
             CgenSupport.emitJal("_dispatch_abort", s);
             StringSymbol string_ind = null;
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
-            CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
+            CgenSupport.emitLoadAddress(CgenSupport.T2, type_name.getString()+CgenSupport.PROTOBJ_SUFFIX, s);
+            CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.T2, s);
             Vector<String> methods_for_this_class = null;
-            if(expr.get_type().toString().equals("SELF_TYPE")) 
-                methods_for_this_class = CgenClassTable.virtual_disptbl.get(this.this_class);
-            else 
-                methods_for_this_class = CgenClassTable.virtual_disptbl.get(expr.get_type().toString());
+            methods_for_this_class = CgenClassTable.virtual_disptbl.get(type_name.toString());
             Enumeration m = methods_for_this_class.elements();
             int ind = 0;
             while(m.hasMoreElements()){
@@ -684,11 +681,6 @@ class static_dispatch extends Expression {
             CgenSupport.emitJalr(CgenSupport.T1, s);
             CgenClassTable.frame_to_top_offset = old_offset;
             return index;
-
-
-
-
-    
     }
 
 
@@ -764,7 +756,7 @@ class dispatch extends Expression {
                 index = expr.code(s, index, sym);
              }
             if(expr.get_type().toString().equals("SELF_TYPE")) 
-             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+                CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, index, s);
             CgenSupport.emitLoadString(CgenSupport.ACC, (StringSymbol)AbstractTable.stringtable.lookup(0), s);
             CgenSupport.emitLoadImm(CgenSupport.T1, 4, s); 
@@ -1063,7 +1055,9 @@ class typcase extends Expression {
                          StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.addString(sorted_branches[k].name.toString());
                         sym.addId(aleph, CgenClassTable.frame_to_top_offset/4);
                         //System.out.println(sym.toString());
+                        int old_offset = CgenClassTable.frame_to_top_offset;
                         index = sorted_branches[k].expr.code(s, index, sym);
+                        CgenClassTable.frame_to_top_offset = old_offset;
                         sym.exitScope();
                         CgenSupport.emitBranch(outer_ind, s);
                     }
