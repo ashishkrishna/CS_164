@@ -956,8 +956,6 @@ class typcase extends Expression {
 
     public branch[] branch_sort(branch[] sort) {
          CgenNode start = super.get_root();
-        //System.out.println(sort[0].name.toString());
-        //System.out.println(start.getName().toString());
         branch[] return_brn = new branch[sort.length];
          branch smallest_num_children = null;
          int ch_fg = 0;
@@ -976,7 +974,6 @@ class typcase extends Expression {
                  ch_fg = 0;
                 if(sort[i]!= null) {
                     if(start.getNode(sort[i].type_decl.toString(), 0).num_children < start.getNode(smallest_num_children.type_decl.toString(), 0).num_children) {
-                        //System.out.println(sort[i].type_decl.toString());
                         smallest_num_children = sort[i];
                         ch_fg = 1;
                         saved_ind = i;
@@ -992,7 +989,6 @@ class typcase extends Expression {
         sort[saved_ind]= null;
         if(ch_fg != 1) {
             return_brn[outer_cnt] = smallest_num_children;
-            //System.out.println(smallest_num_children.type_decl.toString());
          }
         ch_fg = 0;
         outer_cnt++;
@@ -1016,25 +1012,19 @@ class typcase extends Expression {
             CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
              for(Enumeration g = cases.getElements(); g.hasMoreElements();) {
                 branch bet_1 = (branch) g.nextElement();
-                CgenNode branch_type = start.getNode(bet_1.type_decl.toString(), 0);
-                //System.out.println(branch_type.getName().toString());
-               
+                CgenNode branch_type = start.getNode(bet_1.type_decl.toString(), 0);               
                 if(branches_to_sort[branch_type.class_tag] == null) { //first come
                     branches_to_sort[branch_type.class_tag] = bet_1;
-                     //System.out.println(String.valueOf(branch_type.class_tag));
                     }
-                    //branches added based on the class tags of their types 
                 }
 
                     int outer_ind = index;
                     index++;
                     int saved_ind = index;
                     sorted_branches = branch_sort(branches_to_sort);
-                    //System.out.println(String.valueOf(sorted_branches.length));
                     for(int  k = 0; k < sorted_branches.length; k++) {
                         if(sorted_branches[k] == null)
                             continue;
-                        //System.out.println(sorted_branches[k].type_decl.toString());
                         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_ind)+ CgenSupport.LABEL);
                         CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
                         saved_ind = index+1;
@@ -1047,14 +1037,10 @@ class typcase extends Expression {
                             enter_ind = saved_ind;
                         CgenSupport.emitBlti(CgenSupport.T2, start.getNode(sorted_branches[k].type_decl.toString(), 0).class_tag, enter_ind, s);
                         CgenNode interm = start.getNode(sorted_branches[k].type_decl.toString(), 0);
-                        //System.out.println(sorted_branches[k].type_decl.toString());
                         CgenSupport.emitBgti(CgenSupport.T2, start.last_descendant_node(interm).class_tag, enter_ind, s);
-                        //System.out.println(sym.toString());
                         sym.enterScope();
-                        //System.out.println(sorted_branches[k].name.toString());
-                         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.addString(sorted_branches[k].name.toString());
+                        StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.addString(sorted_branches[k].name.toString());
                         sym.addId(aleph, CgenClassTable.frame_to_top_offset/4);
-                        //System.out.println(sym.toString());
                         int old_offset = CgenClassTable.frame_to_top_offset;
                         index = sorted_branches[k].expr.code(s, index, sym);
                         CgenClassTable.frame_to_top_offset = old_offset;
