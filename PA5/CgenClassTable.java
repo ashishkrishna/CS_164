@@ -564,6 +564,7 @@ class CgenClassTable extends SymbolTable {
 			    	for(Enumeration f = attr_class.elements(); f.hasMoreElements(); ) {
 			    		attr nt_attr = (attr) f.nextElement();
 			    		str.print(CgenSupport.WORD + String.valueOf(0)); str.println("");
+			    		rbase.num_attributes++;
 			    	}
 		    }
 	    start_2 = start_2.getParentNd();
@@ -583,7 +584,10 @@ class CgenClassTable extends SymbolTable {
 
     		CgenSupport.emitInitializerRef(parent, str);
     		int offset =  0;
-    		int offset_2 = 0;
+    		Vector v = CgenClassTable.attr_decls.get(base.getName().toString());
+    		//System.out.println(base.num_attributes);
+    		//System.out.println(v.size());
+    		int offset_2 = base.num_attributes-v.size();
     		CgenNode trav_up = base;
     		int ctr_1 = 0;
     		int ctr_2 = 0;
@@ -609,9 +613,15 @@ class CgenClassTable extends SymbolTable {
 		    			CgenClassTable.attr_defs.addId(aleph1, shifter);
 		    			offset++;
 		    		}
+
+		    }
+		    ctr_2++;
+		}
+		if(CgenClassTable.attr_decls.get(trav_up.getName().toString()) != null) {
+		    		Vector<attr> attrs = CgenClassTable.attr_decls.get(trav_up.getName().toString());
 		    		CgenClassTable.frame_offset = 12 + 4*attrs.size();
+		    		//System.out.println(trav_up.getName().toString());
 					CgenClassTable.frame_to_top_offset = -16;
-					attrs = CgenClassTable.attr_decls.get(trav_up.getName().toString());
 					//System.out.println(trav_up.getName().toString());
 		    		for(Enumeration g = attrs.elements(); g.hasMoreElements(); ){
 		    		attr next_attr = (attr) g.nextElement();
@@ -631,11 +641,13 @@ class CgenClassTable extends SymbolTable {
 		    		//CgenSupport.emitStore(CgenSupport.ACC, offset_2, CgenSupport.FP, str);
 		    		CgenSupport.emitStore(CgenSupport.ACC, 3+offset_2, CgenSupport.SELF, str);
 		    	}
+		    		
 		    		offset_2++;
 		    	}
 		    }
-		    	ctr_2++;
-		    }
+
+		    
+		    	
     	  
     	
     		CgenSupport.emitEndRef(parent, 12, str);
