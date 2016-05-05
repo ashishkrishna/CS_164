@@ -40,7 +40,7 @@ class CgenNode extends class_c {
     
     /** Does this node correspond to a basic class? */
     public int basic_status;
-
+    public int num_attributes;
     public int class_tag = 0;
     public int num_children = 0;
 
@@ -55,6 +55,7 @@ class CgenNode extends class_c {
 	this.children = new Vector();
 	this.basic_status = basic_status;
     num_children = 0;
+    num_attributes = 0;
 	AbstractTable.stringtable.addString(name.getString());
     }
 
@@ -90,15 +91,16 @@ class CgenNode extends class_c {
 	return parent; 
     }
 
-    CgenNode getNode(String node_name) {
+    CgenNode getNode(String node_name, int lvl) {
         if(this.getName().toString().equals(node_name)) {
             return this;
         }
         for(Enumeration f = this.getChildren(); f.hasMoreElements();) {
                 CgenNode nxt = (CgenNode) f.nextElement();
-                CgenNode find_nd = nxt.getNode(node_name);
-                if(find_nd != null)
-                    return nxt;
+                CgenNode find_nd = nxt.getNode(node_name, lvl+1);
+                if(find_nd != null) {
+                    return find_nd;
+                }
 
         }
         return null;
