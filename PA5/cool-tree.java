@@ -2017,12 +2017,9 @@ class object extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
 
         if(name.toString().equals("self")) {
-            //System.out.println("HERE\n");
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             return index;
         }
-        //System.out.println(name.toString());
-        //System.out.println(sym.toString());
         StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
         try {
          Integer f = (Integer) (sym.lookup(aleph));
