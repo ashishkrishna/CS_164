@@ -16,7 +16,7 @@ def executePass(cmd, i, o, err):
 def compileAndRun(parser_name, tag, arg):
 	sname = "%s.%s.s" % (arg,tag)
 
-	cmd1 = "python %s %s -o %s" % (parser_name, arg, sname)
+	cmd1 = "python %s %s -g -o %s" % (parser_name, arg, sname)
 	p1 = executePass(cmd1, None, None, subprocess.STDOUT)
 
 	cmd2 = "python runmips.py %s" % (sname)

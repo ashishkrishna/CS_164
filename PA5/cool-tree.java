@@ -580,6 +580,9 @@ class assign extends Expression {
             StringSymbol aleph_1 = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
             Integer h = (Integer) CgenClassTable.attr_defs.lookup(aleph_1);
             CgenSupport.emitStore(CgenSupport.ACC, h, CgenSupport.SELF, s);
+            CgenSupport.emitAddiu(CgenSupport.A1, CgenSupport.SELF, h*4, s);
+            CgenSupport.emitJal("_GenGC_Assign", s);
+         
         }
         return index;
     }
@@ -1354,6 +1357,7 @@ class mul extends Expression {
         CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 4, s);
         CgenClassTable.frame_to_top_offset = CgenClassTable.frame_to_top_offset + 4;
+
         return index;
     }
 
