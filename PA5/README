@@ -175,9 +175,27 @@ Instructions
 
 Write-up for PA5
 ----------------
+The design challenges for this project were quite massive. Every phase required attention to detail,
+insightful thinking, and rigorous testing. 
+----Checkpoint Design-------
+We first focused on completing the requirements for the checkpoint. Our initial challenge
+was to figure out how to output the proper prototype objects, dispatch tables, as well as inits for each class. We soon
+realized that containers were needed for each of these constructs in order to store them, and reuse them at various points.
+So we decided to use HashMaps in order to store the necessary information for each of these constructs. We attempted to match 
+the output of the reference for all of the initialization code and were quite successful in doing this. Modifications were later made
+to this initialization when we handled inheritance, both of attributes and of methods, which are detailed below. Once the initialization
+of the basic classes was complete, we proceeded to write code for all of the required AST nodes. We took great care to follow the invariants
+that were described in the lecture slides. We made sure to maintain stack discipline, and store all results of operations in the accumulator,
+thereby making every operation self-contained. A particularly interesting problem was the issue of label indices. We resolved this by passing
+in the index into the code method of every AST node, and returning the (possibly incremented) index from every call to this method, so that
+the any nested calls to code(...) would always have a valid index. Branches and conditionals often required for us to increment the index by more 
+than 1 (and hence "save" the indices in between) so that for arbitrarily long branches, we would know the exact index for jumping to the end of control.
+----Final Design--------
+For the final design, we had to handle dispatches, both dynamic and static, let expressions, case expressions, multiple classes, as well as inheritance.
 
-Slip hours used for checkpoint : 27 hours
-100-1-27 = 72 hours remaining of slip for our group.
+
+
+
 
 
 

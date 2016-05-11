@@ -1,9 +1,15 @@
 
-(*  Example cool program testing as many aspects of the code generator
-    as possible.
- *)
 
 class Main {
-  main():Int { 0 };
+  main():Int { { (new BetterIO).out(new BetterIO); 3;} };
+};
+
+class BetterIO inherits IO {
+	out(a:Object) : SELF_TYPE {
+		case a of 
+		i : Int => out_int(i);
+		s : String => out_string(s);
+		esac
+	};
 };
 
