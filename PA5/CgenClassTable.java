@@ -438,6 +438,8 @@ class CgenClassTable extends SymbolTable {
 	int index = 0;
 	index = initialize_all_classes(start, index);
 	}
+
+    /*Sets the class label for each class */
 	public int build_all_class_lbls(CgenNode rbase, int classtag) {
     	build_lbl(rbase, rbase.getName().toString(), classtag);
     	for(Enumeration f = rbase.getChildren(); f.hasMoreElements();) {
@@ -448,6 +450,8 @@ class CgenClassTable extends SymbolTable {
     	return classtag;
     }
 
+    
+    /*Sets the label for a specified class (Helper to build_all_class_lbls) */
     public void build_lbl(CgenNode rbase, String classtab,  int classtag) {
     	int size = 3;
     	rbase.class_tag = classtag;
@@ -456,7 +460,7 @@ class CgenClassTable extends SymbolTable {
 
     }
 
-
+    /* Code all methods for a specified class */
 	public int code_methods(CgenNode start, int index, SymbolTable var_defs) {
 	if(start.basic_status == CgenNode.NotBasic) {
 	Vector<method> mains = CgenClassTable.method_decls.get(start.getName().toString()); //Need to find for all classes
@@ -494,7 +498,7 @@ class CgenClassTable extends SymbolTable {
 	return index;
     }
 
-
+    /*Find string constant for each class and print*/
     public void build_class_nameTab(CgenNode base) {
     		AbstractSymbol aleph = AbstractTable.stringtable.lookup(base.getName().toString());
     		StringSymbol gimel = (StringSymbol) aleph;
@@ -509,7 +513,7 @@ class CgenClassTable extends SymbolTable {
     		return;
     }
 
-
+   	/*Builds the ObjClassTab*/
     public void objclasstab_creation(CgenNode base) {
     		str.print(CgenSupport.WORD + base.getName().toString()+CgenSupport.PROTOBJ_SUFFIX); str.println("");
     		str.print(CgenSupport.WORD + base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX); str.println("");
@@ -524,6 +528,7 @@ class CgenClassTable extends SymbolTable {
 
     }
 
+    /*Building all proto-Objs */
     public int build_all_proto_objs(CgenNode rbase, int classtag) {
     	build_proto(rbase, rbase.getName().toString(), classtag);
     	for(Enumeration f = rbase.getChildren(); f.hasMoreElements();) {
@@ -534,6 +539,7 @@ class CgenClassTable extends SymbolTable {
     	return classtag;
     }
 
+    /*Helper function for building proto-Objs*/
     public void build_proto(CgenNode rbase, String classtab,  int classtag) {
     	int size = 3;
     	str.println(CgenSupport.WORD + "-1");
@@ -566,6 +572,7 @@ class CgenClassTable extends SymbolTable {
 
     }
 
+    /*Inits for all classes. Prints out in a treelike manner starting from the root (Object class) */
    public int initialize_all_classes(CgenNode base, int index) {
     		AbstractTable.stringtable.addString(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX);
     		str.print(base.getName().toString()+CgenSupport.CLASSINIT_SUFFIX+CgenSupport.LABEL);
@@ -631,10 +638,6 @@ class CgenClassTable extends SymbolTable {
 		    	}
 		    }
 
-		    
-		    	
-    	  
-    	
     		CgenSupport.emitEndRef(parent, 12, str);
     		SymbolTable var_defs = new SymbolTable();
     		index = code_methods(base, index, var_defs);
@@ -692,7 +695,7 @@ class CgenClassTable extends SymbolTable {
     	return virtual_disptbl;
     }
 
-
+    //Printing the dispatch table
     public void print_dispatch_tbl(CgenNode base, Vector<String> reversal) {
     	str.print(base.getName().toString() + CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL); 
     	for(Enumeration g = reversal.elements(); g.hasMoreElements();) {

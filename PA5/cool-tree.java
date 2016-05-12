@@ -568,20 +568,22 @@ class assign extends Expression {
       * you wish.)
       * @param s the output stream 
       * */
-    public int code(PrintStream s, int index, SymbolTable sym) {
+    public int code(PrintStream s, int index, SymbolTable sym) {   
         expr.getClass().cast(expr);
         index = expr.code(s, index, sym);
         try {
-        StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
+        /*Access for assigning to local var/formal. Store at given Frame Pointer offset in lookup */
+        StringSymbol aleph = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());   
         Integer f = (Integer) (sym.lookup(aleph));
         CgenSupport.emitStore(CgenSupport.ACC, f, CgenSupport.FP, s);
     }
         catch(java.lang.NullPointerException r) {
+            /*Check whether this is an attribute, if it is, then store at the attribute in the proto-Obj table*/
             StringSymbol aleph_1 = (StringSymbol) AbstractTable.stringtable.lookup(name.toString());
             Integer h = (Integer) CgenClassTable.attr_defs.lookup(aleph_1);
             CgenSupport.emitStore(CgenSupport.ACC, h, CgenSupport.SELF, s);
-            if(Flags.cgen_Memmgr == Flags.GC_GENGC) {
-            CgenSupport.emitAddiu(CgenSupport.A1, CgenSupport.SELF, h*4, s);
+            if(Flags.cgen_Memmgr == Flags.GC_GENGC) {   //GenGC flag 
+            CgenSupport.emitAddiu(CgenSupport.A1, CgenSupport.SELF, h*4, s); //Notify GenGC
             CgenSupport.emitJal("_GenGC_Assign", s);
         }
          
@@ -649,6 +651,7 @@ class static_dispatch extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
         int old_offset = CgenClassTable.frame_to_top_offset;
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
+            /*Load all the arguments*/
             Expression nxt = (Expression) f.nextElement();
             nxt.getClass().cast(nxt);
             index = nxt.code(s, index, sym);
@@ -659,6 +662,7 @@ class static_dispatch extends Expression {
 
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
+                /*Evaluate the object calling the method */
                 index = expr.code(s, index, sym);
              }
             if(expr.get_type().toString().equals("SELF_TYPE")) 
@@ -669,6 +673,7 @@ class static_dispatch extends Expression {
             CgenSupport.emitJal("_dispatch_abort", s);
             StringSymbol string_ind = null;
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
+            //Get the method from the Type 
             CgenSupport.emitLoadAddress(CgenSupport.T2, type_name.getString()+CgenSupport.PROTOBJ_SUFFIX, s);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.T2, s);
             Vector<String> methods_for_this_class = null;
@@ -748,6 +753,7 @@ class dispatch extends Expression {
     public int code(PrintStream s, int index, SymbolTable sym) {
         int old_offset = CgenClassTable.frame_to_top_offset;
         for(Enumeration f = actual.getElements(); f.hasMoreElements();) {
+             /*Load all the arguments*/
             Expression nxt = (Expression) f.nextElement();
             nxt.getClass().cast(nxt);
             index = nxt.code(s, index, sym);
@@ -758,6 +764,7 @@ class dispatch extends Expression {
 
             expr.getClass().cast(expr);
             if(!expr.get_type().toString().equals("SELF_TYPE")) {
+                //Evaluate the object calling method
                 index = expr.code(s, index, sym);
              }
             if(expr.get_type().toString().equals("SELF_TYPE")) 
@@ -770,6 +777,7 @@ class dispatch extends Expression {
             s.print(CgenSupport.LABEL_PREFIX+String.valueOf(index)+ CgenSupport.LABEL);
             CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
             Vector<String> methods_for_this_class = null;
+            //Find the method to be called
             if(expr.get_type().toString().equals("SELF_TYPE")) 
                 methods_for_this_class = CgenClassTable.virtual_disptbl.get(this.this_class);
             else 
@@ -836,10 +844,12 @@ class cond extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        //Evaluate the boolean
         index = pred.code(s, index, sym);
         CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         int saved_index = index;
         CgenSupport.emitBeqz(CgenSupport.ACC, saved_index, s);
+        //Save labels for then and else
         index = index+2;
         index = then_exp.code(s, index, sym);
         CgenSupport.emitBranch(saved_index+1, s);
@@ -897,6 +907,7 @@ class loop extends Expression {
         s.print(CgenSupport.LABEL_PREFIX+String.valueOf(saved_index)+ CgenSupport.LABEL);
         index++;
         index = pred.code(s, index, sym);
+        //Save label for exiting from loop
         int saved_index_2 = index;
         CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         CgenSupport.emitBeqz(CgenSupport.ACC, saved_index_2, s);
@@ -959,6 +970,7 @@ class typcase extends Expression {
     //     return index;
     // }
 
+    /*Sorts branches by number of descendants */
     public branch[] branch_sort(branch[] sort) {
          CgenNode start = super.get_root();
         branch[] return_brn = new branch[sort.length];
@@ -1017,8 +1029,9 @@ class typcase extends Expression {
             CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
              for(Enumeration g = cases.getElements(); g.hasMoreElements();) {
                 branch bet_1 = (branch) g.nextElement();
+                //Populate the branches array and pass it to branches-to-sort
                 CgenNode branch_type = start.getNode(bet_1.type_decl.toString(), 0);               
-                if(branches_to_sort[branch_type.class_tag] == null) { //first come
+                if(branches_to_sort[branch_type.class_tag] == null) { //first come-first serve
                     branches_to_sort[branch_type.class_tag] = bet_1;
                     }
                 }
@@ -1040,6 +1053,7 @@ class typcase extends Expression {
                             enter_ind = outer_ind;
                         else
                             enter_ind = saved_ind;
+                        /*Blti and Bgti for each branch in sorted order from branch_sort */
                         CgenSupport.emitBlti(CgenSupport.T2, start.getNode(sorted_branches[k].type_decl.toString(), 0).class_tag, enter_ind, s);
                         CgenNode interm = start.getNode(sorted_branches[k].type_decl.toString(), 0);
                         CgenSupport.emitBgti(CgenSupport.T2, start.last_descendant_node(interm).class_tag, enter_ind, s);
@@ -1103,6 +1117,7 @@ class block extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /*Code each statement*/
         for (Enumeration e = body.getElements(); e.hasMoreElements();) {
             Expression f = (Expression) e.nextElement();
             int trail = 0;
@@ -1881,6 +1896,10 @@ class new_ extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        if(type_name.equalString("SELF_TYPE", 9) || type_name.equalString("self", 4)) {
+            CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
+            return index;
+        }
         CgenSupport.emitLoadAddress(CgenSupport.ACC, type_name.getString()+CgenSupport.PROTOBJ_SUFFIX, s);
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitJal(type_name.getString()+CgenSupport.CLASSINIT_SUFFIX, s);
