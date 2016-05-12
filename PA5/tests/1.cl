@@ -5,7 +5,7 @@ class Main inherits IO {
    
 	out_string(">");
     test <- in_string();
-    if test = "d" then let a : Int <- 34 in let b : Int <- 56 in {out_int(a); out_int(b); } else test fi;
+    if test = "death" then let a : Int <- 34 in let b : String <- "Hello" in {out_string(test.substr(2,3)); out_string(b.substr(2,3)); } else test fi;
    
 }
   };

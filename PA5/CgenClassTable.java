@@ -670,7 +670,9 @@ class CgenClassTable extends SymbolTable {
 				//Goes throug the disp_tbl and checks the indices of all methods that have the same name
 				for(Enumeration q = reversal.elements(); q.hasMoreElements();) { 
 					String nxt_str_method = (String) q.nextElement();
-					if(nxt_str_method.endsWith(m.group(4))) {
+					//Pattern t = Pattern.compile(pattern);
+					Matcher h = r.matcher(nxt_str_method);
+					if(h.find() && h.group(4).equals((m.group(4)))) {
 						inherit_flag = 1;
 						reversal.set(cnt, method_to_put);
 						break;	

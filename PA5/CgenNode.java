@@ -90,7 +90,7 @@ class CgenNode extends class_c {
     CgenNode getParentNd() {
 	return parent; 
     }
-
+    //gets Node by String name.
     CgenNode getNode(String node_name, int lvl) {
         if(this.getName().toString().equals(node_name)) {
             return this;
@@ -105,7 +105,7 @@ class CgenNode extends class_c {
         }
         return null;
     }
-
+    //Rightmost descendant node of a particular node
     CgenNode last_descendant_node(CgenNode name) {
         if(!name.getChildren().hasMoreElements())
             return name;

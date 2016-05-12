@@ -192,7 +192,13 @@ the any nested calls to code(...) would always have a valid index. Branches and 
 than 1 (and hence "save" the indices in between) so that for arbitrarily long branches, we would know the exact index for jumping to the end of control.
 ----Final Design--------
 For the final design, we had to handle dispatches, both dynamic and static, let expressions, case expressions, multiple classes, as well as inheritance.
+Once again, we followed stack discipline in order to implement dispatches. We loaded in all of the arguments in reverse order, before jumping to the entry 
+point of the function. On exit, we did not delete the stack frames, but did restore the virtual frame to top offset to its original starting position, since the stack
+frames previously used by the function that we called are now free for use, and hence, must be accounted for. For let expressions, we decided to enter a new scope, add the identifier to the local variable symboltable, and then proceed to execute the body of the function. Upon finishing execution of the body, we exited the scope and reset the
+virtual frame to top offset. Case expressions involved sorting all of the branches by number of descendants, and then generating blti and bgti functions (along with the appropriate branch matching code). Each expression was ordered so that the most specific classes were checked first, followed by less specific classes (ones with fewer descendants). In order to accomodate multiple classes, we created proto-Objects for each class, followed by the methods defined in each class. In order to handle inheritance, we first set all
+attributes to 0 (void) when generating the proto_Object. Then, in the init procedure, each attribute would be initialized. Inherited attributes would be initialized whenever the descendant class called (jal Inherited_class). It was particularly important to maintain the correct offsets for inherited attributes, as well as inherited methods (even those that were redefined in child classes), so that the invariant of calling a particular method from a particular offset was maintained). All of these implementations required a great deal of time and planning. This was, by far, the most extensive project in this class.
 
+Ashish Krishna & Anthony Polloreno 
 
 
 

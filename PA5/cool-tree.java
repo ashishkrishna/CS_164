@@ -1241,6 +1241,7 @@ class plus extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /* Store arg1 on the stack, get arg2 from acc and add */
       index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -1301,6 +1302,7 @@ class sub extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+         /* Store arg1 on the stack, get arg2 from acc and sub */
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -1361,6 +1363,7 @@ class mul extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+         /* Store arg1 on the stack, get arg2 from acc and mult */
         index = e1.code(s, index, sym);
        CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
        CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -1422,6 +1425,7 @@ class divide extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+         /* Store arg1 on the stack, get arg2 from acc and div */
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -1477,6 +1481,7 @@ class neg extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+         /* Create new negated obj (integer obj) */
         index = e1.code(s, index, sym);
         CgenSupport.emitJal("Object.copy", s);
         CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
@@ -1530,6 +1535,7 @@ class lt extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /*Does the comparison and stores the result in a new Bool */
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -1595,6 +1601,7 @@ class eq extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /* Does the eq comparison and stores the result in a new Bool Cosnt */
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -1658,6 +1665,7 @@ class leq extends Expression {
       * @param s the output stream /
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /*Does the leq comparison and stores the result in a new BoolConst*/
         index = e1.code(s, index, sym);
         CgenSupport.emitStore(CgenSupport.ACC, 0, CgenSupport.SP, s);
         CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -4, s);
@@ -1717,6 +1725,7 @@ class comp extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /*Find the compliment and store result in new BoolConst */
         index = e1.code(s, index, sym);
         CgenSupport.emitLoad(CgenSupport.ACC, 3, CgenSupport.ACC, s);
         CgenSupport.emitMove(CgenSupport.T1, CgenSupport.ACC, s);
@@ -1896,6 +1905,7 @@ class new_ extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /* Generates new object, if self, just stores the self in ACC */
         if(type_name.equalString("SELF_TYPE", 9) || type_name.equalString("self", 4)) {
             CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
             return index;
@@ -1945,6 +1955,7 @@ class isvoid extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /*Checks whether acc is 0 Returns an appropriate BoolConst */
         index = e1.code(s, index, sym);
         CgenSupport.emitMove(CgenSupport.T1, CgenSupport.ACC, s);
         CgenSupport.emitLoadBool(CgenSupport.ACC, new BoolConst(true), s);
@@ -1989,6 +2000,7 @@ class no_expr extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
+        /*Returns 0 in acc */
         CgenSupport.emitLoadInt(CgenSupport.ACC,
                                 (IntSymbol)AbstractTable.inttable.lookup("0"), s);
         CgenSupport.emitJal("Object.copy", s);
@@ -2036,7 +2048,7 @@ class object extends Expression {
       * @param s the output stream 
       * */
     public int code(PrintStream s, int index, SymbolTable sym) {
-
+        /*Checks all the symboltables (attributes and local vars/params) */
         if(name.toString().equals("self")) {
             CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
             return index;
