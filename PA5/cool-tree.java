@@ -14,6 +14,8 @@ import java.util.Vector;
 import java.util.Stack;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 
 
@@ -682,8 +684,12 @@ class static_dispatch extends Expression {
             int ind = 0;
             while(m.hasMoreElements()){
                 String next_elem = (String) m.nextElement();
-                if(next_elem.endsWith(name.toString()))
+                String pattern = "(([aA-zZ]([aA-zZ]|[\\d])*))\\.(([aA-zZ]([aA-zZ]|[\\d])*))"; //Grab the pattern [Class].[method]
+                Pattern r = Pattern.compile(pattern);   
+                Matcher q = r.matcher(next_elem);
+                if(q.find() && name.toString().equals(q.group(4))) {
                     break;
+                }
                 ind++;
             }
             index++;
@@ -786,8 +792,12 @@ class dispatch extends Expression {
             int ind = 0;
             while(m.hasMoreElements()){
                 String next_elem = (String) m.nextElement();
-                if(next_elem.endsWith(name.toString()))
+                String pattern = "(([aA-zZ]([aA-zZ]|[\\d])*))\\.(([aA-zZ]([aA-zZ]|[\\d])*))"; //Grab the pattern [Class].[method]
+                Pattern r = Pattern.compile(pattern);   
+                Matcher q = r.matcher(next_elem);
+                if(q.find() && name.toString().equals(q.group(4))) {
                     break;
+                }
                 ind++;
             }
             index++;
